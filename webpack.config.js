@@ -1,6 +1,6 @@
 const path = require('path');
-const nodeExternals = require('webpack-node-externals');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const PROJECTS = (process.env.PROJECTS || '').split(',');
 const IS_WATCH = !!process.env.WATCH;
@@ -33,6 +33,15 @@ const moduleConfig = (tscOptions = {}) => ({
 
 const htmlPlugin = new HtmlWebpackPlugin({template: './src/frontend/index.html'});
 
+const copyPlugin = new CopyPlugin({
+    patterns: [
+        {
+            from: '*.css',
+            context: './src/frontend/'
+        },
+    ]
+});
+
 const frontendBuild = (name, entryFile, outputFile) => ({
     name: name,
     entry: entryFile,
@@ -63,7 +72,7 @@ const frontendBuild = (name, entryFile, outputFile) => ({
         "react": "React",
         "react-dom": "ReactDOM"
     },
-    plugins: [htmlPlugin]
+    plugins: [htmlPlugin, copyPlugin]
 });
 
 const availableProjects = {

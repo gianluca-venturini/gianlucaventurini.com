@@ -7,8 +7,7 @@
   "scripts": {
     "build": "PROJECTS=frontend webpack --progress --colors",
     "build-watch": "PROJECTS=frontend WATCH=true webpack --progress --colors",
-    "start": "node --inspect dist/server.js",
-    "build-hot-reload": "PROJECTS=frontend webpack-dev-server --mode=development",
+    "start": "PROJECTS=frontend webpack-dev-server --mode=development",
     "clean": "rm -rf node_modules/ dist/"
   },
   "engines": {
@@ -18,15 +17,18 @@
   "devDependencies": {
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/react-router": "^5.1.7",
     "@types/webpack-env": "^1.15.2",
+    "copy-webpack-plugin": "^6.0.1",
+    "html-webpack-plugin": "^4.3.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-router": "^5.2.0",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.4",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.10.1",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
     "express": "^4.17.1"
