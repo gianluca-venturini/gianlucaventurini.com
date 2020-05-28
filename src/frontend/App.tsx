@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import { Route, Switch } from 'react-router';
+import { Redirect, Route, Switch } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
+import { Bookshelf } from './components/pages/Bookshelf';
 import { Home } from './components/pages/Home';
 
 export class App extends React.Component<{}> {
@@ -10,7 +11,9 @@ export class App extends React.Component<{}> {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route path="/" component={Home} />
+                    <Route exact path="/" component={Home} />
+                    <Route path="/bookshelf" component={Bookshelf} />
+                    <Redirect to="/" />
                 </Switch>
             </BrowserRouter>
         );
@@ -20,5 +23,5 @@ export class App extends React.Component<{}> {
 
 export function start() {
     const rootElem = document.getElementById('main');
-    render(<App/>, rootElem);
+    render(<App />, rootElem);
 }

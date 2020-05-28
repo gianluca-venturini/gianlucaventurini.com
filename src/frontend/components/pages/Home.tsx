@@ -1,9 +1,13 @@
 import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
+import { Page } from './Page';
 
-export class Home extends React.Component<{}> {
+interface HomeProps extends RouteComponentProps<{}> {}
+
+export class Home extends React.Component<HomeProps> {
 
     render() {
-        return <div>Home</div>;
+        return <Page {...this.props}>Home</Page>;
     }
 
 }
