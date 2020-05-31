@@ -2,7 +2,7 @@ import * as React from 'react';
 import { render } from 'react-dom';
 import { Redirect, Route, Switch } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
-import { Bookshelf } from './components/pages/Bookshelf';
+import { BookshelfPage } from './components/pages/BookshelfPage';
 import { Home } from './components/pages/Home';
 
 export class App extends React.Component<{}> {
@@ -12,7 +12,7 @@ export class App extends React.Component<{}> {
             <BrowserRouter>
                 <Switch>
                     <Route exact path="/" component={Home} />
-                    <Route path="/bookshelf" component={Bookshelf} />
+                    <Route path="/bookshelf" component={BookshelfPage} />
                     <Redirect to="/" />
                 </Switch>
             </BrowserRouter>

@@ -26,7 +26,7 @@ export class NavBar extends React.Component<NavBarProps, NavBarState> {
         const {pages} = this.state;
         return (
             <div>
-                {pages?.map(page => <Link to={page.data.route}><div>{page.data.title[0].text}</div></Link>)}
+                {pages?.map(page => <Link key={page.data.route} to={page.data.route}><div>{page.data.title[0].text}</div></Link>)}
             </div>
         );
     }

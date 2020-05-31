@@ -8,7 +8,7 @@ export class Page extends React.Component<PageProps> {
 
     render() {
         const {children, ...rest} = this.props;
-        return (<>{children}<NavBar {...rest} /></>);
+        return (<><NavBar {...rest} />{children}</>);
     }
 
 }
