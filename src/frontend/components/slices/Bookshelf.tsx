@@ -1,3 +1,4 @@
+import { makeStyles } from '@material-ui/styles';
 import { RichText, RichTextBlock } from 'prismic-reactjs';
 import * as React from 'react';
 import { PrismicSlice } from './SliceJson';
@@ -9,31 +10,40 @@ interface BookshelfItem {
 
 type BookshelfSlice = PrismicSlice<'bookshelf', BookshelfItem>;
 
+const styles = makeStyles({
+    root: {
+        '&:hover': {
+            color: 'red'
+        },
+        '@media only screen and (max-width: 600px)': {
+            backgroundColor: 'red'
+        }
+    },
+});
+
 interface BookshelfProps {
     slice: BookshelfSlice;
 }
 
-export class Bookshelf extends React.Component<BookshelfProps> {
-
-    render() {
-        const {slice} = this.props;
-        console.log('HERE', slice);
-        return (
-            <div>
-                {
-                    slice.items.map(item => (
+export const Bookshelf: React.FC<BookshelfProps> = props => {
+    
+    const {slice} = props;
+    const classes = styles();
+    return (
+        <div>
+            {
+                slice.items.map(item => (
+                    <div className={classes.root}>
                         <div>
-                            <div>
-                                <RichText render={item.book_title} />
-                            </div>
-                            <div>
-                                <RichText render={item.book_description} />
-                            </div>
+                            <RichText render={item.book_title} />
                         </div>
-                    ))
-                }
-            </div>
-        );
-    }
+                        <div>
+                            <RichText render={item.book_description} />
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+    );
 
 }
