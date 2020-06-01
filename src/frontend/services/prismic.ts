@@ -10,10 +10,13 @@ export class PrismicService {
         this.apiPromise = Prismic.getApi(API_ENDPOINT);
     }
 
-    async getBookshelf() {
+    async getPage(pageName: string) {
         const api = await this.apiPromise;        
-        const response = await api.query(Prismic.Predicates.at('document.type', 'page'), {});
-        return response;
+        const response = await api.query([
+            Prismic.Predicates.at('document.type', 'page'),
+            Prismic.Predicates.at('document.tags', [pageName])
+        ], {});
+        return response.results[0];
     }
 
     async getPages() {

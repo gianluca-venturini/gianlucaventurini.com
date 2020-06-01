@@ -1,9 +1,8 @@
 import * as React from 'react';
 import { render } from 'react-dom';
-import { Redirect, Route, Switch } from 'react-router';
+import { Redirect, Route, RouteProps, Switch } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
-import { BookshelfPage } from './components/pages/BookshelfPage';
-import { Home } from './components/pages/Home';
+import { RoutePage } from './components/pages/PageUtils';
 
 export class App extends React.Component<{}> {
 
@@ -11,8 +10,8 @@ export class App extends React.Component<{}> {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route exact path="/" component={Home} />
-                    <Route path="/bookshelf" component={BookshelfPage} />
+                    <Route exact path="/" component={(props: RouteProps) => <RoutePage {...props} pageName="home" />} />
+                    <Route path="/bookshelf" component={(props: RouteProps) => <RoutePage {...props} pageName="bookshelf" />} />
                     <Redirect to="/" />
                 </Switch>
             </BrowserRouter>

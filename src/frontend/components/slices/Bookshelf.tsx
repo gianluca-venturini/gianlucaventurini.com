@@ -19,6 +19,11 @@ const styles = makeStyles({
             backgroundColor: 'red'
         }
     },
+    description: {
+        '& strong': {
+            color: 'blue'
+        }
+    }
 });
 
 interface BookshelfProps {
@@ -37,7 +42,7 @@ export const Bookshelf: React.FC<BookshelfProps> = props => {
                         <div>
                             <RichText render={item.book_title} />
                         </div>
-                        <div>
+                        <div className={classes.description}>
                             <RichText render={item.book_description} />
                         </div>
                     </div>
