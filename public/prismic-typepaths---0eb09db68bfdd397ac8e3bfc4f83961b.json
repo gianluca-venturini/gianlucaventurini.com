@@ -1,0 +1,1 @@
+[{"path":["page","alternate_languages"],"type":"AlternateLanguages"},{"path":["page","data"],"type":"PrismicPageDataType"},{"path":["page","data","title"],"type":"PrismicStructuredTextType"},{"path":["page","data","image"],"type":"PrismicImageType"},{"path":["page","data","paragraph"],"type":"PrismicStructuredTextType"},{"path":["page"],"type":"PrismicPage"}]
