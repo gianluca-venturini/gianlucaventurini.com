@@ -1,8 +1,9 @@
-import { graphql, PageProps } from "gatsby"
-import React from "react"
+import { graphql, PageProps } from "gatsby";
+import React from "react";
 
 export default function IndexPage(props: PageProps) {
-    return <h1>{JSON.stringify(props.data)}</h1>
+    console.log(JSON.stringify(props.data));
+    return <div>Gianluca Venturini</div>;
 }
 
 export const IndexQuery = graphql`
