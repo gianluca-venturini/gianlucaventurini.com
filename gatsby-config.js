@@ -15,7 +15,7 @@ module.exports = {
                 repositoryName: process.env.PRISMIC_REPOSITORY_NAME,
                 accessToken: process.env.PRISMIC_ACCESS_TOKEN,
                 schemas: {
-                    page: require('./src/schemas/article.json'),
+                    home: require('./src/schemas/home.json'),
                 },
             },
         },
