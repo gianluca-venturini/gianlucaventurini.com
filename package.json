@@ -24,6 +24,7 @@
     "@types/webpack-env": "^1.15.2",
     "dotenv": "^8.2.0",
     "gatsby": "^2.24.2",
+    "gatsby-plugin-google-analytics": "^2.3.11",
     "gatsby-plugin-sass": "^2.3.12",
     "gatsby-source-prismic": "^3.1.4",
     "html-webpack-plugin": "^4.3.0",
