@@ -84,7 +84,8 @@ export const GlobalStyles = createGlobalStyle`
 
 const Theme: DefaultTheme = {
     colors: {
-        mainText: `rgba(0, 0, 0, 0.87)`
+        mainText: `rgba(0, 0, 0, 0.87)`,
+        redText: `rgba(255, 82, 82, 0.87)`
     }
 }
 
