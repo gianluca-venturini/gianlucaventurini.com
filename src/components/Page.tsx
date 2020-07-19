@@ -3,7 +3,7 @@ import styled, { ThemeProvider } from "styled-components";
 import { Theme, GlobalStyles } from "./Theme";
 import { Reset } from 'styled-reset'
 import { MetaProps, Meta } from "./Meta";
-import { Navigation } from "./Navigation";
+import { Navigation, NavigationProps } from "./Navigation";
 
 export const PageContainer = styled.div`
     color: ${props => props.theme.colors.mainText};
@@ -24,15 +24,17 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-interface PageProps extends MetaProps { }
+interface PageProps extends MetaProps, NavigationProps {}
 
 export const Page: React.FC<PageProps> = props => {
+    const {location, ...metaProps} = props;
+
     return (
         <ThemeProvider theme={Theme}>
             <Reset />
             <GlobalStyles />
-            <Meta {...props} />
-            <Navigation />
+            <Meta {...metaProps} />
+            <Navigation location={location}/>
             <PageContainer>
                 <ContentContainer>
                     {props.children}

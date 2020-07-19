@@ -31,7 +31,7 @@ interface HomeData {
 
 export default function IndexPage(props: PageProps<HomeData>) {
     return (
-        <Page title="Home · Gianluca Venturini" description={DESCRIPTION_320}>
+        <Page title="Home · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
             <Content>
                 <Greetings>
                     <PrismicImage round {...props.data.prismicHome.data.avatar}/>

@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components';
+import { PageProps } from 'gatsby';
 
-export const NavigationWrapper = styled.div`
+const NavigationWrapper = styled.div`
     position: absolute;
     right: 40px;
     top: 40px;
@@ -13,30 +14,40 @@ export const NavigationWrapper = styled.div`
     font-size: 13px;
     line-height: 16px;
     text-align: end;
-
+    color: ${props => props.theme.colors.mainText};
+    
     cursor: pointer;
-
+    
     a:link, a:visited {
         text-decoration: none;
-        color: ${props => props.theme.colors.mainText};
     }
 
     *:hover {
         font-weight: 600;
     }
-
+    
     
 `;
-    // TODO(gianluca): enable when pages will be generated programmatically
-    // a:hover {
-    //     color: ${props => props.theme.colors.redText};
-    // }
-export const Navigation: React.FC = props => {
+    
+interface LinkWrapperProps {
+    current: boolean;
+}
+
+const LinkWrapper = styled.a<LinkWrapperProps>`
+    font-weight: ${props => props.current ? '600' : '400'};
+    color: ${props => props.current ? props.theme.colors.redText : props.theme.colors.mainText};
+`;
+
+export interface NavigationProps {
+    location: PageProps['location'];
+}
+
+export const Navigation: React.FC<NavigationProps> = props => {
 
     return (
         <NavigationWrapper>
-            <h1><a href='/'>Gianluca Venturini</a></h1> {/* H1 used for SEO purposes */}
-            {/* <a href='/'>Bookshelf</a> */}
+            <h1><LinkWrapper href='/' current={props.location.pathname === '/'}>Gianluca Venturini</LinkWrapper></h1> {/* H1 used for SEO purposes */}
+            <LinkWrapper href='/bookshelf' current={props.location.pathname === '/bookshelf'}>Bookshelf</LinkWrapper>
         </NavigationWrapper>
     )
 }
