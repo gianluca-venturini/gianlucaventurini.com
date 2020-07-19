@@ -27,7 +27,7 @@ export const NavigationWrapper = styled.div`
 
     
 `;
-    
+    // TODO(gianluca): enable when pages will be generated programmatically
     // a:hover {
     //     color: ${props => props.theme.colors.redText};
     // }
@@ -36,7 +36,7 @@ export const Navigation: React.FC = props => {
     return (
         <NavigationWrapper>
             <h1><a href='/'>Gianluca Venturini</a></h1> {/* H1 used for SEO purposes */}
-            <a href='/'>Bookshelf</a>
+            {/* <a href='/'>Bookshelf</a> */}
         </NavigationWrapper>
     )
 }
