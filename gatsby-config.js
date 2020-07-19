@@ -23,13 +23,6 @@ module.exports = {
             resolve: `gatsby-plugin-google-analytics`,
             options: {
                 trackingId: "UA-64351268-1",
-                head: false,
-                exclude: [],
-                pageTransitionDelay: 0,
-                optimizeId: "0",
-                experimentId: "0",
-                variationId: "0",
-                defer: false,
             },
         },
         {
