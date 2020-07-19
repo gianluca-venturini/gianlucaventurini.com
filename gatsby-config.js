@@ -40,6 +40,9 @@ module.exports = {
             options: {
                 lang: 'en'
             }
-          }
+        },
+        {
+            resolve: `gatsby-plugin-styled-components`
+        },
     ],
 };
