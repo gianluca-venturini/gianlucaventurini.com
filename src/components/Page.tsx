@@ -1,6 +1,6 @@
 import * as React from "react";
 import styled, { ThemeProvider } from "styled-components";
-import { Theme } from "./Theme";
+import { Theme, GlobalStyles } from "./Theme";
 import { Reset } from 'styled-reset'
 
 export const PageContainer = styled.div`
@@ -12,18 +12,21 @@ export const PageContainer = styled.div`
 `;
 
 export const ContentContainer = styled.div`
+    max-width: 600px;
+
     grid-column: 2;
     grid-row: 2;
     justify-self: center;
 
-    line-height: 1.4;
-    max-width: 600px;
+    font-size: 14px;
+    line-height: 1.6;
 `;
 
 export const Page: React.FC = props => {
     return (
         <ThemeProvider theme={Theme}>
             <Reset />
+            <GlobalStyles />
             <PageContainer>
                 <ContentContainer>
                     {props.children}

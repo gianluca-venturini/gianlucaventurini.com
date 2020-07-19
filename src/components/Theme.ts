@@ -11,69 +11,75 @@ import InterThin from '../fonts/Inter-Thin.ttf'
 
 export const GlobalStyles = createGlobalStyle`
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 900;
         src: url(${InterBlack});
     }
     
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 800;
         src: url(${InterExtraBold});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 700;
         src: url(${InterBold});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 600;
         src: url(${InterSemiBold});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 500;
         src: url(${InterMedium});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 400;
         src: url(${InterRegular});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 300;
         src: url(${InterLight});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 200;
         src: url(${InterExtraLight});
     }
 
     @font-face {
-        font-family: Ginger;
+        font-family: Inter;
         font-style: normal;
         font-weight: 100;
         src: url(${InterThin});
     }
 
-    font-family: Inter, sans-serif;
+    body {
+        font-family: Inter, sans-serif;
+        text-rendering: optimizeLegibility;
+        font-feature-settings: "kern" 1;
+        font-kerning: normal;
+        min-width: 320px;
+    }
 `
 
 const Theme: DefaultTheme = {
