@@ -16,3 +16,6 @@ Run the prod server `gatsby build && gatsby serve`
 
 ## Live website
 https://gianlucaventurini.com
+
+## Useful resources
+https://medium.com/source-group/start-a-new-website-with-gatsby-prismic-cms-netlify-a875455c992
