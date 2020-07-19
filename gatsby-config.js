@@ -31,6 +31,15 @@ module.exports = {
                 variationId: "0",
                 defer: false,
             },
-          },
+        },
+        {
+            resolve: `gatsby-plugin-react-helmet`
+        },
+        {
+            resolve: 'gatsby-plugin-html-attributes',
+            options: {
+                lang: 'en'
+            }
+          }
     ],
 };

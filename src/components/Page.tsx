@@ -2,6 +2,7 @@ import * as React from "react";
 import styled, { ThemeProvider } from "styled-components";
 import { Theme, GlobalStyles } from "./Theme";
 import { Reset } from 'styled-reset'
+import { MetaProps, Meta } from "./Meta";
 
 export const PageContainer = styled.div`
     color: ${props => props.theme.colors.mainText};
@@ -22,11 +23,14 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-export const Page: React.FC = props => {
+interface PageProps extends MetaProps { }
+
+export const Page: React.FC<PageProps> = props => {
     return (
         <ThemeProvider theme={Theme}>
             <Reset />
             <GlobalStyles />
+            <Meta {...props} />
             <PageContainer>
                 <ContentContainer>
                     {props.children}

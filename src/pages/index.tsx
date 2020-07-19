@@ -4,6 +4,7 @@ import { PrismicImage, PrismicImageProps } from "../components/PrismicImage";
 import { PrismicRichTextProps, PrismicRichText } from "../components/PrismicRichText";
 import { Page } from "../components/Page";
 import styled from "styled-components";
+import { DESCRIPTION_320 } from "../components/Constants";
 
 
 export const Greetings = styled.div`
@@ -29,9 +30,8 @@ interface HomeData {
 }
 
 export default function IndexPage(props: PageProps<HomeData>) {
-    console.log(JSON.stringify(props.data));
     return (
-        <Page>
+        <Page title="Home · Gianluca Venturini" description={DESCRIPTION_320}>
             <Content>
                 <Greetings>
                     <PrismicImage round {...props.data.prismicHome.data.avatar}/>
@@ -49,7 +49,7 @@ export const IndexQuery = graphql`
             data {
                 avatar {
                     url
-                    thumbnails
+                    alt
                     dimensions {
                         height
                         width
