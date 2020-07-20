@@ -6,5 +6,9 @@ export interface PrismicRichTextProps {
 }
 
 export const PrismicRichText = (props: PrismicRichTextProps) => {
-    return <RichText render={props.raw as any} />;
+    const renderProp = props.raw.map(r => ({
+        spans: [], // Need to add this because Prismic service is not always populating it
+        ...r
+    })) as any;
+    return <RichText render={renderProp} />;
 }

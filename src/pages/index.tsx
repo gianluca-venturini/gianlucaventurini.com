@@ -35,9 +35,9 @@ export default function IndexPage(props: PageProps<HomeData>) {
             <Content>
                 <Greetings>
                     <PrismicImage round {...props.data.prismicHome.data.avatar}/>
-                    <PrismicRichText {...props.data.prismicHome.data.greetings}/>
+                    <PrismicRichText raw={props.data.prismicHome.data.greetings.raw}/>
                 </Greetings>
-                <PrismicRichText {...props.data.prismicHome.data.long_description}/>
+                <PrismicRichText raw={props.data.prismicHome.data.long_description.raw}/>
             </Content>
         </Page>
     );
