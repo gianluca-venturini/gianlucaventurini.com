@@ -5,7 +5,6 @@ import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
 import { PrismicTitle } from "../components/PrismicTitle";
-import { RichText } from "prismic-reactjs";
 
 export const Content = styled.div`
     display: grid;
