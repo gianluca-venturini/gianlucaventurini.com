@@ -46,8 +46,13 @@ export const Navigation: React.FC<NavigationProps> = props => {
 
     return (
         <NavigationWrapper>
-            <h1><LinkWrapper href='/' current={props.location.pathname === '/'}>Gianluca Venturini</LinkWrapper></h1> {/* H1 used for SEO purposes */}
-            <LinkWrapper href='/bookshelf' current={props.location.pathname === '/bookshelf'}>Bookshelf</LinkWrapper>
+            <h1><PageLink href='/' location={props.location}>Gianluca Venturini</PageLink></h1> {/* H1 used for SEO purposes */}
+            <PageLink href='/bookshelf' location={props.location}>Bookshelf</PageLink>
         </NavigationWrapper>
     )
 }
+
+const PageLink: React.FC<{href: string, location: PageProps['location'] }> = props => {
+    const normalizedPathname = props.location.pathname.length === 1 ? props.location.pathname : props.location.pathname.replace(/\/$/, '');
+    return <LinkWrapper href={props.href} current={normalizedPathname === props.href}>{props.children}</LinkWrapper>
+};
