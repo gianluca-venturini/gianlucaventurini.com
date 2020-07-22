@@ -37,5 +37,12 @@ module.exports = {
         {
             resolve: `gatsby-plugin-styled-components`
         },
+        {
+            resolve: 'gatsby-plugin-robots-txt',
+            options: {
+                host: 'https://gianlucaventurini.com',
+                policy: [{ userAgent: '*', allow: '/' }]
+            }
+        }
     ],
 };
