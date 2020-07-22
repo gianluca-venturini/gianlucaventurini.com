@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components';
 import { PageProps } from 'gatsby';
+import { GUTTERS } from './Styles';
 
 const NavigationWrapper = styled.div`
     position: absolute;
@@ -54,5 +55,5 @@ export const Navigation: React.FC<NavigationProps> = props => {
 
 const PageLink: React.FC<{href: string, location: PageProps['location'] }> = props => {
     const normalizedPathname = props.location.pathname.length === 1 ? props.location.pathname : props.location.pathname.replace(/\/$/, '');
-    return <LinkWrapper href={props.href} current={normalizedPathname === props.href}>{props.children}</LinkWrapper>
+    return <LinkWrapper href={props.href} current={normalizedPathname === props.href} style={{lineHeight: `48px`, marginBottom: GUTTERS.xsmall}}>{props.children}</LinkWrapper>
 };

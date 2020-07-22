@@ -24,17 +24,16 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-interface PageProps extends Omit<MetaProps, 'pathname'>, NavigationProps {}
+interface PageProps extends MetaProps, NavigationProps {}
 
 export const Page: React.FC<PageProps> = props => {
-    const {location, ...metaProps} = props;
 
     return (
         <ThemeProvider theme={Theme}>
             <Reset />
             <GlobalStyles />
-            <Meta {...metaProps} pathname={location.pathname} />
-            <Navigation location={location}/>
+            <Meta {...props} />
+            <Navigation location={props.location}/>
             <PageContainer>
                 <ContentContainer>
                     {props.children}

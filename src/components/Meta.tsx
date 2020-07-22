@@ -1,14 +1,15 @@
 import React from 'react'
 import { Helmet } from 'react-helmet'
+import { PageProps } from 'gatsby';
 
 export interface MetaProps {
     title: string;
     description: string;
-    pathname: string;
+    location: PageProps['location'];
 }
 
 export const Meta: React.FC<MetaProps> = props => {
-    const { title, description, pathname } = props;
+    const { title, description } = props;
 
     return (
         <div className="application">
@@ -20,7 +21,6 @@ export const Meta: React.FC<MetaProps> = props => {
                 <meta name="author" content="Gianluca Venturini"></meta>
                 <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
                 <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-                <link rel="canonical" href={`https://gianlucaventurini.com/${pathname.toLowerCase()}`} />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:creator" content="@gianlu_ventu" />
                 <meta name="twitter:site" content="@gianlu_ventu" />

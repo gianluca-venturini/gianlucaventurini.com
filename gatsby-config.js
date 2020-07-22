@@ -43,6 +43,13 @@ module.exports = {
                 host: 'https://gianlucaventurini.com',
                 policy: [{ userAgent: '*', allow: '/' }]
             }
-        }
+        },
+        {
+            resolve: `gatsby-plugin-canonical-urls`,
+            options: {
+                siteUrl: `https://gianlucaventurini.com`,
+                stripQueryString: true,
+            },
+        },
     ],
 };
