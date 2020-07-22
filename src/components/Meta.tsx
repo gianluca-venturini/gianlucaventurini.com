@@ -4,11 +4,11 @@ import { Helmet } from 'react-helmet'
 export interface MetaProps {
     title: string;
     description: string;
-    href: string;
+    pathname: string;
 }
 
 export const Meta: React.FC<MetaProps> = props => {
-    const { title, description, href } = props;
+    const { title, description, pathname } = props;
 
     return (
         <div className="application">
@@ -20,7 +20,7 @@ export const Meta: React.FC<MetaProps> = props => {
                 <meta name="author" content="Gianluca Venturini"></meta>
                 <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
                 <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-                <link rel="canonical" href={href.toLowerCase()} />
+                <link rel="canonical" href={`https://gianlucaventurini.com/${pathname.toLowerCase()}`} />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:creator" content="@gianlu_ventu" />
                 <meta name="twitter:site" content="@gianlu_ventu" />

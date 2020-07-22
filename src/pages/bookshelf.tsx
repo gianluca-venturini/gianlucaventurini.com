@@ -31,7 +31,6 @@ interface HomeData {
 }
 
 export default function BookshelfPage(props: PageProps<HomeData>) {
-    console.log(props);
     return (
         <Page title="Bookshelf · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
             <Content>
