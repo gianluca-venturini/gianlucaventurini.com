@@ -51,5 +51,8 @@ module.exports = {
                 stripQueryString: true,
             },
         },
+        {
+            resolve: `gatsby-plugin-sitemap`,
+        },
     ],
 };
