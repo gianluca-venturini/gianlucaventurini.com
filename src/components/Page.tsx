@@ -24,7 +24,7 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-interface PageProps extends MetaProps, NavigationProps {}
+interface PageProps extends Omit<MetaProps, 'href'>, NavigationProps {}
 
 export const Page: React.FC<PageProps> = props => {
     const {location, ...metaProps} = props;
@@ -33,7 +33,7 @@ export const Page: React.FC<PageProps> = props => {
         <ThemeProvider theme={Theme}>
             <Reset />
             <GlobalStyles />
-            <Meta {...metaProps} />
+            <Meta {...metaProps} href={location.href} />
             <Navigation location={location}/>
             <PageContainer>
                 <ContentContainer>
