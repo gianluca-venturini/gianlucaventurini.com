@@ -11,18 +11,27 @@ export const Content = styled.div`
     row-gap: 50px;
 `;
 
-export const Book = styled.div`
-    display: grid;
-    row-gap: 10px;
+export const BookTitle = styled.span`
+    * {
+        display: inline-block;
+    }
 `;
 
-interface HomeData {
+export const BookAuthor = styled.span`
+    margin-left: 6px;
+    display: inline-block;
+    font-weight: 200;
+    font-size: 12px;
+`;
+
+interface BookshelfData {
     prismicBookshelf: {
         data: {
             title: {text: string}[],
             body: {
                 items: {
                     book_description: PrismicRichTextProps['raw'];
+                    book_author: PrismicRichTextProps['raw'];
                     book_title: PrismicRichTextProps['raw'];
                 }[];
             }[]
@@ -30,16 +39,19 @@ interface HomeData {
     }
 }
 
-export default function BookshelfPage(props: PageProps<HomeData>) {
+export default function BookshelfPage(props: PageProps<BookshelfData>) {
     return (
         <Page title="Bookshelf · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
             <Content>
                 <PrismicTitle {...props.data.prismicBookshelf.data.title} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (
-                    <Book key={book.book_title[0].text}>
-                        <PrismicRichText raw={book.book_title} />
-                        <div style={{fontWeight: 200}}><PrismicRichText raw={book.book_description} /></div>
-                    </Book>
+                    <div key={book.book_title[0].text}>
+                        <span>
+                            <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
+                            <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
+                        </span>
+                        <div style={{marginTop: 10, fontWeight: 200}}><PrismicRichText raw={book.book_description} /></div>
+                    </div>
                 ))}
             </Content>
         </Page>
@@ -53,6 +65,10 @@ export const IndexQuery = graphql`
                 body {
                     items {
                         book_description {
+                            text
+                            type
+                        }
+                        book_author {
                             text
                             type
                         }
