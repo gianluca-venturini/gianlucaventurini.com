@@ -75,6 +75,7 @@ export const GlobalStyles = createGlobalStyle`
 
     body {
         font-family: Inter, sans-serif;
+        font-display: swap;
         text-rendering: optimizeLegibility;
         font-feature-settings: "kern" 1;
         font-kerning: normal;
