@@ -15,6 +15,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 900;
         src: url(${InterBlack});
+        font-display: swap;
     }
     
     @font-face {
@@ -22,6 +23,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 800;
         src: url(${InterExtraBold});
+        font-display: swap;
     }
 
     @font-face {
@@ -29,6 +31,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 700;
         src: url(${InterBold});
+        font-display: swap;
     }
 
     @font-face {
@@ -36,6 +39,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 600;
         src: url(${InterSemiBold});
+        font-display: swap;
     }
 
     @font-face {
@@ -43,6 +47,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 500;
         src: url(${InterMedium});
+        font-display: swap;
     }
 
     @font-face {
@@ -50,6 +55,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 400;
         src: url(${InterRegular});
+        font-display: swap;
     }
 
     @font-face {
@@ -57,6 +63,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 300;
         src: url(${InterLight});
+        font-display: swap;
     }
 
     @font-face {
@@ -64,6 +71,7 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 200;
         src: url(${InterExtraLight});
+        font-display: swap;
     }
 
     @font-face {
@@ -71,11 +79,11 @@ export const GlobalStyles = createGlobalStyle`
         font-style: normal;
         font-weight: 100;
         src: url(${InterThin});
+        font-display: swap;
     }
 
     body {
         font-family: Inter, sans-serif;
-        font-display: swap;
         text-rendering: optimizeLegibility;
         font-feature-settings: "kern" 1;
         font-kerning: normal;
