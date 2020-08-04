@@ -31,13 +31,13 @@ interface HomeData {
 
 export default function IndexPage(props: PageProps<HomeData>) {
     return (
-        <Page title="Home · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
+        <Page title="Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
             <Content>
                 <Greetings>
-                    <PrismicImage round {...props.data.prismicHome.data.avatar}/>
-                    <PrismicRichText raw={props.data.prismicHome.data.greetings.raw}/>
+                    <PrismicImage round {...props.data.prismicHome.data.avatar} />
+                    <PrismicRichText raw={props.data.prismicHome.data.greetings.raw} />
                 </Greetings>
-                <PrismicRichText raw={props.data.prismicHome.data.long_description.raw}/>
+                <PrismicRichText raw={props.data.prismicHome.data.long_description.raw} />
             </Content>
         </Page>
     );
