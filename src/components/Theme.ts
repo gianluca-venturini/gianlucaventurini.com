@@ -89,12 +89,19 @@ export const GlobalStyles = createGlobalStyle`
         font-kerning: normal;
         min-width: 320px;
     }
+
+    ::selection {
+        background: rgba(255, 82, 82, 0.1);
+    }
 `
 
 const Theme: DefaultTheme = {
     colors: {
         mainText: `rgba(0, 0, 0, 0.87)`,
         redText: `rgba(255, 82, 82, 0.87)`
+    },
+    width: {
+        tablet: `860px`
     }
 }
 

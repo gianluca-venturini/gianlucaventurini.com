@@ -5,9 +5,7 @@
   "author": "Gianluca Venturini <gianluca@stellarite.io>",
   "license": "MIT",
   "scripts": {
-    "build": "PROJECTS=frontend webpack --progress --colors",
-    "build-watch": "PROJECTS=frontend WATCH=true webpack --progress --colors",
-    "start": "PROJECTS=frontend webpack-dev-server --mode=development",
+    "dev": "gatsby develop",
     "clean": "rm -rf node_modules/ dist/",
     "preload-fonts": "gatsby-preload-fonts"
   },

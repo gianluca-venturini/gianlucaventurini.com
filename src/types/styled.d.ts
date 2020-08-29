@@ -7,5 +7,8 @@ declare module 'styled-components' {
             mainText: string;
             redText: string;
         };
+        width: {
+            tablet: string;
+        }
     }
 }
