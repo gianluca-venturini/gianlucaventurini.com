@@ -22,8 +22,6 @@ const NavigationWrapper = styled.div`
     text-align: end;
     color: ${props => props.theme.colors.mainText};
     
-    cursor: pointer;
-    
     a:link, a:visited {
         text-decoration: none;
     }
@@ -39,10 +37,11 @@ const NavigationBackground = styled.div<NavCommonProps>`
     bottom: 0;
     left: 0;
     right: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease-out;
     background: #fff;
     opacity: ${props => props.isNavOpen ? 1 : 0};
+    @media (min-width: ${props => props.theme.width.tablet}) {
+        display: none;
+    }
 `;
 
 const HamburgerWrapper = styled.div`
@@ -57,7 +56,8 @@ const HamburgerWrapper = styled.div`
 const LinksContainer = styled.div<NavCommonProps>`
     position: relative;
     opacity: ${props => props.isNavOpen ? 1 : 0};
-    transition: opacity 0.2s ease-out;
+
+    cursor: pointer;
 
     @media (min-width: ${props => props.theme.width.tablet}) {
         opacity: 1;
@@ -82,7 +82,7 @@ export const Navigation: React.FC<NavigationProps> = props => {
     const [isNavOpen, setNavOpen] = React.useState(false);
 
     return (
-        <NavigationWrapper onClick={() => setNavOpen(!isNavOpen)}>
+        <NavigationWrapper>
             <NavigationBackground isNavOpen={isNavOpen} />
             <HamburgerWrapper>
                 <Hamburger isNavOpen={isNavOpen} onClick={() => setNavOpen(!isNavOpen)} />
@@ -102,9 +102,7 @@ const PageLink: React.FC<{ href: string, location: PageProps['location'] }> = pr
         // Manually trigger the redirect to give enough time to the animation to finish
         e.preventDefault();
         const link = e.currentTarget.href;
-        setTimeout(() => {
-            window.location.replace(link);
-        }, 500);
+        window.location.replace(link);
     }
 
     return (
