@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components';
-import { PageProps } from 'gatsby';
+import { Link, PageProps } from 'gatsby';
 import { GUTTERS } from './Styles';
 import { Hamburger } from './Hamburger';
 
@@ -38,7 +38,7 @@ const NavigationBackground = styled.div<NavCommonProps>`
     left: 0;
     right: 0;
     background: #fff;
-    opacity: ${props => props.isNavOpen ? 1 : 0};
+    display: ${props => props.isNavOpen ? 'block' : 'none'};
     @media (min-width: ${props => props.theme.width.tablet}) {
         display: none;
     }
@@ -55,12 +55,10 @@ const HamburgerWrapper = styled.div`
 
 const LinksContainer = styled.div<NavCommonProps>`
     position: relative;
-    opacity: ${props => props.isNavOpen ? 1 : 0};
-
-    cursor: pointer;
+    display: ${props => props.isNavOpen ? 'block' : 'none'};
 
     @media (min-width: ${props => props.theme.width.tablet}) {
-        opacity: 1;
+        display: block;
     }
 `;
 
@@ -68,9 +66,12 @@ interface LinkWrapperProps {
     current: boolean;
 }
 
-const LinkWrapper = styled.a<LinkWrapperProps>`
-    font-weight: ${props => props.current ? '600' : '400'};
-    color: ${props => props.current ? props.theme.colors.redText : props.theme.colors.mainText};
+const LinkWrapper = styled.div<LinkWrapperProps>`
+    a {
+        font-weight: ${props => props.current ? '600' : '400'};
+        color: ${props => props.current ? props.theme.colors.redText : props.theme.colors.mainText};
+        cursor: pointer;
+    }
 `;
 
 export interface NavigationProps {
@@ -82,7 +83,7 @@ export const Navigation: React.FC<NavigationProps> = props => {
     const [isNavOpen, setNavOpen] = React.useState(false);
 
     return (
-        <NavigationWrapper>
+        <NavigationWrapper onClick={() => setNavOpen(!isNavOpen)}>
             <NavigationBackground isNavOpen={isNavOpen} />
             <HamburgerWrapper>
                 <Hamburger isNavOpen={isNavOpen} onClick={() => setNavOpen(!isNavOpen)} />
@@ -98,16 +99,15 @@ export const Navigation: React.FC<NavigationProps> = props => {
 const PageLink: React.FC<{ href: string, location: PageProps['location'] }> = props => {
     const normalizedPathname = props.location.pathname.length === 1 ? props.location.pathname : props.location.pathname.replace(/\/$/, '');
 
-    function click(e: React.MouseEvent<HTMLAnchorElement>) {
-        // Manually trigger the redirect to give enough time to the animation to finish
+    function click(e: React.MouseEvent<HTMLDivElement>) {
         e.preventDefault();
-        const link = e.currentTarget.href;
-        window.location.replace(link);
     }
 
     return (
-        <LinkWrapper onClick={click} href={props.href} current={normalizedPathname === props.href} style={{ lineHeight: `48px`, marginBottom: GUTTERS.xsmall }}>
-            {props.children}
+        <LinkWrapper onClick={click} current={normalizedPathname === props.href} style={{ lineHeight: `48px`, marginBottom: GUTTERS.xsmall }}>
+            <Link to={props.href}>
+                {props.children}
+            </Link>
         </LinkWrapper>
     );
 };
