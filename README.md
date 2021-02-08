@@ -1,8 +1,16 @@
-# Gatsby and Prismic starter
-A starter project that uses Gatsby and Prismic for generating a static website.
+# My personal website 
+This is my personal website.
 
-## Features
-- Build static websites with typescript, Gatsby, Prismic and Netlify.
+## Tech stack
+I'm using [Gatsby](https://www.gatsbyjs.com/) static code generator, pulling data from [Prismic](https://prismic.io/) [headless CMS](https://prismic.io/headless-cms-intro).
+
+The website is served from [Netlify](https://www.netlify.com/). A new [static build is triggered](https://docs.netlify.com/configure-builds/build-hooks/) every time I merge commits in the [master branch](https://github.com/gianluca-venturini/gianlucaventurini.com) or I update the content in [Prismic](https://prismic.io/). This makes the website extremely fast in loading and guarantees the best [SEO](https://en.wikipedia.org/wiki/Search_engine_optimization) support.
+
+The frontend is built in [Typescript](https://www.typescriptlang.org/) using [React](https://reactjs.org/).
+
+I implemented [SEO](https://en.wikipedia.org/wiki/Search_engine_optimization) using [Gatsby plugins](https://github.com/gianluca-venturini/gianlucaventurini.com/blob/master/gatsby-config.js).
+
+The total cost of running this website is zero dollars.
 
 ## Installation
 Install Gatsby: `npm install -g gatsby-cli`
