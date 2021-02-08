@@ -3,7 +3,7 @@ import { DefaultTheme, createGlobalStyle } from 'styled-components'
 export const GlobalStyles = createGlobalStyle`
 
     body {
-        font-family: Inter, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         text-rendering: optimizeLegibility;
         font-feature-settings: "kern" 1;
         font-kerning: normal;

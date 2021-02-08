@@ -1,9 +1,8 @@
 import * as React from "react";
-import { Bookshelf } from "./Bookshelf";
 import { AnyPrismicSlice } from "./SliceJson";
 
-const SLICES: {[index: string]: React.ComponentType<{slice: AnyPrismicSlice}>} = {
-    bookshelf: Bookshelf
+const SLICES: { [index: string]: React.ComponentType<{ slice: AnyPrismicSlice }> } = {
+    // insert slices here
 };
 
 export function renderSlice<TSlice extends AnyPrismicSlice>(slice: TSlice) {
@@ -13,5 +12,5 @@ export function renderSlice<TSlice extends AnyPrismicSlice>(slice: TSlice) {
         console.error(`Cannot find ${slice.slice_type}. Did you add it to SLICES?`);
     }
 
-    return <SliceElement slice={slice}/>;
+    return <SliceElement slice={slice} />;
 }

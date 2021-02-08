@@ -27,7 +27,7 @@ export const BookAuthor = styled.span`
 interface BookshelfData {
     prismicBookshelf: {
         data: {
-            title: {text: string}[],
+            title: { text: string }[],
             body: {
                 items: {
                     book_description: PrismicRichTextProps['raw'];
@@ -50,7 +50,6 @@ export default function BookshelfPage(props: PageProps<BookshelfData>) {
                             <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
                             <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
                         </span>
-                        <div style={{marginTop: 10, fontWeight: 200}}><PrismicRichText raw={book.book_description} /></div>
                     </div>
                 ))}
             </Content>
