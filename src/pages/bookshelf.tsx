@@ -30,7 +30,6 @@ interface BookshelfData {
             title: { text: string }[],
             body: {
                 items: {
-                    book_description: PrismicRichTextProps['raw'];
                     book_author: PrismicRichTextProps['raw'];
                     book_title: PrismicRichTextProps['raw'];
                 }[];
@@ -63,10 +62,6 @@ export const IndexQuery = graphql`
             data {
                 body {
                     items {
-                        book_description {
-                            text
-                            type
-                        }
                         book_author {
                             text
                             type

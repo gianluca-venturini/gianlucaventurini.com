@@ -10,7 +10,6 @@ Install Gatsby: `npm install -g gatsby-cli`
 ## Develop
 Run the dev server `gatsby develop`
 Run the prod server `gatsby build && gatsby serve`
-Generate the preload font map `yarn preload-fonts`
 
 ## Project status
 [![Netlify Status](https://api.netlify.com/api/v1/badges/5b364caa-4fc3-4be9-b48e-90dbfd392960/deploy-status)](https://app.netlify.com/sites/hardcore-brattain-033f16/deploys)
