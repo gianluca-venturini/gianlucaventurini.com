@@ -10,9 +10,15 @@ interface NavCommonProps {
 
 const NavigationWrapper = styled.div`
     position: absolute;
+
     right: 40px;
     top: 40px;
     
+    @media (max-width: ${props => props.theme.width.phone}) {
+        right: 20px;
+        top: 20px;
+    }
+
     display: flex;
     flex-direction: column;
     justify-content: end;

@@ -21,7 +21,8 @@ const Theme: DefaultTheme = {
         redText: `rgba(255, 82, 82, 0.87)`
     },
     width: {
-        tablet: `860px`
+        tablet: `860px`,
+        phone: `460px`
     }
 }
 

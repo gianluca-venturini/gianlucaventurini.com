@@ -9,6 +9,7 @@ declare module 'styled-components' {
         };
         width: {
             tablet: string;
+            phone: string;
         }
     }
 }
