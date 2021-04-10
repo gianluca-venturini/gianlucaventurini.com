@@ -10,6 +10,7 @@ interface NavCommonProps {
 
 const NavigationWrapper = styled.div`
     position: absolute;
+    z-index: 1;
 
     right: 40px;
     top: 40px;

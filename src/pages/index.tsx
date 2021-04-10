@@ -5,6 +5,8 @@ import { PrismicRichTextProps, PrismicRichText } from "../components/PrismicRich
 import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
+import { LottieIcon } from "../components/LottieIcon";
+import { GithubIcon, TwitterIcon } from "../components/Icons";
 
 
 export const Greetings = styled.div`
@@ -17,6 +19,10 @@ export const Greetings = styled.div`
 export const Content = styled.div`
     display: grid;
     row-gap: 50px;
+`;
+
+export const SocialContainer = styled.div`
+    display: flex;
 `;
 
 interface HomeData {
@@ -38,6 +44,10 @@ export default function IndexPage(props: PageProps<HomeData>) {
                     <PrismicRichText raw={props.data.prismicHome.data.greetings.raw} />
                 </Greetings>
                 <PrismicRichText raw={props.data.prismicHome.data.long_description.raw} />
+                <SocialContainer>
+                    <TwitterIcon />
+                    <GithubIcon />
+                </SocialContainer>
             </Content>
         </Page>
     );
