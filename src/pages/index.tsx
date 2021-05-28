@@ -18,7 +18,7 @@ export const Greetings = styled.div`
 
 export const Content = styled.div`
     display: grid;
-    row-gap: 50px;
+    row-gap: 20px;
 `;
 
 export const SocialContainer = styled.div`
