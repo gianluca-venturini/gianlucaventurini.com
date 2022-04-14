@@ -5,6 +5,7 @@ import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
 import { PrismicTitle } from "../components/PrismicTitle";
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 export const Content = styled.div`
     display: grid;
@@ -44,12 +45,14 @@ export default function BookshelfPage(props: PageProps<BookshelfData>) {
             <Content>
                 <PrismicTitle {...props.data.prismicBookshelf.data.title} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (
-                    <div key={book.book_title[0].text}>
-                        <span>
-                            <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
-                            <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
-                        </span>
-                    </div>
+                    <CopyToClipboard text={`https://gianlucaventurini.com/bookshelf#${getBookAnchor(book.book_title[0].text)}`}>
+                        <div key={book.book_title[0].text} id={getBookAnchor(book.book_title[0].text)}>
+                            <span>
+                                <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
+                                <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
+                            </span>
+                        </div>
+                    </CopyToClipboard>
                 ))}
             </Content>
         </Page>
@@ -77,7 +80,12 @@ export const IndexQuery = graphql`
                 }
             }
         }
-    }
-    
-  
+    } 
 `
+
+function getBookAnchor(bookTitle: string) {
+    if (!bookTitle) {
+        return null;
+    }
+    return bookTitle.toLowerCase().replace(/\ /g, '-');
+}

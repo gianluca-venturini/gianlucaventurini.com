@@ -5,7 +5,6 @@ import { PrismicRichTextProps, PrismicRichText } from "../components/PrismicRich
 import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
-import { LottieIcon } from "../components/LottieIcon";
 import { GithubIcon, TwitterIcon } from "../components/Icons";
 
 
