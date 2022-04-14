@@ -49,7 +49,7 @@ export default function BookshelfPage(props: PageProps<BookshelfData>) {
             <Content>
                 <PrismicTitle text={props.data.prismicBookshelf.data.title.text} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (
-                    <CopyToClipboard text={getBookUrl(book.book_title.text)} key={book.book_title.text} onCopy={() => window.location.replace(getBookPath(book.book_title.text)) }>
+                    <CopyToClipboard text={getBookUrl(book.book_title.text)} key={book.book_title.text} onCopy={() => typeof window !== `undefined` && window.location.replace(getBookPath(book.book_title.text)) }>
                         <BookContainer id={getBookAnchor(book.book_title.text)}>
                             <span>
                                 <BookTitle>{book.book_title.text}</BookTitle>
@@ -97,11 +97,17 @@ function getBookAnchor(bookTitle: string) {
 }
 
 function getBookUrl(bookTitle: string) {
+    if (typeof window === `undefined`) {
+        return '';
+    }
     const url = new URL(window.location.href);
     return `${url.protocol}://${url.host}${url.pathname}#${getBookAnchor(bookTitle)}`
 }
 
 function getBookPath(bookTitle: string) {
+    if (typeof window === `undefined`) {
+        return '';
+    }
     const url = new URL(window.location.href);
     return `${url.pathname}#${getBookAnchor(bookTitle)}`
 }
