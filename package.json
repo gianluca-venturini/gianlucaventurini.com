@@ -12,7 +12,7 @@
   },
   "engines": {
     "yarn": "^1.10.1",
-    "node": ">=10.18.1"
+    "node": ">=14.15.0"
   },
   "dependencies": {
     "@material-ui/styles": "^4.10.0",
