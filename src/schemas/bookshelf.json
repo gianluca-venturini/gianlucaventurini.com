@@ -3,7 +3,7 @@
     "title" : {
       "type" : "StructuredText",
       "config" : {
-        "single" : "heading1, heading2, heading3, heading4, heading5, heading6",
+        "single" : "heading1,heading2,heading3,heading4,heading5,heading6",
         "label" : "title"
       }
     },
@@ -20,21 +20,20 @@
             "fieldset" : "books",
             "description" : "List of books",
             "icon" : "collections_bookmark",
-            "display" : "list",
             "non-repeat" : { },
             "repeat" : {
               "book_title" : {
                 "type" : "StructuredText",
                 "config" : {
-                  "single" : "heading1, heading2, heading3, heading4, heading5, heading6",
+                  "single" : "heading1,heading2,heading3,heading4,heading5,heading6",
                   "label" : "book_title"
                 }
               },
-              "book_description" : {
+              "book_author" : {
                 "type" : "StructuredText",
                 "config" : {
-                  "multi" : "paragraph, preformatted, heading1, heading2, heading3, heading4, heading5, heading6, strong, em, hyperlink, image, embed, list-item, o-list-item, o-list-item",
-                  "label" : "book_description"
+                  "multi" : "paragraph,preformatted,heading1,heading2,heading3,heading4,heading5,heading6,strong,em,hyperlink,image,embed,list-item,o-list-item,o-list-item",
+                  "label" : "book_author"
                 }
               }
             }

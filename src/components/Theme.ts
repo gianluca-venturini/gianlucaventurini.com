@@ -14,6 +14,10 @@ export const GlobalStyles = createGlobalStyle`
         background: rgba(255, 82, 82, 0.1);
     }
 
+    :target {
+        background-color: rgba(255, 82, 82, 0.1);
+    }
+
     /** Disable link color */
     a, a:hover, a:visited, a:active {
         color: inherit;

@@ -8,8 +8,8 @@ export const TitleWrapper = styled.h1`
 
 export type PrismicPrismicTitleProps = {
     text: string
-}[];
+};
 
 export const PrismicTitle = (props: PrismicPrismicTitleProps) => {
-    return <TitleWrapper>{props[0].text}</TitleWrapper>;
+    return <TitleWrapper>{props.text}</TitleWrapper>;
 }

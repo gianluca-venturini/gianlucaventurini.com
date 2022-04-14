@@ -1,6 +1,6 @@
 import { graphql, PageProps } from "gatsby";
 import React from "react";
-import { PrismicRichTextProps, PrismicRichText } from "../components/PrismicRichText";
+import { PrismicRichTextProps } from "../components/PrismicRichText";
 import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
@@ -10,6 +10,10 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 export const Content = styled.div`
     display: grid;
     row-gap: 20px;
+`;
+
+export const BookContainer = styled.div`
+    cursor: pointer;
 `;
 
 export const BookTitle = styled.span`
@@ -28,11 +32,11 @@ export const BookAuthor = styled.span`
 interface BookshelfData {
     prismicBookshelf: {
         data: {
-            title: { text: string }[],
+            title: { text: string },
             body: {
                 items: {
-                    book_author: PrismicRichTextProps['raw'];
-                    book_title: PrismicRichTextProps['raw'];
+                    book_author: { text: string };
+                    book_title: { text: string };
                 }[];
             }[]
         }
@@ -43,15 +47,15 @@ export default function BookshelfPage(props: PageProps<BookshelfData>) {
     return (
         <Page title="Bookshelf · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
             <Content>
-                <PrismicTitle {...props.data.prismicBookshelf.data.title} />
+                <PrismicTitle text={props.data.prismicBookshelf.data.title.text} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (
-                    <CopyToClipboard text={getBookPath(book.book_title[0].text)} key={book.book_title[0].text}>
-                        <div id={getBookAnchor(book.book_title[0].text)}>
+                    <CopyToClipboard text={getBookUrl(book.book_title.text)} key={book.book_title.text} onCopy={() => window.location.replace(getBookPath(book.book_title.text)) }>
+                        <BookContainer id={getBookAnchor(book.book_title.text)}>
                             <span>
-                                <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
-                                <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
+                                <BookTitle>{book.book_title.text}</BookTitle>
+                                <BookAuthor>{book.book_author.text}</BookAuthor>
                             </span>
-                        </div>
+                        </BookContainer>
                     </CopyToClipboard>
                 ))}
             </Content>
@@ -64,14 +68,14 @@ export const IndexQuery = graphql`
         prismicBookshelf {
             data {
                 body {
-                    items {
-                        book_author {
-                            text
-                            type
-                        }
-                        book_title {
-                            text
-                            type
+                    ... on PrismicBookshelfDataBodyBook {
+                        items {
+                            book_author {
+                                text
+                            }
+                            book_title {
+                                text
+                            }
                         }
                     }
                 }
@@ -92,7 +96,12 @@ function getBookAnchor(bookTitle: string) {
     return bookTitle.toLowerCase().replace(/\ /g, '-');
 }
 
-function getBookPath(bookTitle: string) {
+function getBookUrl(bookTitle: string) {
     const url = new URL(window.location.href);
     return `${url.protocol}://${url.host}${url.pathname}#${getBookAnchor(bookTitle)}`
+}
+
+function getBookPath(bookTitle: string) {
+    const url = new URL(window.location.href);
+    return `${url.pathname}#${getBookAnchor(bookTitle)}`
 }

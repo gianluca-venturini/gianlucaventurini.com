@@ -16,6 +16,9 @@ module.exports = {
                 accessToken: process.env.PRISMIC_ACCESS_TOKEN,
                 schemas: {
                     home: require('./src/schemas/home.json'),
+                    bookshelf: require('./src/schemas/bookshelf.json'),
+                    article: {},
+                    single_page: {},
                 },
             },
         },
@@ -53,6 +56,30 @@ module.exports = {
         },
         {
             resolve: `gatsby-plugin-sitemap`,
-        }
+        },
+        {
+            resolve: 'gatsby-plugin-image',
+        },
+        {
+            resolve: `gatsby-plugin-sharp`,
+            options: {
+                // Defaults used for gatsbyImageData and StaticImage
+                defaults: {},
+                // Set to false to allow builds to continue on image errors
+                failOnError: true,
+            },
+        },
+        {
+            resolve: `gatsby-plugin-manifest`,
+            options: {
+              name: "Gianluca Venturini",
+              short_name: "Gianluca Venturini",
+              start_url: "/",
+              background_color: "#6b37bf",
+              theme_color: "#6b37bf",
+              display: "standalone",
+              icon: "src/images/favicon.png"
+            }
+          }
     ],
 };
