@@ -75,8 +75,8 @@ module.exports = {
               name: "Gianluca Venturini",
               short_name: "Gianluca Venturini",
               start_url: "/",
-              background_color: "#6b37bf",
-              theme_color: "#6b37bf",
+              background_color: "#FF5252",
+              theme_color: "#FF5252",
               display: "standalone",
               icon: "src/images/favicon.png"
             }
