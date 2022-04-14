@@ -1,6 +1,5 @@
 import { graphql, PageProps } from "gatsby";
 import React from "react";
-import { PrismicRichTextProps } from "../components/PrismicRichText";
 import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";

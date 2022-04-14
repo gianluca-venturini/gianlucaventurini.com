@@ -3,11 +3,11 @@ import { DefaultTheme, createGlobalStyle } from 'styled-components'
 export const GlobalStyles = createGlobalStyle`
 
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-        text-rendering: optimizeLegibility;
-        font-feature-settings: "kern" 1;
-        font-kerning: normal;
-        min-width: 320px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"!important;
+        text-rendering: optimizeLegibility!important;
+        font-feature-settings: "kern" 1!important;
+        font-kerning: normal!important;
+        min-width: 320px!important;
     }
 
     ::selection {
