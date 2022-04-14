@@ -45,8 +45,8 @@ export default function BookshelfPage(props: PageProps<BookshelfData>) {
             <Content>
                 <PrismicTitle {...props.data.prismicBookshelf.data.title} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (
-                    <CopyToClipboard text={`https://gianlucaventurini.com/bookshelf#${getBookAnchor(book.book_title[0].text)}`}>
-                        <div key={book.book_title[0].text} id={getBookAnchor(book.book_title[0].text)}>
+                    <CopyToClipboard text={getBookPath(book.book_title[0].text)} key={book.book_title[0].text}>
+                        <div id={getBookAnchor(book.book_title[0].text)}>
                             <span>
                                 <BookTitle><PrismicRichText raw={book.book_title} /></BookTitle>
                                 <BookAuthor><PrismicRichText raw={book.book_author} /></BookAuthor>
@@ -81,6 +81,8 @@ export const IndexQuery = graphql`
             }
         }
     } 
+
+
 `
 
 function getBookAnchor(bookTitle: string) {
@@ -88,4 +90,9 @@ function getBookAnchor(bookTitle: string) {
         return null;
     }
     return bookTitle.toLowerCase().replace(/\ /g, '-');
+}
+
+function getBookPath(bookTitle: string) {
+    const url = new URL(window.location.href);
+    return `${url.protocol}://${url.host}${url.pathname}#${getBookAnchor(bookTitle)}`
 }

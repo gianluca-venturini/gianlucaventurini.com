@@ -3,8 +3,6 @@ import { LottieIcon } from './LottieIcon';
 import twitterIconData from './animations/twitter.json'
 import githubIconData from './animations/github.json'
 
-console.log('HERE', twitterIconData);
-
 interface LottieIconProps {
     height: number;
     width: number;
