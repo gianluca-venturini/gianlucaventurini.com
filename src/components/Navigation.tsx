@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, PageProps } from 'gatsby';
 import { GUTTERS } from './Styles';
 import { Hamburger } from './Hamburger';
+import { AUTHOR } from './Constants';
 
 interface NavCommonProps {
     isNavOpen: boolean;
@@ -96,7 +97,7 @@ export const Navigation: React.FC<NavigationProps> = props => {
                 <Hamburger isNavOpen={isNavOpen} onClick={() => setNavOpen(!isNavOpen)} />
             </HamburgerWrapper>
             <LinksContainer isNavOpen={isNavOpen}>
-                <h1><PageLink href='/' location={props.location}>Gianluca Venturini</PageLink></h1> {/* H1 used for SEO purposes */}
+                <h1><PageLink href='/' location={props.location}>{AUTHOR}</PageLink></h1> {/* H1 used for SEO purposes */}
                 <PageLink href='/bookshelf' location={props.location}>Bookshelf</PageLink>
             </LinksContainer>
         </NavigationWrapper>

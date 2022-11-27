@@ -44,7 +44,7 @@ interface BookshelfData {
 
 export default function BookshelfPage(props: PageProps<BookshelfData>) {
     return (
-        <Page title="Bookshelf · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
+        <Page title="Bookshelf" description={DESCRIPTION_320} location={props.location}>
             <Content>
                 <PrismicTitle text={props.data.prismicBookshelf.data.title.text} />
                 {props.data.prismicBookshelf.data.body[0].items.map(book => (

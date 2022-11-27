@@ -15,7 +15,7 @@ interface BlogPostData {
 
 export default function BlogPostPage(props: PageProps<BlogPostData>) {
     return (
-        <Page title="Blog · Gianluca Venturini" description={DESCRIPTION_320} location={props.location}>
+        <Page title="Blog" description={DESCRIPTION_320} location={props.location}>
             <h1>{props.data.prismicBlogPost.data.title.text}</h1>
             {JSON.stringify(props)}
         </Page>
