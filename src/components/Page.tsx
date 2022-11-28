@@ -25,7 +25,9 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-interface PageProps extends MetaProps, NavigationProps {}
+interface PageProps extends MetaProps, NavigationProps {
+    children?: React.ReactNode
+}
 
 export const Page: React.FC<PageProps> = props => {
 

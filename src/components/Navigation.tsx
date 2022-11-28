@@ -99,12 +99,13 @@ export const Navigation: React.FC<NavigationProps> = props => {
             <LinksContainer isNavOpen={isNavOpen}>
                 <h1><PageLink href='/' location={props.location}>{AUTHOR}</PageLink></h1> {/* H1 used for SEO purposes */}
                 <PageLink href='/bookshelf' location={props.location}>Bookshelf</PageLink>
+                <PageLink href='/blog' location={props.location}>Blog</PageLink>
             </LinksContainer>
         </NavigationWrapper>
     )
 }
 
-const PageLink: React.FC<{ href: string, location: PageProps['location'] }> = props => {
+const PageLink: React.FC<{ href: string, location: PageProps['location'], children?: React.ReactNode }> = props => {
     const normalizedPathname = props.location.pathname.length === 1 ? props.location.pathname : props.location.pathname.replace(/\/$/, '');
 
     function click(e: React.MouseEvent<HTMLDivElement>) {

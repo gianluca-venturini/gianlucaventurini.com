@@ -35,6 +35,7 @@ interface HomeData {
 }
 
 export default function IndexPage(props: PageProps<HomeData>) {
+    console.log('test');
     return (
         <Page title="" description={DESCRIPTION_320} location={props.location}>
             <Content>
