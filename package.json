@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "gatsby develop",
+    "build": "gatsby build",
     "clean": "rm -rf node_modules/ dist/",
     "clean2": "gatsby clean",
     "preload-fonts": "gatsby-preload-fonts"
