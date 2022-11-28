@@ -6,6 +6,7 @@ import { Page } from "../../components/Page";
 
 interface BlogPostData {
     prismicBlogPost: {
+        uid: string;
         data: {
             title: { text: string },
             body: any
@@ -23,15 +24,15 @@ export default function BlogPostPage(props: PageProps<BlogPostData>) {
 }
 
 export const IndexQuery = graphql`
-    query BlogPost {
-        prismicBlogPost {
+    query BlogPost($uid: String!) {
+        prismicBlogPost(uid: {eq: $uid }) {
             uid
             data {
                 body {
-                richText
+                    richText
                 }
                 title {
-                text
+                    text
                 }
             }
         }
