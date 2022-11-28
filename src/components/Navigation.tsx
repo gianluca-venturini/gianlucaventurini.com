@@ -10,7 +10,7 @@ interface NavCommonProps {
 }
 
 const NavigationWrapper = styled.div`
-    position: absolute;
+    position: fixed;
     z-index: 1;
 
     right: 40px;
@@ -45,7 +45,7 @@ const NavigationBackground = styled.div<NavCommonProps>`
     bottom: 0;
     left: 0;
     right: 0;
-    background: #fff;
+    backdrop-filter: blur(10px);
     display: ${props => props.isNavOpen ? 'block' : 'none'};
     @media (min-width: ${props => props.theme.width.tablet}) {
         display: none;
