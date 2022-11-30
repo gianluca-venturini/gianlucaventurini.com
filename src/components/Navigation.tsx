@@ -1,9 +1,10 @@
 import React from 'react'
 import styled from 'styled-components';
-import { Link, PageProps } from 'gatsby';
+import { Link, PageProps, GatsbyLinkProps } from 'gatsby';
 import { GUTTERS } from './Styles';
 import { Hamburger } from './Hamburger';
 import { AUTHOR } from './Constants';
+import { COLORS } from './Theme';
 
 interface NavCommonProps {
     isNavOpen: boolean;
@@ -34,8 +35,12 @@ const NavigationWrapper = styled.div`
         text-decoration: none;
     }
 
-    *:hover {
-        font-weight: 600;
+    a:hover {
+        font-weight: 600!important;
+    }
+
+    a {
+        user-select: none;
     }
 `;
 
@@ -70,18 +75,6 @@ const LinksContainer = styled.div<NavCommonProps>`
     }
 `;
 
-interface LinkWrapperProps {
-    current: boolean;
-}
-
-const LinkWrapper = styled.div<LinkWrapperProps>`
-    a {
-        font-weight: ${props => props.current ? '600' : '400'};
-        color: ${props => props.current ? props.theme.colors.redText : props.theme.colors.mainText};
-        cursor: pointer;
-    }
-`;
-
 export interface NavigationProps {
     location: PageProps['location'];
 }
@@ -108,15 +101,35 @@ export const Navigation: React.FC<NavigationProps> = props => {
 const PageLink: React.FC<{ href: string, location: PageProps['location'], children?: React.ReactNode }> = props => {
     const normalizedPathname = props.location.pathname.length === 1 ? props.location.pathname : props.location.pathname.replace(/\/$/, '');
 
-    function click(e: React.MouseEvent<HTMLDivElement>) {
-        e.preventDefault();
-    }
-
     return (
-        <LinkWrapper onClick={click} current={normalizedPathname === props.href} style={{ lineHeight: `48px`, marginBottom: GUTTERS.xsmall }}>
-            <Link to={props.href}>
-                {props.children}
-            </Link>
-        </LinkWrapper>
+        <WrappedLink to={props.href} current={normalizedPathname === props.href}>
+            {props.children}
+        </WrappedLink>
     );
 };
+
+interface WrappedLinkProps {
+    current: boolean;
+    children: React.ReactNode;
+}
+
+const WrappedLink: React.FC<GatsbyLinkProps<{}> & WrappedLinkProps> = ({ children, current, style, to }) => {
+    return (
+        <Link 
+            style={{ 
+                lineHeight: `48px`, 
+                marginBottom: GUTTERS.xsmall, 
+                fontWeight: current ? 600 : 'inherit',
+                color: current ? COLORS.text.red : COLORS.text.primary,
+                cursor: 'pointer',
+                display: 'block',
+                background: 'none',
+                ...style
+            }} 
+            to={to}
+        >
+            {children}
+        </Link>
+    )
+}
+
