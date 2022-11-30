@@ -1,11 +1,11 @@
 import { graphql, PageProps } from "gatsby";
 import React from "react";
 import { PrismicImage, PrismicImageProps } from "../components/PrismicImage";
-import { PrismicRichTextProps, PrismicRichText } from "../components/PrismicRichText";
 import { Page } from "../components/Page";
 import styled from "styled-components";
 import { DESCRIPTION_320 } from "../components/Constants";
 import { GithubIcon, TwitterIcon } from "../components/Icons";
+import { RichText, RichTextField } from "../components/RichText";
 
 
 export const Greetings = styled.div`
@@ -28,8 +28,8 @@ interface HomeData {
     prismicHome: {
         data: {
             avatar: PrismicImageProps,
-            greetings: PrismicRichTextProps,
-            long_description: PrismicRichTextProps
+            greetings: { raw: RichTextField },
+            long_description: { raw: RichTextField }
         }
     }
 }
@@ -41,9 +41,9 @@ export default function IndexPage(props: PageProps<HomeData>) {
             <Content>
                 <Greetings>
                     <PrismicImage round {...props.data.prismicHome.data.avatar} />
-                    <PrismicRichText raw={props.data.prismicHome.data.greetings.raw} />
+                    <RichText richText={props.data.prismicHome.data.greetings.raw} />
                 </Greetings>
-                <PrismicRichText raw={props.data.prismicHome.data.long_description.raw} />
+                <RichText richText={props.data.prismicHome.data.long_description.raw} />
                 <SocialContainer>
                     <TwitterIcon />
                     <GithubIcon />
