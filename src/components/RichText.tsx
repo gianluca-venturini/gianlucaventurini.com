@@ -4,8 +4,17 @@ import React from "react";
 import { Typography, FONTS } from "./Typography";
 import { GUTTERS } from "./Styles";
 import { COLORS } from "./Theme";
+import styled from "styled-components";
 
 export type RichTextField = any;
+
+const Strong = styled.span`
+    font-weight: 700!important;
+
+    * {
+        font-weight: inherit;
+    }
+`;
 
 interface RichTextProps {
     richText: RichTextField;
@@ -30,7 +39,8 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                 heading5: ({ text }) => <Typography variant={FONTS.title.medium} style={{ marginTop: GUTTERS.medium}}>{text}</Typography>,
                 span: ({ text }) => <Typography variant={FONTS.body.medium} component="span">{text}</Typography>,
                 list: ({ children }) => <ul>{children}</ul>,
-                listItem: ({ children }) => <li>{children}</li>,
+                listItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'disc' }}>{children}</li>,
+                strong: ({ children }) => <Strong>{children}</Strong>
             }}
         />
     );

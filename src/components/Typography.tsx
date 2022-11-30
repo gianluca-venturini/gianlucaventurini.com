@@ -1,5 +1,6 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
+import { GUTTERS, BREAKPOINTS } from './Styles';
 
 export type FontVariant = {
     component?: string;
@@ -216,7 +217,10 @@ export interface TypographyProps {
 
 const Wrapper = styled.span`
     font-size: 10%;
-    font-size: calc((100vw + 800px) / 2000);
+    
+    @media (min-width: ${BREAKPOINTS.mobile}px) {
+        font-size: calc((100vw + 800px) / 2000);
+    }
 `;
 
 const Font = styled.span<TypographyProps>`

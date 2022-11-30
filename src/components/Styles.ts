@@ -9,3 +9,7 @@ export const GUTTERS = {
     mini: 4,
     micro: 2,
 };
+
+export const BREAKPOINTS = {
+    mobile: 860,
+};
