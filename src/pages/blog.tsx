@@ -3,7 +3,7 @@ import React from "react";
 import { Page } from "../components/Page";
 import { DESCRIPTION_320 } from "../components/Constants";
 
-interface BookshelfData {
+interface BlogIndexPageProps {
     allPrismicBlogPost: {
         nodes: [{
             uid: string,
@@ -16,7 +16,7 @@ interface BookshelfData {
     }
 }
 
- const BlogIndexPage: React.FC<PageProps<BookshelfData>> = props => {
+ const BlogIndexPage: React.FC<PageProps<BlogIndexPageProps>> = props => {
     return (
         <Page title="Blog" description={DESCRIPTION_320} location={props.location}>
             {props.data.allPrismicBlogPost.nodes.map(blogPost => (
@@ -42,26 +42,3 @@ query BlogPosts {
     }
 }
 `
-
-function getBookAnchor(bookTitle: string) {
-    if (!bookTitle) {
-        return null;
-    }
-    return bookTitle.toLowerCase().replace(/\ /g, '-');
-}
-
-function getBookUrl(bookTitle: string) {
-    if (typeof window === `undefined`) {
-        return '';
-    }
-    const url = new URL(window.location.href);
-    return `${url.protocol}://${url.host}${url.pathname}#${getBookAnchor(bookTitle)}`
-}
-
-function getBookPath(bookTitle: string) {
-    if (typeof window === `undefined`) {
-        return '';
-    }
-    const url = new URL(window.location.href);
-    return `${url.pathname}#${getBookAnchor(bookTitle)}`
-}

@@ -1,5 +1,13 @@
 import { DefaultTheme, createGlobalStyle } from 'styled-components'
 
+export const COLORS = {
+    text: {
+        primary: '#444444',
+        light: '#aaa',
+        red: 'rgba(255, 82, 82, 0.87)',
+    }
+};
+
 export const GlobalStyles = createGlobalStyle`
 
     body {
@@ -30,7 +38,7 @@ export const GlobalStyles = createGlobalStyle`
 
 const Theme: DefaultTheme = {
     colors: {
-        mainText: `rgba(0, 0, 0, 0.75)`,
+        mainText: COLORS.text.primary,
         redText: `rgba(255, 82, 82, 0.87)`
     },
     width: {
