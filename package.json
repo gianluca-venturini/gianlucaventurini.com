@@ -13,10 +13,11 @@
   },
   "engines": {
     "yarn": "^1.22.17",
-    "node": ">=18.0.0"
+    "node": "16.18.1"
   },
   "dependencies": {
     "@material-ui/styles": "^4.10.0",
+    "@prismicio/react": "^2.5.0",
     "@types/react": "^18.0.25",
     "@types/react-copy-to-clipboard": "^5.0.2",
     "@types/react-dom": "^18.0.9",

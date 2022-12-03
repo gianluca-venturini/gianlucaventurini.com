@@ -2276,7 +2276,7 @@
   resolved "https://registry.yarnpkg.com/@prismicio/custom-types-client/-/custom-types-client-0.0.7.tgz#f55ee5f1d5f9e1307ed2ecca6a5e47dff1ecb91a"
   integrity sha512-pf0rG1rwKAEQ5WeGTG4vyxzW6FFG2iySgrGCAbil5XvHTajwJ1qdG53h0bU71AQRXZmL7b48YFdI7DQcy5ASFw==
 
-"@prismicio/helpers@^2.3.3", "@prismicio/helpers@^2.3.4":
+"@prismicio/helpers@^2.3.1", "@prismicio/helpers@^2.3.3", "@prismicio/helpers@^2.3.4":
   version "2.3.6"
   resolved "https://registry.yarnpkg.com/@prismicio/helpers/-/helpers-2.3.6.tgz#77d063cc7843d826570bd5b914bd799495abf61f"
   integrity sha512-pXTm4lPbi/9YWSj1jBen74oROBzwjEEJ6KXaIUMpdyepG7i005/IddsCEbs4dQJbZ1bzfCA5C+DBQANdWXTpxw==
@@ -2286,7 +2286,15 @@
     escape-html "^1.0.3"
     imgix-url-builder "^0.0.3"
 
-"@prismicio/richtext@^2.1.1":
+"@prismicio/react@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@prismicio/react/-/react-2.5.0.tgz#2fa27467e153db8d761b72eeec648ac4e7ed910b"
+  integrity sha512-1EYdvoU2bpVEkmVDDVyTUK22C580tTWR96HJ9PMUex0oGeJLBAMKiRinyachN42r1uCH5nRAH54A90ZtBjjZhw==
+  dependencies:
+    "@prismicio/helpers" "^2.3.1"
+    "@prismicio/richtext" "^2.0.1"
+
+"@prismicio/richtext@^2.0.1", "@prismicio/richtext@^2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@prismicio/richtext/-/richtext-2.1.1.tgz#45b76b0bcfe40a5465c14d7d458e3354f6510068"
   integrity sha512-/99JR2NUU2WV0025eAIqjd9OnF4ITaM57SVuhLc1XBUgnJe0HZrC9f24YKVW43jFR5HYTJtLgz01WjEddymqmA==
