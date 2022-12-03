@@ -8,8 +8,7 @@
     "dev": "gatsby develop",
     "build": "gatsby build",
     "clean": "rm -rf node_modules/ dist/",
-    "clean2": "gatsby clean",
-    "preload-fonts": "gatsby-preload-fonts"
+    "clean2": "gatsby clean"
   },
   "engines": {
     "yarn": "^1.22.17",
