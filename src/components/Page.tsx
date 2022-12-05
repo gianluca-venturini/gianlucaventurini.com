@@ -26,6 +26,7 @@ export const ContentContainer = styled.div`
 `;
 
 interface PageProps extends MetaProps, NavigationProps {
+    style?: React.CSSProperties;
     children?: React.ReactNode
 }
 
@@ -40,7 +41,7 @@ export const Page: React.FC<PageProps> = props => {
             <Meta {...props} title={title} />
             <Navigation location={props.location}/>
             <PageContainer>
-                <ContentContainer>
+                <ContentContainer style={props.style}>
                     {props.children}
                 </ContentContainer>
             </PageContainer>

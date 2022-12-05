@@ -191,6 +191,7 @@ export interface TypographyProps {
     maxWidth?: number;
     style?: React.CSSProperties;
     variant: FontVariant;
+    noDecoration?: boolean;
     children?: React.ReactNode;
 }
 
@@ -236,6 +237,10 @@ const Font = styled.span<TypographyProps>`
                 text-transform: ${props.variant.textTransform};
             `}
         `}
+
+    ${props => 
+        props.noDecoration && css`text-decoration: none;`
+    }
 `;
 
 export const Typography: React.FC<TypographyProps> = props => {
