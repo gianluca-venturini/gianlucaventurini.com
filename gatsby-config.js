@@ -17,8 +17,7 @@ module.exports = {
                 schemas: {
                     home: require('./src/schemas/home.json'),
                     bookshelf: require('./src/schemas/bookshelf.json'),
-                    article: {},
-                    single_page: {},
+                    blog_post: require('./src/schemas/blog_post.json'),
                 },
             },
         },

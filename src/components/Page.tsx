@@ -4,6 +4,7 @@ import { Theme, GlobalStyles } from "./Theme";
 import { Reset } from 'styled-reset'
 import { MetaProps, Meta } from "./Meta";
 import { Navigation, NavigationProps } from "./Navigation";
+import { AUTHOR } from "./Constants";
 
 export const PageContainer = styled.div`
     color: ${props => props.theme.colors.mainText};
@@ -24,18 +25,23 @@ export const ContentContainer = styled.div`
     line-height: 1.6;
 `;
 
-interface PageProps extends MetaProps, NavigationProps {}
+interface PageProps extends MetaProps, NavigationProps {
+    style?: React.CSSProperties;
+    children?: React.ReactNode
+}
 
 export const Page: React.FC<PageProps> = props => {
+
+    const title = !!props.title ? ` · ${AUTHOR}` : AUTHOR;
 
     return (
         <ThemeProvider theme={Theme}>
             <Reset />
             <GlobalStyles />
-            <Meta {...props} />
+            <Meta {...props} title={title} />
             <Navigation location={props.location}/>
             <PageContainer>
-                <ContentContainer>
+                <ContentContainer style={props.style}>
                     {props.children}
                 </ContentContainer>
             </PageContainer>
