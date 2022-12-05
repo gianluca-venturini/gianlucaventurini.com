@@ -30,7 +30,7 @@ export default BlogIndexPage;
 
 export const IndexQuery = graphql`
 query BlogPosts {
-    allPrismicBlogPost(limit: 10, sort: {fields: first_publication_date}) {
+    allPrismicBlogPost(limit: 10, sort: {fields: first_publication_date, order: DESC}) {
         nodes {
             uid
             data {
