@@ -10,6 +10,10 @@ export const COLORS = {
 
 export const GlobalStyles = createGlobalStyle`
 
+    html {
+        scroll-behavior:smooth
+    }
+
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"!important;
         text-rendering: optimizeLegibility!important;
@@ -18,28 +22,31 @@ export const GlobalStyles = createGlobalStyle`
         min-width: 320px!important;
     }
 
-    ::selection {
-        background: rgba(255, 82, 82, 0.1);
-    }
-
-    :target {
-        background-color: rgba(255, 82, 82, 0.1);
-    }
-
     /** Disable link color */
     a, a:hover, a:visited, a:active {
         color: inherit;
     }
 
+    ::selection {
+        background: black;
+        color: white;
+    }
+
+    :target {
+        background: black;
+        color: white;
+    }
+
     a:hover {
-        background-color: rgba(255, 82, 82, 0.2);
+        background: black;
+        color: white;
     }
 `
 
 const Theme: DefaultTheme = {
     colors: {
         mainText: COLORS.text.primary,
-        redText: `rgba(255, 82, 82, 0.87)`
+        redText: COLORS.text.red,
     },
     width: {
         tablet: `860px`,
