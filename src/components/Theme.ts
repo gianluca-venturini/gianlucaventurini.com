@@ -10,6 +10,16 @@ export const COLORS = {
 
 export const GlobalStyles = createGlobalStyle`
 
+    :root {
+        --page-max-width: 390px;
+    }
+
+    @media (min-width: ${props => props.theme.width.tablet}) {
+        :root {
+            --page-max-width: 600px;
+        }
+    }
+
     html {
         scroll-behavior:smooth
     }

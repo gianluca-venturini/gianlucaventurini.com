@@ -15,7 +15,8 @@ export const PageContainer = styled.div`
 `;
 
 export const ContentContainer = styled.div`
-    max-width: 600px;
+
+    max-width: var(--page-max-width);
 
     grid-column: 2;
     grid-row: 2;

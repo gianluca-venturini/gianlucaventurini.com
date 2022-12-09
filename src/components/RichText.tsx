@@ -30,7 +30,7 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                     <div style={{ marginTop: GUTTERS.medium, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: GUTTERS.small }}>
                         <img 
                             style={{ 
-                                maxWidth: Math.min(node.dimensions.width / 2, 600),
+                                maxWidth: `min(${node.dimensions.width / 2}px, var(--page-max-width))`,
                                 maxHeight: node.dimensions.height / 2,
                                 width: 'auto',
                                 height: 'auto', 
