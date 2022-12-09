@@ -27,8 +27,17 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
             components={{
                 paragraph: ({ children }) => <p style={{ marginTop: GUTTERS.medium}}>{children}</p>,
                 image: ({ node }) => (
-                    <div style={{ marginTop: GUTTERS.medium}}>
-                        <img style={{ maxWidth: 600 }} src={node.url} alt={node.alt} />
+                    <div style={{ marginTop: GUTTERS.medium, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: GUTTERS.small }}>
+                        <img 
+                            style={{ 
+                                maxWidth: Math.min(node.dimensions.width / 2, 600),
+                                maxHeight: node.dimensions.height / 2,
+                                width: 'auto',
+                                height: 'auto', 
+                            }} 
+                            src={node.url}
+                            alt={node.alt}
+                        />
                         {!!node.alt && <Typography variant={FONTS.body.small} color={COLORS.text.light} align="center">{node.alt}</Typography>}
                     </div>
                 ),
