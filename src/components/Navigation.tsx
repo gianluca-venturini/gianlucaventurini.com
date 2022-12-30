@@ -5,6 +5,7 @@ import { GUTTERS } from './Styles';
 import { Hamburger } from './Hamburger';
 import { AUTHOR } from './Constants';
 import { COLORS } from './Theme';
+import { Typography, FONTS } from './Typography';
 
 interface NavCommonProps {
     isNavOpen: boolean;
@@ -115,21 +116,21 @@ interface WrappedLinkProps {
 
 const WrappedLink: React.FC<GatsbyLinkProps<{}> & WrappedLinkProps> = ({ children, current, style, to }) => {
     return (
-        <Link 
-            style={{ 
-                lineHeight: `48px`, 
-                marginBottom: GUTTERS.xsmall, 
-                fontWeight: current ? 600 : 'inherit',
-                color: current ? COLORS.text.red : COLORS.text.primary,
-                cursor: 'pointer',
-                display: 'block',
-                background: 'none',
-                ...style
-            }} 
-            to={to}
-        >
-            {children}
-        </Link>
+        <Typography variant={{ ...FONTS.label.medium, weight: 400 }}>
+            <Link 
+                style={{ 
+                    marginTop: GUTTERS.medium,
+                    color: current ? COLORS.text.red : COLORS.text.primary,
+                    cursor: 'pointer',
+                    display: 'block',
+                    background: 'none',
+                    ...style
+                }} 
+                to={to}
+            >
+                    {children}
+            </Link>
+        </Typography>
     )
 }
 
