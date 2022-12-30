@@ -5,13 +5,16 @@ export const COLORS = {
         primary: '#444444',
         light: '#aaa',
         red: 'rgba(255, 82, 82, 0.87)',
+    },
+    background: {
+        gray: '#eee'
     }
 };
 
 export const GlobalStyles = createGlobalStyle`
 
     :root {
-        --page-max-width: 390px;
+        --page-max-width: 350px;
     }
 
     @media (min-width: ${props => props.theme.width.tablet}) {

@@ -30,7 +30,7 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                     <div style={{ marginTop: GUTTERS.medium, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: GUTTERS.small }}>
                         <img 
                             style={{ 
-                                maxWidth: `min(${node.dimensions.width / 2}px, var(--page-max-width))`,
+                                maxWidth: `min(${node.dimensions.width / 2}px, calc(var(--page-max-width) - 20px))`,
                                 maxHeight: node.dimensions.height / 2,
                                 width: 'auto',
                                 height: 'auto', 
@@ -51,7 +51,19 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                 list: ({ children }) => <ul>{children}</ul>,
                 listItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'disc' }}>{children}</li>,
                 oListItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'decimal' }}>{children}</li>,
-                strong: ({ children }) => <Strong>{children}</Strong>
+                strong: ({ children }) => <Strong>{children}</Strong>,
+                preformatted: ({ children }) => (
+                    <div 
+                        style={{
+                            marginTop: GUTTERS.medium,
+                            whiteSpace: 'pre-line',
+                            font: 'monospace',
+                            background: COLORS.background.gray,
+                            padding: GUTTERS.small,
+                        }}>
+                        {children}
+                    </div>
+                ),
             }}
         />
     );
