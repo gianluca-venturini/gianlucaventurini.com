@@ -239,7 +239,9 @@ const Font = styled.span<TypographyProps>`
         `}
 
     ${props => 
-        props.noDecoration && css`text-decoration: none;`
+        props.noDecoration && css`
+            text-decoration: none;
+        `
     }
 `;
 

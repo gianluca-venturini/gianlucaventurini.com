@@ -7,6 +7,12 @@
         "placeholder" : "my-blog-post-title"
       }
     },
+    "publish_date" : {
+      "type" : "Date",
+      "config" : {
+        "label" : "publish_date"
+      }
+    },
     "title" : {
       "type" : "StructuredText",
       "config" : {

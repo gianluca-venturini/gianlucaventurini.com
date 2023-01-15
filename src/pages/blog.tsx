@@ -4,12 +4,14 @@ import { Page } from "../components/Page";
 import { DESCRIPTION_320 } from "../components/Constants";
 import { Typography, FONTS } from "../components/Typography";
 import { GUTTERS } from "../components/Styles";
+import { COLORS } from "../components/Theme";
 
 interface BlogIndexPageProps {
     allPrismicBlogPost: {
         nodes: [{
             uid: string,
             data: {
+                publish_date: string,
                 title: {
                      text: string,
                 }
@@ -27,7 +29,10 @@ interface BlogIndexPageProps {
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: GUTTERS.maxi }}
         >
             {props.data.allPrismicBlogPost.nodes.map(blogPost => (
-                <Link to={`/blog/${blogPost.uid}`}><Typography noDecoration variant={FONTS.title.large}>{blogPost.data.title.text}</Typography></Link>
+                <Link key={blogPost.uid} to={`/blog/${blogPost.uid}`} style={{ textDecoration: 'none' }}>
+                    <Typography variant={FONTS.title.large}>{blogPost.data.title.text}</Typography>
+                    <Typography variant={FONTS.label.medium} style={{ color: COLORS.text.light }}>{blogPost.data.publish_date}</Typography>
+                </Link>
             ))}
         </Page>
     );
@@ -37,10 +42,11 @@ export default BlogIndexPage;
 
 export const IndexQuery = graphql`
 query BlogPosts {
-    allPrismicBlogPost(limit: 10, sort: {fields: first_publication_date, order: DESC}) {
+    allPrismicBlogPost(limit: 10, sort: {fields: data___publish_date, order: DESC}) {
         nodes {
             uid
             data {
+                publish_date
                 title {
                     text
                 }
