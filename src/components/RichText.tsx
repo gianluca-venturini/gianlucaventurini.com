@@ -56,7 +56,7 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                     <div 
                         style={{
                             marginTop: GUTTERS.medium,
-                            whiteSpace: 'pre-line',
+                            whiteSpace: 'pre-wrap',
                             font: 'monospace',
                             background: COLORS.background.gray,
                             padding: GUTTERS.small,
