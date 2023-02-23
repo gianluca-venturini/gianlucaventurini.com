@@ -2,12 +2,16 @@ import { DefaultTheme, createGlobalStyle } from 'styled-components'
 
 export const COLORS = {
     text: {
-        primary: '#444444',
+        dark: '#333',
         light: '#aaa',
+        highlight: '#f0f0f0',
         red: 'rgba(255, 82, 82, 0.87)',
     },
     background: {
         gray: '#eee'
+    },
+    highlight: {
+        dark: '#333',
     }
 };
 
@@ -41,24 +45,24 @@ export const GlobalStyles = createGlobalStyle`
     }
 
     ::selection {
-        background: black;
-        color: white;
+        background: ${COLORS.highlight.dark};
+        color: ${COLORS.text.highlight};
     }
 
     :target {
-        background: black;
-        color: white;
+        background: ${COLORS.highlight.dark};
+        color: ${COLORS.text.highlight};
     }
 
     a:hover {
-        background: black;
-        color: white;
+        background: ${COLORS.highlight.dark};
+        color: ${COLORS.text.highlight};
     }
 `
 
 const Theme: DefaultTheme = {
     colors: {
-        mainText: COLORS.text.primary,
+        mainText: COLORS.text.dark,
         redText: COLORS.text.red,
     },
     width: {
