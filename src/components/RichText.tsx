@@ -5,6 +5,7 @@ import { Typography, FONTS } from "./Typography";
 import { GUTTERS } from "./Styles";
 import { COLORS } from "./Theme";
 import styled from "styled-components";
+import { Code } from "./Code";
 
 export type RichTextField = any;
 
@@ -52,17 +53,8 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                 listItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'disc' }}>{children}</li>,
                 oListItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'decimal' }}>{children}</li>,
                 strong: ({ children }) => <Strong>{children}</Strong>,
-                preformatted: ({ children }) => (
-                    <div 
-                        style={{
-                            marginTop: GUTTERS.medium,
-                            whiteSpace: 'pre-wrap',
-                            font: 'monospace',
-                            background: COLORS.background.gray,
-                            padding: GUTTERS.small,
-                        }}>
-                        {children}
-                    </div>
+                preformatted: ({ text }) => (
+                    <Code style={{ marginTop: GUTTERS.medium}}>{text}</Code>
                 ),
             }}
         />

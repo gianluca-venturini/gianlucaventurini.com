@@ -38,6 +38,7 @@ const NavigationWrapper = styled.div`
 
     a:hover {
         font-weight: 600!important;
+        color: ${COLORS.text.dark};
     }
 
     a {

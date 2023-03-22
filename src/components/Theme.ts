@@ -21,9 +21,9 @@ export const GlobalStyles = createGlobalStyle`
         --page-max-width: 350px;
     }
 
-    @media (min-width: ${props => props.theme.width.tablet}) {
+    @media (min-width: ${props => props.theme.width.phone}) {
         :root {
-            --page-max-width: 600px;
+            --page-max-width: min(70vw, 700px);
         }
     }
 
