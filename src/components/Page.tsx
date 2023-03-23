@@ -8,14 +8,18 @@ import { AUTHOR } from "./Constants";
 
 export const PageContainer = styled.div`
     color: ${props => props.theme.colors.mainText};
-
+    
     display: grid;
-    grid-template-columns: 40px auto 40px;
+
+    grid-template-columns: 20px auto 20px;
     grid-template-rows: 50px auto 50px;
+
+    @media (min-width: ${props => props.theme.width.phone}) {
+        grid-template-columns: 40px auto 40px;
+    }
 `;
 
 export const ContentContainer = styled.div`
-
     max-width: var(--page-max-width);
 
     grid-column: 2;
