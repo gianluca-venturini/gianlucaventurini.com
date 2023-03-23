@@ -18,7 +18,7 @@ export const COLORS = {
 export const GlobalStyles = createGlobalStyle`
 
     :root {
-        --page-max-width: max(calc(100vw - 40px), 350px);
+        --page-max-width: max(calc(100vw - 40px), 300px);
     }
 
     @media (min-width: ${props => props.theme.width.phone}) {

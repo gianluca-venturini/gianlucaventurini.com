@@ -121,7 +121,7 @@ const WrappedLink: React.FC<GatsbyLinkProps<{}> & WrappedLinkProps> = ({ childre
             <Link 
                 style={{ 
                     marginTop: GUTTERS.medium,
-                    color: current ? COLORS.text.red : COLORS.text.primary,
+                    color: current ? COLORS.text.red : COLORS.text.dark,
                     cursor: 'pointer',
                     display: 'block',
                     background: 'none',
