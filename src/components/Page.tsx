@@ -28,12 +28,7 @@ export const ContentContainer = styled.div`
 
     font-size: 14px;
     line-height: 1.6;
-
-    // Cut words that are too large to be visualized on one line
-    // without requiring them to be broken down into multiple lines
-    // I make this tradeoff intentionally over the alternative of having 
-    // an horizontal scrollbar or having to break down title words into multiple lines
-    overflow-x: hidden;
+    overflow-wrap: break-word;
 `;
 
 interface PageProps extends MetaProps, NavigationProps {
