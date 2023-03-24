@@ -28,7 +28,8 @@ export const GlobalStyles = createGlobalStyle`
     }
 
     html {
-        scroll-behavior:smooth
+        scroll-behavior: smooth;
+        background: ${COLORS.background.gray};
     }
 
     body {
