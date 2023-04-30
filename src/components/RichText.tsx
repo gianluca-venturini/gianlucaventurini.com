@@ -46,7 +46,7 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                     <>
                         {renderEmbedType(text, {
                             code: code => <Code style={{ marginTop: GUTTERS.medium}}>{code}</Code>,
-                            video: (video, format) => <video loop autoPlay muted style={{ marginTop: GUTTERS.medium, maxWidth: '100%' }}><source src={video} type={`video/${format}`}/></video>,
+                            video: (video, format) => <video loop autoPlay playsInline muted style={{ marginTop: GUTTERS.medium, maxWidth: '100%' }}><source src={video} type={`video/${format}`}/></video>,
                         })}
                     </>
                 ),
