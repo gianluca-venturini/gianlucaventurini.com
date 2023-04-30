@@ -3,9 +3,9 @@ import { PrismicRichText } from "@prismicio/react";
 import * as React from "react";
 import { Typography, FONTS } from "./Typography";
 import { GUTTERS } from "./Styles";
-import { COLORS } from "./Theme";
 import styled from "styled-components";
 import { Code } from "./Code";
+import { Image } from "./Image";
 import { renderEmbedType } from "./RichTextUtil";
 
 export type RichTextField = any;
@@ -29,19 +29,7 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
             components={{
                 paragraph: ({ children }) => <p style={{ marginTop: GUTTERS.medium}}>{children}</p>,
                 image: ({ node }) => (
-                    <div style={{ marginTop: GUTTERS.medium, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: GUTTERS.small }}>
-                        <img 
-                            style={{ 
-                                maxWidth: `min(${node.dimensions.width / 2}px, calc(var(--page-max-width) - 20px))`,
-                                maxHeight: node.dimensions.height / 2,
-                                width: 'auto',
-                                height: 'auto', 
-                            }} 
-                            src={node.url}
-                            alt={node.alt}
-                        />
-                        {!!node.alt && <Typography variant={FONTS.body.small} color={COLORS.text.light} align="center">{node.alt}</Typography>}
-                    </div>
+                    <Image dimensions={node.dimensions} url={node.url} alt={node.alt} description={node.alt} />
                 ),
                 heading1: ({ text }) => <Typography variant={FONTS.title.macro} style={{ marginTop: GUTTERS.large}}>{text}</Typography>,
                 heading2: ({ text }) => <Typography variant={FONTS.title.xlarge} style={{ marginTop: GUTTERS.medium}}>{text}</Typography>,

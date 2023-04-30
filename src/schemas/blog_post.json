@@ -21,6 +21,21 @@
         "placeholder" : "My blog post title"
       }
     },
+    "description" : {
+      "type" : "StructuredText",
+      "config" : {
+        "multi" : "paragraph",
+        "label" : "description"
+      }
+    },
+    "cover" : {
+      "type" : "Image",
+      "config" : {
+        "constraint" : { },
+        "thumbnails" : [ ],
+        "label" : "cover"
+      }
+    },
     "body" : {
       "type" : "StructuredText",
       "config" : {
