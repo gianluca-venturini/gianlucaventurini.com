@@ -1,11 +1,12 @@
 import { PrismicRichText } from "@prismicio/react";
 
-import React from "react";
+import * as React from "react";
 import { Typography, FONTS } from "./Typography";
 import { GUTTERS } from "./Styles";
 import { COLORS } from "./Theme";
 import styled from "styled-components";
 import { Code } from "./Code";
+import { renderEmbedType } from "./RichTextUtil";
 
 export type RichTextField = any;
 
@@ -54,7 +55,12 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                 oListItem: ({ children }) => <li style={{ marginLeft: 16, listStyleType: 'decimal' }}>{children}</li>,
                 strong: ({ children }) => <Strong>{children}</Strong>,
                 preformatted: ({ text }) => (
-                    <Code style={{ marginTop: GUTTERS.medium}}>{text}</Code>
+                    <>
+                        {renderEmbedType(text, {
+                            code: code => <Code style={{ marginTop: GUTTERS.medium}}>{code}</Code>,
+                            video: (video, format) => <video loop autoPlay style={{ marginTop: GUTTERS.medium, maxWidth: '100%' }}><source src={video} type={`video/${format}`}/></video>,
+                        })}
+                    </>
                 ),
             }}
         />
