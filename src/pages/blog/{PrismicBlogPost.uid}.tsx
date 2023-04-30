@@ -23,7 +23,7 @@ interface BlogPostData {
 
 export default function BlogPostPage(props: PageProps<BlogPostData>) {
     return (
-        <Page title={props.data.prismicBlogPost.data.title.text} description={props.data.prismicBlogPost.data.title.text} image={props.data.prismicBlogPost.data.cover} location={props.location}>
+        <Page title={props.data.prismicBlogPost.data.title.text} description={props.data.prismicBlogPost.data.description.text} image={props.data.prismicBlogPost.data.cover} location={props.location}>
             <Typography variant={FONTS.label.large} style={{ marginBottom: GUTTERS.large, color: COLORS.text.light }}>{props.data.prismicBlogPost.data.publish_date}</Typography>
             <Typography variant={FONTS.title.giga} style={{ marginBottom: GUTTERS.large }}>{props.data.prismicBlogPost.data.title.text}</Typography>
             <Image url={props.data.prismicBlogPost.data.cover.url} alt={props.data.prismicBlogPost.data.cover.alt} dimensions={props.data.prismicBlogPost.data.cover.dimensions} />
