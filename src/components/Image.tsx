@@ -14,6 +14,10 @@ interface ImageProps {
 }
 
 export const Image: React.FC<ImageProps> = ({ url, alt, description, dimensions }) => {
+    if (!url && !dimensions) {
+        return null;
+    }
+
     return (
         <div style={{ marginTop: GUTTERS.medium, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: GUTTERS.small }}>
             <img 
