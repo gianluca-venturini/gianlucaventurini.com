@@ -5987,13 +5987,12 @@ gatsby-plugin-canonical-urls@^4.12.1:
   dependencies:
     "@babel/runtime" "^7.15.4"
 
-gatsby-plugin-google-analytics@^4.12.1:
-  version "4.24.0"
-  resolved "https://registry.yarnpkg.com/gatsby-plugin-google-analytics/-/gatsby-plugin-google-analytics-4.24.0.tgz#63ca32c5565e22b7497d361df004e8dc048c4eca"
-  integrity sha512-opSdLiJ7xAObfl2j9QsNtXiGEKGVb0MLbEqFUs694vAj8T15/wL1/bFcwzX2nZnZoP2YhvVfblYd+AbJ2AVVCQ==
+gatsby-plugin-google-tagmanager@4.12.1:
+  version "4.12.1"
+  resolved "https://registry.yarnpkg.com/gatsby-plugin-google-tagmanager/-/gatsby-plugin-google-tagmanager-4.12.1.tgz#6834da4228b9f4f813907d2cfb809607148f3ef3"
+  integrity sha512-sk6RF2eCbyuJwABk2CIFOOU/rJfBPzXK9MrEi6p39U/P/1z0Qm2w9DaPprSrHrfcSQijfnHEGIWqO14UxZ+AKg==
   dependencies:
     "@babel/runtime" "^7.15.4"
-    minimatch "3.0.4"
     web-vitals "^1.1.2"
 
 gatsby-plugin-html-attributes@^1.0.5:
@@ -8259,13 +8258,6 @@ mini-svg-data-uri@^1.4.4:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/mini-svg-data-uri/-/mini-svg-data-uri-1.4.4.tgz#8ab0aabcdf8c29ad5693ca595af19dd2ead09939"
   integrity sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==
-
-minimatch@3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.4.tgz#5166e286457f03306064be5497e8dbb0c3d32083"
-  integrity sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
-  dependencies:
-    brace-expansion "^1.1.7"
 
 minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2:
   version "3.1.2"
