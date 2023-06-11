@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { Code } from "./Code";
 import { Image } from "./Image";
 import { renderEmbedType } from "./RichTextUtil";
+import { COLORS } from "./Theme";
 
 export type RichTextField = any;
 
@@ -16,6 +17,18 @@ const Strong = styled.span`
     * {
         font-weight: inherit;
     }
+`;
+
+const WrappedLink = styled.a`
+    display: inline-block;
+    box-shadow: inset 0 -0.7em 0 0 ${COLORS.highlight.red};
+    text-decoration: none;
+
+    &:hover {
+        box-shadow: inset 0 -2em 0 0 ${COLORS.highlight.red};
+    }
+
+    transition: box-shadow 0.3s;
 `;
 
 interface RichTextProps {
@@ -50,6 +63,15 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                         })}
                     </>
                 ),
+                hyperlink: ({ children, node }) => (
+                    <WrappedLink
+                        href={node.data.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {children}
+                    </WrappedLink>
+                )
             }}
         />
     );

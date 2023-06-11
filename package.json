@@ -17,6 +17,7 @@
   "dependencies": {
     "@material-ui/styles": "^4.10.0",
     "@prismicio/react": "^2.5.0",
+    "@prismicio/types": "^0.2.8",
     "@types/react": "^18.0.25",
     "@types/react-copy-to-clipboard": "^5.0.2",
     "@types/react-dom": "^18.0.9",

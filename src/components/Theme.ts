@@ -12,6 +12,7 @@ export const COLORS = {
     },
     highlight: {
         dark: '#333',
+        red: 'rgba(255, 82, 82, 0.40)',
     }
 };
 
@@ -51,11 +52,6 @@ export const GlobalStyles = createGlobalStyle`
     }
 
     :target {
-        background: ${COLORS.highlight.dark};
-        color: ${COLORS.text.highlight};
-    }
-
-    a:hover {
         background: ${COLORS.highlight.dark};
         color: ${COLORS.text.highlight};
     }
