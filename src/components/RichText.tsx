@@ -20,15 +20,19 @@ const Strong = styled.span`
 `;
 
 const WrappedLink = styled.a`
-    display: inline-block;
-    box-shadow: inset 0 -0.7em 0 0 ${COLORS.highlight.red};
     text-decoration: none;
 
-    &:hover {
-        box-shadow: inset 0 -2em 0 0 ${COLORS.highlight.red};
+    span {
+        span {
+            display: inline-block;
+            box-shadow: inset 0 -0.65em 0 0 ${COLORS.highlight.red};
+            &:hover {
+                box-shadow: inset 0 -2em 0 0 ${COLORS.highlight.red};
+            }
+        
+            transition: box-shadow 0.3s;
+        }
     }
-
-    transition: box-shadow 0.3s;
 `;
 
 interface RichTextProps {

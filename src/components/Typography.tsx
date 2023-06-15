@@ -195,8 +195,9 @@ export interface TypographyProps {
     children?: React.ReactNode;
 }
 
-const Wrapper = styled.span`
+const Wrapper = styled.span<Pick<TypographyProps, 'variant'>>`
     font-size: 10%;
+    line-height: ${props => props.variant.lineHeight};
     
     @media (min-width: ${BREAKPOINTS.mobile}px) {
         font-size: calc((100vw + 800px) / 2000);
@@ -249,7 +250,7 @@ export const Typography: React.FC<TypographyProps> = props => {
     const { align, color, component, children, id, maxWidth, style, variant, ...rest } = props;
 
     return (
-        <Wrapper>
+        <Wrapper variant={variant}>
             <Font
                 align={align}
                 as={component ?? variant.component as any}
