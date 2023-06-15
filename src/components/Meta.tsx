@@ -17,7 +17,7 @@ export interface MetaProps {
 }
 
 export const Meta: React.FC<MetaProps> = props => {
-    const { title: titleProp, description, image } = props;
+    const { title: titleProp, description, image, location } = props;
 
     const title = !!titleProp ? `${AUTHOR} · ${titleProp}` : AUTHOR;
     const imageUrl = image?.url ?? 'https://images.prismic.io/gianlucaventurini/36e634b9-ab07-4657-a146-a1a3a1627a8b_paint_0-1.png';
@@ -38,7 +38,7 @@ export const Meta: React.FC<MetaProps> = props => {
                 <meta name="twitter:creator" content="@gianlu_ventu" />
                 <meta name="twitter:site" content="@gianlu_ventu" />
                 <meta property="og:site_name" content={AUTHOR} />
-                <meta property="og:url" content="https://gianlucaventurini.com" />
+                <meta property="og:url" content={`https://gianlucaventurini.com${location.pathname}`} />
                 <meta property="og:title" content={title} />
                 <meta property="og:description" content={description} />
                 <meta property="og:image" content={imageUrl} />
