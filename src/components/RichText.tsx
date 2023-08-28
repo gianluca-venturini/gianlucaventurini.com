@@ -61,7 +61,13 @@ export const RichText: React.FC<RichTextProps> = ({ richText }) => {
                 preformatted: ({ text }) => (
                     <>
                         {renderEmbedType(text, {
-                            code: code => <Code style={{ marginTop: GUTTERS.medium}}>{code}</Code>,
+                            code: rawCode => {
+                                const [language, ...rest] = rawCode.split('\n');
+                                const code = rest.join('\n');
+                                return (
+                                    <Code language={language} style={{ marginTop: GUTTERS.medium}}>{code}</Code>
+                                )
+                            },
                             video: (video, format) => <video loop autoPlay playsInline muted style={{ marginTop: GUTTERS.medium, maxWidth: '100%' }}><source src={video} type={`video/${format}`}/></video>,
                         })}
                     </>

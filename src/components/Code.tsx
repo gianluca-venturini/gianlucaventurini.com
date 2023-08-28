@@ -4,6 +4,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface CodeProps {
     children: string;
+    language: string;
     style: React.CSSProperties;
 }
 
@@ -16,7 +17,7 @@ const CIRCLE_STYLE: React.CSSProperties = {
 
 vscDarkPlus.comment.color = 'rgb(113, 113, 113)';
 
-export const Code: React.FC<CodeProps> = ({ children, style }) => {
+export const Code: React.FC<CodeProps> = ({ children, language, style }) => {
     return (
         <div style={{ 
             background: 'rgb(30, 30, 30)',
@@ -36,7 +37,7 @@ export const Code: React.FC<CodeProps> = ({ children, style }) => {
                 showLineNumbers
                 useInlineStyles
                 // wrapLongLines
-                language="typescript"
+                language={language}
                 style={vscDarkPlus}
                 customStyle={{
                     fontSize: 12,
