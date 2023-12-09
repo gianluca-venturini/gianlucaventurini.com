@@ -1,3 +1,34 @@
 {
-  "extends": "next/core-web-vitals"
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "next/core-web-vitals",
+        "plugin:react/recommended",
+        "standard-with-typescript",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:prettier/recommended",
+        // This must be last
+        "prettier" // Disables ESLint rules that conflict with Prettier formatting -- https://github.com/prettier/eslint-config-prettier#installation
+    ],
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-multiple-empty-lines": [
+            "error",
+            {
+                "max": 1,
+                "maxEOF": 0,
+                "maxBOF": 0
+            }
+        ],
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "react/react-in-jsx-scope": "off"
+    }
 }
