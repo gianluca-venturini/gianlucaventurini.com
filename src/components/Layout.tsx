@@ -26,11 +26,10 @@ export const Layout = (props: React.PropsWithChildren) => {
             <Head>
                 <title>Gianluca Venturini</title>
                 <meta name="description" content="A TinaCMS Application" />
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="/favicon.png" />
             </Head>
-            <div className="bg-light dark:bg-dark">Hello</div>
             <header>
-                <div className="flex gap-4 bg-amber-900">
+                <div className="flex gap-4 mb-4">
                     <Link className="flex-initial" href="/">
                         Gianluca Venturini
                     </Link>
