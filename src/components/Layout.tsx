@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { init } from 'next/dist/compiled/webpack/webpack';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -7,13 +8,21 @@ type Theme = 'light' | 'dark';
 
 export const Layout = (props: React.PropsWithChildren) => {
     const [theme, setTheme] = useState<Theme>(getInitialTheme());
+
+    function setAndStoreTheme(theme: Theme) {
+        setTheme(theme);
+        localStorage.theme = theme;
+    }
+
+    function flipTheme() {
+        setAndStoreTheme(theme === 'dark' ? 'light' : 'dark');
+    }
+
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
         } else if (theme === 'light') {
             document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
         }
     }, [theme]);
 
@@ -41,15 +50,7 @@ export const Layout = (props: React.PropsWithChildren) => {
                     </Link>
                     <button
                         className="flex-initial"
-                        onClick={() => {
-                            if (!theme) {
-                                setTheme('dark');
-                            } else if (theme === 'light') {
-                                setTheme('dark');
-                            } else if (theme === 'dark') {
-                                setTheme('light');
-                            }
-                        }}
+                        onClick={flipTheme}
                         suppressHydrationWarning
                     >
                         {theme === 'dark' ? '☀️' : '🌙'}
@@ -65,8 +66,10 @@ function getInitialTheme(): Theme {
     if (typeof window === 'undefined' || !('localStorage' in window)) {
         return 'light';
     }
-    return localStorage.theme ??
-        window.matchMedia('(prefers-color-scheme: dark)').matches
+    if (localStorage.theme) {
+        return localStorage.theme;
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light';
 }
