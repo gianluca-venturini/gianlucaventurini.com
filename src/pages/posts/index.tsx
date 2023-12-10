@@ -1,7 +1,7 @@
-import { Layout } from '../components/Layout';
+import { Layout } from '../../components/Layout';
 import Link from 'next/link';
 import { useTina } from 'tinacms/dist/react';
-import { client } from '../../tina/__generated__/client';
+import { client } from '../../../tina/__generated__/client';
 import { type InferGetStaticPropsType } from 'next/types';
 
 export default function PostList(
