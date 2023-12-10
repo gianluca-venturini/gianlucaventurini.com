@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { init } from 'next/dist/compiled/webpack/webpack';
 import Head from 'next/head';
 import Link from 'next/link';
 
