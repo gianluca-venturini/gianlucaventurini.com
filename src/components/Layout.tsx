@@ -1,6 +1,7 @@
-import Link from 'next/link';
-import Head from 'next/head';
 import { useEffect, useState } from 'react';
+
+import Head from 'next/head';
+import Link from 'next/link';
 
 type Theme = 'light' | 'dark';
 
@@ -29,26 +30,32 @@ export const Layout = (props: React.PropsWithChildren) => {
             </Head>
             <div className="bg-light dark:bg-dark">Hello</div>
             <header>
-                <Link href="/">Gianluca Venturini</Link>
-                {' | '}
-                <Link href="/bookshelf">Bookshelf</Link>
-                {' | '}
-                <Link href="/posts">Blog</Link>
-                {' | '}
-                <button
-                    onClick={() => {
-                        if (!theme) {
-                            setTheme('dark');
-                        } else if (theme === 'light') {
-                            setTheme('dark');
-                        } else if (theme === 'dark') {
-                            setTheme('light');
-                        }
-                    }}
-                    suppressHydrationWarning
-                >
-                    {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
+                <div className="flex gap-4 bg-amber-900">
+                    <Link className="flex-initial" href="/">
+                        Gianluca Venturini
+                    </Link>
+                    <Link className="flex-initial" href="/bookshelf">
+                        Bookshelf
+                    </Link>
+                    <Link className="flex-initial" href="/posts">
+                        Blog
+                    </Link>
+                    <button
+                        className="flex-initial"
+                        onClick={() => {
+                            if (!theme) {
+                                setTheme('dark');
+                            } else if (theme === 'light') {
+                                setTheme('dark');
+                            } else if (theme === 'dark') {
+                                setTheme('light');
+                            }
+                        }}
+                        suppressHydrationWarning
+                    >
+                        {theme === 'dark' ? '☀️' : '🌙'}
+                    </button>
+                </div>
             </header>
             <main>{props.children}</main>
         </div>

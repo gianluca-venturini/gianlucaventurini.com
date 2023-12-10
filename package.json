@@ -7,7 +7,7 @@
         "build": "tinacms build && next build",
         "start": "tinacms build && next start",
         "lint-next": "next lint",
-        "lint": "eslint ./pages --ext .tsx,.ts,.js"
+        "lint": "eslint ./src --ext .tsx,.ts,.js"
     },
     "dependencies": {
         "next": "14.0.4",

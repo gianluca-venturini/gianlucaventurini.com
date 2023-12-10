@@ -32,11 +32,35 @@
                 "maxBOF": 0
             }
         ],
-        "sort-imports": [
+        "import/order": [
             "error",
             {
-                "ignoreCase": true,
-                "ignoreDeclarationSort": true
+                "groups": [
+                    "unknown",
+                    [
+                        "builtin",
+                        "external"
+                    ],
+                    "internal",
+                    [
+                        "parent",
+                        "sibling",
+                        "index"
+                    ]
+                ],
+                "pathGroups": [
+                    {
+                        "pattern": "react*",
+                        "group": "external",
+                        "position": "before"
+                    }
+                ],
+                "pathGroupsExcludedImportTypes": [],
+                "alphabetize": {
+                    "order": "asc",
+                    "caseInsensitive": true
+                },
+                "newlines-between": "always"
             }
         ],
         "@typescript-eslint/explicit-function-return-type": "off",

@@ -1,12 +1,12 @@
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
-import { useTina } from 'tinacms/dist/react';
-import { client } from '../../../tina/__generated__/client';
 import {
     type GetStaticPaths,
     type GetStaticProps,
     type InferGetStaticPropsType,
 } from 'next';
-import { Layout } from '../../components/Layout';
+import { useTina } from 'tinacms/dist/react';
+import { TinaMarkdown } from 'tinacms/dist/rich-text';
+
+import { client } from '../../../tina/__generated__/client';
 
 export default function Home(
     props: InferGetStaticPropsType<typeof getStaticProps>
