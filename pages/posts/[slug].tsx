@@ -6,7 +6,7 @@ import {
     type GetStaticProps,
     type InferGetStaticPropsType,
 } from 'next';
-import { Layout } from '../components/NewLayout';
+import { Layout } from '../components/Layout';
 
 export default function Home(
     props: InferGetStaticPropsType<typeof getStaticProps>

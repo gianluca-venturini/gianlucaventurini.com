@@ -32,6 +32,13 @@
                 "maxBOF": 0
             }
         ],
+        "sort-imports": [
+            "error",
+            {
+                "ignoreCase": true,
+                "ignoreDeclarationSort": true
+            }
+        ],
         "@typescript-eslint/explicit-function-return-type": "off",
         "react/react-in-jsx-scope": "off",
         "import/no-anonymous-default-export": "off",

@@ -1,4 +1,4 @@
-import { Layout } from '../components/NewLayout';
+import { Layout } from '../components/Layout';
 import Link from 'next/link';
 import { useTina } from 'tinacms/dist/react';
 import { client } from '../../tina/__generated__/client';
