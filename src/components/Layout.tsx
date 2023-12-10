@@ -28,7 +28,7 @@ export const Layout = (props: React.PropsWithChildren) => {
                 <meta name="description" content="A TinaCMS Application" />
                 <link rel="icon" href="/favicon.png" />
             </Head>
-            <header>
+            <header className="select-none">
                 <div className="flex gap-4 mb-4">
                     <Link className="flex-initial" href="/">
                         Gianluca Venturini
