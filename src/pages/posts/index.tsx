@@ -18,7 +18,7 @@ export default function PostList(
         throw new Error('Error in fetching posts!');
     }
     return (
-        <Layout>
+        <>
             <h1>Posts</h1>
             <div>
                 {postsList.map((post) => (
@@ -29,7 +29,7 @@ export default function PostList(
                     </div>
                 ))}
             </div>
-        </Layout>
+        </>
     );
 }
 

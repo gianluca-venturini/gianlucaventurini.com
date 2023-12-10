@@ -19,11 +19,7 @@ export default function Home(
     });
 
     const content = data.post.body;
-    return (
-        <Layout>
-            <TinaMarkdown content={content} />
-        </Layout>
-    );
+    return <TinaMarkdown content={content} />;
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {

@@ -16,11 +16,9 @@ export default function Home(
 
     const content = data.page.body;
     return (
-        <Layout>
-            <div data-tina-field={tinaField(data.page, 'body')}>
-                <TinaMarkdown content={content} />
-            </div>
-        </Layout>
+        <div data-tina-field={tinaField(data.page, 'body')}>
+            <TinaMarkdown content={content} />
+        </div>
     );
 }
 
