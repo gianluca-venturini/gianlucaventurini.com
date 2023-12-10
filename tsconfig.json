@@ -22,12 +22,6 @@
                 "name": "next"
             }
         ],
-        "paths": {
-            "@/*": [
-                "./pages/*",
-                "./tina/*"
-            ]
-        }
     },
     "include": [
         "next-env.d.ts",

@@ -1,6 +1,5 @@
-/**
- * @type {import('tinacms').Collection}
- */
+import { type Collection } from 'tinacms';
+
 export default {
     label: 'Page',
     name: 'page',
@@ -16,10 +15,10 @@ export default {
     ],
     ui: {
         router: ({ document }) => {
-            if (document._sys.filename === 'home') {
+            if (document._sys.filename === 'lol') {
                 return `/`;
             }
             return undefined;
         },
     },
-};
+} satisfies Collection;

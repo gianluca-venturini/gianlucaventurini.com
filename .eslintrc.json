@@ -20,6 +20,9 @@
         "ecmaVersion": 12,
         "sourceType": "module"
     },
+    "ignorePatterns": [
+        "**/__generated__/*.ts"
+    ],
     "rules": {
         "no-multiple-empty-lines": [
             "error",
@@ -32,6 +35,8 @@
         "@typescript-eslint/explicit-function-return-type": "off",
         "react/react-in-jsx-scope": "off",
         "import/no-anonymous-default-export": "off",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/strict-boolean-expressions": "off",
+        "indent": "off"
     }
 }

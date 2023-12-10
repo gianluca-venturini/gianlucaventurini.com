@@ -1,3 +1,5 @@
+import { type Collection } from 'tinacms';
+
 /**
  * @type {import('tinacms').Collection}
  */
@@ -23,4 +25,4 @@ export default {
             return `/posts/${document._sys.filename}`;
         },
     },
-};
+} satisfies Collection;

@@ -7,7 +7,7 @@
         "build": "next build",
         "start": "next start",
         "lint-next": "next lint",
-        "lint": "eslint ./src --ext .tsx,.ts,.js"
+        "lint": "eslint ./pages --ext .tsx,.ts,.js"
     },
     "dependencies": {
         "next": "14.0.4",
