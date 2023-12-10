@@ -38,7 +38,7 @@ export const Layout = (props: React.PropsWithChildren) => {
                 <link rel="icon" href="/favicon.png" />
             </Head>
             <header className="select-none">
-                <div className="flex gap-4 mb-4">
+                <div className="flex gap-6 mb-6">
                     <Link className="flex-initial" href="/">
                         Gianluca Venturini
                     </Link>
