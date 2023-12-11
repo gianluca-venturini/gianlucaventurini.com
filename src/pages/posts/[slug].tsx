@@ -4,9 +4,9 @@ import {
     type InferGetStaticPropsType,
 } from 'next';
 import { useTina } from 'tinacms/dist/react';
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { client } from '../../../tina/__generated__/client';
+import { Markdown } from '../../components/Markdown';
 
 export default function Home(
     props: InferGetStaticPropsType<typeof getStaticProps>
@@ -19,7 +19,7 @@ export default function Home(
     });
 
     const content = data.post.body;
-    return <TinaMarkdown content={content} />;
+    return <Markdown content={content} />;
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {

@@ -3,6 +3,7 @@ import { tinaField, useTina } from 'tinacms/dist/react';
 import { TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { client } from '../../tina/__generated__/client';
+import { Markdown } from '../components/Markdown';
 
 export default function Home(
     props: InferGetStaticPropsType<typeof getStaticProps>
@@ -17,7 +18,9 @@ export default function Home(
     const content = data.page.body;
     return (
         <div data-tina-field={tinaField(data.page, 'body')}>
-            <TinaMarkdown content={content} />
+            <span className="markdown">
+                <Markdown content={content} />
+            </span>
         </div>
     );
 }

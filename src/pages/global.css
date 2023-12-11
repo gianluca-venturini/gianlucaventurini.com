@@ -11,3 +11,8 @@ body {
     @apply bg-dark;
     @apply text-neutral-50;
 }
+
+/* Markdown custom style */
+.markdown p {
+    @apply mb-4;
+}
