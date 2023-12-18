@@ -1,6 +1,5 @@
 import { type InferGetStaticPropsType } from 'next/types';
 import { tinaField, useTina } from 'tinacms/dist/react';
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { client } from '../../tina/__generated__/client';
 import { Markdown } from '../components/Markdown';
