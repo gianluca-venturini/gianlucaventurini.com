@@ -1,5 +1,6 @@
 ---
 title: 'Real-Time Visualization: An Architecture for immediate insight'
+cover: /uploads/cover 4.png
 ---
 
 During a recent hack week, my team developed a proof of concept (POC) for a real-time visualization system showing how phishing emails find their way inside a target organization. I'll describe general architecture learnings that can be applied to any visualization that needs to be updated in Real-Time. The objective was to design and implement an architecture that fulfills the stringent requirements of real-time data visualization, using standard components offered by any cloud vendor like Postgres, Redis, a pub/sub bus, and a Data Warehouse.
@@ -27,6 +28,7 @@ I'm sure there are specialized systems out there that do a good job of supportin
 ## The Real-Time Analytics Architecture
 
 The architecture we propose leverages Postgres, Redis, and Server-Sent Events (SSE) to overcome the limitations mentioned above:
+
 * **Postgres** stores pre-aggregated data in Time Series format in a table. It allows atomic transactional updates every time a Time Series requires an update. The time series are sharded per hour.
 * **Analytics Backfill Job** constructs the initial Time Series by querying the Data Warehouse.
 * **Analytics Listener Worker** subscribes to pub/sub and updates the corresponding Time Series bucket any time there are events. It reads a batch of events and updates the metric in Postgres.
@@ -34,7 +36,6 @@ The architecture we propose leverages Postgres, Redis, and Server-Sent Events (S
 * **Time Series Observer Worker** listens for changes in Postgres Time Series rows and communicates them to the corresponding Redis channel.
 * **API Pod** is a container running the API handler code spawned up inside Kubernetes. Performs initial Time Series retrieval from Postgres and subscribes to Redis channels for updates.
 * **Server Sent Events:** Maintains an open connection with the frontend to push differential updates every time the API pods observe a row change from the subscribed Redis channels.
-
 
 ![Standard Analytics architecture (in red) VS the Real-Time one (in blue).](</uploads/realtime analytics architecture.png>)
 

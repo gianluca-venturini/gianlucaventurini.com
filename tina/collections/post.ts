@@ -14,6 +14,11 @@ export default {
             name: 'title',
         },
         {
+            type: 'image',
+            label: 'Cover Image',
+            name: 'cover',
+        },
+        {
             type: 'rich-text',
             label: 'Blog Post Body',
             name: 'body',

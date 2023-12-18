@@ -3,6 +3,7 @@ import {
     type GetStaticProps,
     type InferGetStaticPropsType,
 } from 'next';
+import Image from 'next/image';
 import { useTina } from 'tinacms/dist/react';
 
 import { client } from '../../../tina/__generated__/client';
@@ -24,6 +25,13 @@ export default function Home(
             <h1 className="@apply text-5xl font-bold mb-4">
                 {data.post.title}
             </h1>
+            <Image
+                src={data.post.cover}
+                alt={data.post.cover}
+                width={1600}
+                height={500}
+                className="mb-4"
+            />
             <Markdown content={content} />
         </div>
     );
