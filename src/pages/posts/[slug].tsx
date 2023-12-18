@@ -19,7 +19,14 @@ export default function Home(
     });
 
     const content = data.post.body;
-    return <Markdown content={content} />;
+    return (
+        <div>
+            <h1 className="@apply text-5xl font-bold mb-4">
+                {data.post.title}
+            </h1>
+            <Markdown content={content} />
+        </div>
+    );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
