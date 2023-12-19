@@ -2,8 +2,8 @@ import { type Collection } from 'tinacms';
 
 export default {
     label: 'Books',
-    name: 'books',
-    path: 'content/books',
+    name: 'bookshelf',
+    path: 'content/bookshelf',
     format: 'md',
     fields: [
         {
@@ -27,7 +27,7 @@ export default {
     ],
     ui: {
         router: ({ document }) => {
-            return `/books/${document._sys.filename}`;
+            return undefined;
         },
     },
 } satisfies Collection;
