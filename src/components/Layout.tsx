@@ -26,38 +26,37 @@ export const Layout = (props: React.PropsWithChildren) => {
     }, [theme]);
 
     return (
-        <div
-            style={{
-                margin: '3rem',
-            }}
-        >
+        <>
             <Head>
                 <title>Gianluca Venturini</title>
                 <meta name="description" content="A TinaCMS Application" />
                 <link rel="icon" href="/favicon.png" />
             </Head>
-            <header className="select-none">
-                <div className="flex gap-6 mb-6">
-                    <Link className="flex-initial" href="/">
-                        Gianluca Venturini
-                    </Link>
-                    <Link className="flex-initial" href="/bookshelf">
-                        Bookshelf
-                    </Link>
-                    <Link className="flex-initial" href="/posts">
-                        Blog
-                    </Link>
-                    <button
-                        className="flex-initial"
-                        onClick={flipTheme}
-                        suppressHydrationWarning
-                    >
-                        {theme === 'dark' ? '☀️' : '🌙'}
-                    </button>
-                </div>
+            <header className="select-none flex gap-6 py-2 px-4">
+                <Link className="flex-initial" href="/">
+                    Gianluca Venturini
+                </Link>
+                <Link className="flex-initial" href="/bookshelf">
+                    Bookshelf
+                </Link>
+                <Link className="flex-initial" href="/posts">
+                    Blog
+                </Link>
+                <button
+                    className="flex-initial"
+                    onClick={flipTheme}
+                    suppressHydrationWarning
+                >
+                    {theme === 'dark' ? '☀️' : '🌙'}
+                </button>
             </header>
-            <main>{props.children}</main>
-        </div>
+            <main
+                className="max-w-[48rem] flex-col py-8 px-4 mx-auto"
+                style={{ maxWidth: 600 }}
+            >
+                {props.children}
+            </main>
+        </>
     );
 };
 
