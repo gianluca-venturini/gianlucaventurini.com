@@ -15,9 +15,6 @@ export default {
     ],
     ui: {
         router: ({ document }) => {
-            if (document._sys.filename === 'lol') {
-                return `/`;
-            }
             return undefined;
         },
     },

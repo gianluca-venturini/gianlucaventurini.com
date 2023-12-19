@@ -1,4 +1,6 @@
 import { defineConfig } from 'tinacms';
+
+import books from './collections/books';
 import page from './collections/page';
 import post from './collections/post';
 
@@ -23,7 +25,7 @@ export const config = defineConfig({
         outputFolder: 'admin', // within the public folder
     },
     schema: {
-        collections: [page, post] as any,
+        collections: [page, post, books] as any,
     },
 });
 
