@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 
+import { GithubIcon, TwitterIcon } from './Icons';
+
 type Theme = 'light' | 'dark';
 
 export const Layout = (props: React.PropsWithChildren) => {
@@ -33,14 +35,29 @@ export const Layout = (props: React.PropsWithChildren) => {
                 <link rel="icon" href="/favicon.png" />
             </Head>
             <header className="select-none flex gap-6 py-2 px-4">
-                <Link className="flex-initial" href="/">
+                <Link className="flex-initial hidden sm:flex" href="/">
                     Gianluca Venturini
+                </Link>
+                <Link className="flex-initial sm:hidden" href="/">
+                    Gianluca
                 </Link>
                 <Link className="flex-initial" href="/bookshelf">
                     Bookshelf
                 </Link>
                 <Link className="flex-initial" href="/posts">
                     Blog
+                </Link>
+                <Link
+                    className="flex-initial flex items-center"
+                    href="https://twitter.com/gianlu_ventu"
+                >
+                    <TwitterIcon />
+                </Link>
+                <Link
+                    className="flex-initial flex items-center"
+                    href="https://github.com/gianluca-venturini"
+                >
+                    <GithubIcon />
                 </Link>
                 <button
                     className="flex-initial"
