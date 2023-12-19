@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 body {
-    @apply bg-neutral-100 dark:bg-neutral-950;
-    @apply text-neutral-600 dark:text-gray-400;
+    @apply bg-neutral-100 dark:bg-neutral-800;
+    @apply text-neutral-600 dark:text-gray-300;
 }
 
 ::selection {
-    @apply bg-dark;
-    @apply text-neutral-50;
+    @apply bg-neutral-700;
+    @apply text-red-400;
 }
 
 /* Markdown custom style */
