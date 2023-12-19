@@ -19,6 +19,11 @@ export default {
             name: 'cover',
         },
         {
+            type: 'datetime',
+            label: 'Date Publish',
+            name: 'date',
+        },
+        {
             type: 'rich-text',
             label: 'Blog Post Body',
             name: 'body',

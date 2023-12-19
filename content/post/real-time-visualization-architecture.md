@@ -1,6 +1,7 @@
 ---
 title: 'Real-Time Visualization: An Architecture for immediate insight'
 cover: /uploads/cover 4.png
+date: 2023-11-18T08:00:00.000Z
 ---
 
 During a recent hack week, my team developed a proof of concept (POC) for a real-time visualization system showing how phishing emails find their way inside a target organization. I'll describe general architecture learnings that can be applied to any visualization that needs to be updated in Real-Time. The objective was to design and implement an architecture that fulfills the stringent requirements of real-time data visualization, using standard components offered by any cloud vendor like Postgres, Redis, a pub/sub bus, and a Data Warehouse.
