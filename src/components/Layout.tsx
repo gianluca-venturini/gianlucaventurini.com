@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 
-import { GithubIcon, TwitterIcon } from './Icons';
+import { GithubIcon, TwitterIcon, TwitterXIcon } from './Icons';
 
 type Theme = 'light' | 'dark';
 
@@ -48,10 +48,15 @@ export const Layout = (props: React.PropsWithChildren) => {
                     Blog
                 </Link>
                 <Link
-                    className="flex-initial flex items-center"
+                    className="flex-initial flex items-center relative w-4 group"
                     href="https://twitter.com/gianlu_ventu"
                 >
-                    <TwitterIcon />
+                    <div className="absolute inset-0 flex items-center justify-center group-hover:animate-flickering-off">
+                        <TwitterXIcon />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:animate-flickering-on">
+                        <TwitterIcon />
+                    </div>
                 </Link>
                 <Link
                     className="flex-initial flex items-center"
