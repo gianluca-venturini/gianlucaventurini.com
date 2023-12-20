@@ -110,11 +110,11 @@ book:
     author: Mark Richards and Neal Ford
   - title: "Lifespan: Why We Age, and Why We Don't Have To"
     author: David A. Sinclair
-  - title: Outlive: The Science and Art of Longevity
+  - title: "Outlive: The Science and Art of Longevity"
     author: Peter Attia MD, Bill Gifford
-  - title: Ghost In The Wires: My Adventures as the World's Most Wanted Hacker
+  - title: "Ghost In The Wires: My Adventures as the World's Most Wanted Hacker"
     author: Kevin Mitnick and William L. Simon
-  - title: Einstein: His Life and Universe
+  - title: "Einstein: His Life and Universe"
     author: Walter Isaacson
   - title: Leonardo da Vinci
     author: Walter Isaacson
