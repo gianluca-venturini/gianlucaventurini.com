@@ -25,9 +25,4 @@ export default {
             ],
         },
     ],
-    ui: {
-        router: ({ document }) => {
-            return undefined;
-        },
-    },
 } satisfies Collection;

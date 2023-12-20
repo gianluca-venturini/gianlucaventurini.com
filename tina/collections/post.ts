@@ -30,9 +30,4 @@ export default {
             isBody: true,
         },
     ],
-    ui: {
-        router: ({ document }) => {
-            return `/posts/${document._sys.filename}`;
-        },
-    },
 } satisfies Collection;
