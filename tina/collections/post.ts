@@ -7,6 +7,7 @@ export default {
     label: 'Blog Posts',
     name: 'post',
     path: 'content/post',
+    format: 'mdx',
     fields: [
         {
             type: 'string',
@@ -33,6 +34,19 @@ export default {
             label: 'Blog Post Body',
             name: 'body',
             isBody: true,
+            templates: [
+                {
+                    name: 'Visualization',
+                    label: 'Visualization',
+                    fields: [
+                        {
+                            name: 'title',
+                            label: 'Title',
+                            type: 'string',
+                        },
+                    ],
+                },
+            ],
         },
     ],
 } satisfies Collection;
