@@ -3,6 +3,7 @@ import { type InferGetStaticPropsType } from 'next/types';
 import { useTina } from 'tinacms/dist/react';
 
 import { client } from '../../../tina/__generated__/client';
+import { formatDate } from '../../components/Utils';
 
 export default function PostList(
     props: InferGetStaticPropsType<typeof getStaticProps>
@@ -19,14 +20,26 @@ export default function PostList(
     }
     return (
         <>
-            <h1>Posts</h1>
-            <div>
+            <h1 className="text-5xl font-bold mb-8">Posts</h1>
+            <div className="flex flex-col">
                 {postsList.map((post) => (
-                    <div key={post?.node?.id}>
-                        <Link href={`/posts/${post?.node?._sys.filename}`}>
-                            {post?.node?._sys.filename}
-                        </Link>
-                    </div>
+                    <Link
+                        key={post?.node?.id}
+                        href={`/posts/${post?.node?._sys.filename}`}
+                        className="flex flex-row gap-2"
+                    >
+                        <span className="text-sm whitespace-nowrap">
+                            {post?.node?.title}
+                        </span>
+                        {post?.node?.date && (
+                            <>
+                                <span className="text-sm">&mdash;</span>
+                                <span className="text-sm font-thin whitespace-nowrap">
+                                    {formatDate(post?.node?.date)}
+                                </span>
+                            </>
+                        )}
+                    </Link>
                 ))}
             </div>
         </>
@@ -34,7 +47,10 @@ export default function PostList(
 }
 
 export const getStaticProps = async () => {
-    const { data, query, variables } = await client.queries.postConnection();
+    const { data, query, variables } = await client.queries.postConnection({
+        sort: 'date',
+        last: 10,
+    });
 
     return {
         props: {
