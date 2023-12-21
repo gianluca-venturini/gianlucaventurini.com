@@ -1,5 +1,6 @@
 ---
 title: 'Real-Time Visualization: An Architecture for immediate insight'
+snippet: "The past Hack Week, my team developed a real-time visualization system for tracking phishing emails, leveraging Postgres, Pub/Sub, Redis, and Server-Sent Events in the Architecture to overcome the limitations of standard analytics systems. The system excels in ultra-low latency."
 cover: /uploads/cover 4.png
 date: 2023-11-18T08:00:00.000Z
 ---

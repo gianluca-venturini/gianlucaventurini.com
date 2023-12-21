@@ -21,24 +21,29 @@ export default function PostList(
     return (
         <>
             <h1 className="text-5xl font-bold mb-8">Posts</h1>
-            <div className="flex flex-col">
+            <div className="flex flex-col divide-y">
                 {postsList.map((post) => (
                     <Link
                         key={post?.node?.id}
                         href={`/posts/${post?.node?._sys.filename}`}
-                        className="flex flex-row gap-2"
+                        className="flex flex-col gap-1 py-4"
                     >
-                        <span className="text-sm whitespace-nowrap">
-                            {post?.node?.title}
-                        </span>
-                        {post?.node?.date && (
-                            <>
-                                <span className="text-sm">&mdash;</span>
-                                <span className="text-sm font-thin whitespace-nowrap">
-                                    {formatDate(post?.node?.date)}
-                                </span>
-                            </>
-                        )}
+                        <div className="flex flex-row gap-2 flex-wrap">
+                            <span className="text-sm whitespace-nowrap">
+                                {post?.node?.title}
+                            </span>
+                            {post?.node?.date && (
+                                <>
+                                    <span className="text-sm">&mdash;</span>
+                                    <span className="text-sm font-thin whitespace-nowrap">
+                                        {formatDate(post?.node?.date)}
+                                    </span>
+                                </>
+                            )}
+                        </div>
+                        <div className="text-sm font-thin">
+                            {post?.node?.snippet}
+                        </div>
                     </Link>
                 ))}
             </div>

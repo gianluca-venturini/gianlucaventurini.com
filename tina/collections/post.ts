@@ -14,6 +14,11 @@ export default {
             name: 'title',
         },
         {
+            type: 'string',
+            label: 'Snippet',
+            name: 'snippet',
+        },
+        {
             type: 'image',
             label: 'Cover Image',
             name: 'cover',
