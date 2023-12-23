@@ -1,5 +1,4 @@
 import {
-    type Metadata,
     type GetStaticPaths,
     type GetStaticProps,
     type InferGetStaticPropsType,
