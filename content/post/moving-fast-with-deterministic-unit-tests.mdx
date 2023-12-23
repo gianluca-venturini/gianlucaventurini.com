@@ -1,0 +1,81 @@
+---
+title: Moving fast with deterministic unit tests
+snippet: Quick review different types of tests and their tradeoffs
+date: 2023-03-22T07:00:00.000Z
+---
+
+This article will review different types of tests and their tradeoffs. It will then focus on how to develop a good unit test suite.
+
+## What are we testing?
+
+As software engineers, well-written tests are one of the most powerful tools we have to convince ourselves that the code works as expected.
+
+There are different types of tests, ranging from the most expensive to the cheapest: end-to-end, integration, and unit tests. We must decide which to use based on what we are testing and how quickly we need the test to run.
+
+End-to-end tests verify that a user flow works well by testing that all parts of the system are behaving correctly and that the user experience is good. For example, we may want to test that a user can sign up for our product. This type of test is mostly carried out manually during the QA process with the goal of finding bugs; it's slow and expensive. However, it's very effective because a human can notice details that are hard to describe with an automated test. For example, is the account table visually appealing? Does it load quickly? Some of these tests can be automated, especially for critical parts of the product where the UI doesn't change often.
+
+Integration tests focus on ensuring that multiple systems behave correctly when wired together. These tests are automated and can take some time to run since they do not need to be run too frequently. For example, we can test creating a new account by calling a library function, updating it, and checking if the result is correctly persisted in the database and cached. We can run this test every time a new commit is deployed on our staging environment. Integration tests are mostly used to detect regressions resulting from changes to systems that cause the ensemble to behave incorrectly.
+
+Unit tests are fully automated, run quickly, and should be run continuously throughout the development process. They test a single module in isolation, verifying that it meets all requirements. Each test should only focus on a single behavior, and its result must be independent of all other behaviors.
+
+To test a module in isolation, we should mock its dependencies. A popular pattern for doing so is dependency injection, where all dependencies are passed as parameters to the function itself, rather than monkey-patching other module imports.
+
+Unit tests are a fundamental building block of Test Driven Development (TDD). TDD is the best way I know of writing reliable software, as it creates a tight feedback loop: write a test, watch it fail, implement the feature, run the test again and make sure it passes, test if something else broke, and repeat.
+
+The run time of the test suite and the reliability of the tests determine the developer experience working with the codebase, and therefore our team's velocity. Maintaining a reliable unit test suite is a high-impact activity. Let's now focus on how to write reliable unit tests.
+
+## What is a reliable unit test?
+
+A reliable unit test will fail every time the module behaves incorrectly, and always succeed otherwise. It is important to ensure that running a test multiple times, possibly in different environments, always yields the same result. In other words, we want the test to be fully deterministic.
+
+Having a fully deterministic unit test suite allows developers to refactor and add new code with confidence. When a test breaks, we know there is a real problem.
+
+Building deterministic unit tests can be complex. There are many sources of non-determinism, and often we need to put in extra effort to remove them since test environments often do not do it by default.
+
+## Why is our unit test non-deterministic?
+
+Let's discuss sources of non-determinism in unit tests. We aim for the test to be deterministic when run multiple times on the same machine, as well as when run on different machines with slightly different configurations.
+
+### Race conditions
+
+We execute multiple concurrent operations that race with each other, producing non-deterministic results because their completion order could be different.
+
+To avoid this, we need to call those functions sequentially and make sure that each function execution completes before initiating the next one.
+
+### I/O
+
+When using asynchronous APIs, we may find ourselves in a situation where we need to wait for a variable amount of time. This can cause the test to behave differently depending on how fast the call is. It also introduces one more layer where things can go wrong. For example, what if an I/O call never completes because of a network error? Every time we have I/O in a test, it becomes an integration test and doesn't belong in our unit test suite.
+
+The solution is to avoid making I/O calls altogether in our unit tests. For instance, we can provide file content in a constant instead of reading it from disk, and mock API responses instead of opening a network connection.
+
+### Time
+
+In my experience, time is the most common cause of test flakiness. If we don't mock time, the test will behave slightly differently every time we run it. Most of the time, we won't notice any difference, but sometimes the test will fail for no apparent reason. Unfortunately, these failures are often ignored because they occur rarely enough to be dismissed. However, over time, the number of tests increases and the number of times we run them compounds, making the entire test suite less reliable.
+
+The solution is to mock time advancement itself. Every time our module requires time passing (e.g. when checking cache expiration), we will manually advance the mocked clock. This will make time fully deterministic and ensure that our test will always behave the same way.
+
+### Random Number Generators
+
+This is the most subtle issue because it causes our tests to become flaky when more tests are added. While this may not initially seem like a problem, it's important to remember that a test should pass or fail in complete isolation from other tests.
+
+You may be tempted to use a pseudorandom number generator every time you need an arbitrary number. If the seed remains the same, it will produce a fully deterministic sequence, right? Unfortunately, competing with other tests for pseudo-numbers will introduce non-determinism. If a test is added before or if multiple tests are executed in parallel, we may end up with different numbers every time.
+
+The solution is simple: hardcode all your test numbers, so they won’t change in subsequent runs.
+
+Note that sometimes we may want to run randomized tests to ensure that our software behaves correctly with different inputs. I recommend writing these as integration tests, acknowledging that they can never be deterministic and therefore should not be part of your unit test suite.
+
+### Side Effects
+
+Side effects can occur when we accidentally modify the global environment from inside the test, causing the test to fail on a subsequent run or causing another test to fail. I recommend avoiding writing to global state whenever possible. For example, do not write to a file in the filesystem. If writing to global state is unavoidable, be extra careful to always clean up immediately after the test finishes, and ensure that no other tests will fail due to potential race conditions.
+
+### Environment
+
+We need to ensure that our tests behave consistently in every environment. Investigating why a test fails in production when it succeeds in our development environment can be very time-consuming. This is because we don't have all the debugging capabilities in production that we have in local dev.
+
+We should not use environment variables directly because different systems may have different defaults. Instead, we should have a module responsible for fetching env variables and mocking them using the dependency injection pattern.
+
+APIs on different architectures may behave slightly differently. To mitigate this issue, we can write a wrapper module around the execution environment's native APIs and mock them. For example, instead of using the file read API, we can mock it and return the content of the file from a constant.
+
+## Closing Thoughts
+
+In the first part, we explored the different types of automated and manual tests, highlighting their tradeoffs. In the second part, we described how to make our unit tests reliable by removing sources of non-determinism, which guarantees consistent results across all environments. This practice ensures a fast Test Driven Development feedback loop and ultimately leads to a better developer experience.
