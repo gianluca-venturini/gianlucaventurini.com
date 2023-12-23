@@ -1,8 +1,10 @@
 import {
+    type Metadata,
     type GetStaticPaths,
     type GetStaticProps,
     type InferGetStaticPropsType,
 } from 'next';
+import Head from 'next/head';
 import Image from 'next/image';
 import { useTina } from 'tinacms/dist/react';
 
@@ -23,6 +25,37 @@ export default function Home(
 
     return (
         <div>
+            <Head>
+                <meta name="robots" content="index, follow" />
+                {data.post.title && (
+                    <>
+                        <title>{data.post.title}</title>
+                        <meta property="og:title" content={data.post.title} />
+                        <meta name="twitter:title" content={data.post.title} />
+                    </>
+                )}
+                {data.post.snippet && (
+                    <>
+                        <meta
+                            property="og:description"
+                            content={data.post.snippet}
+                        />
+                        <meta
+                            name="twitter:description"
+                            content={data.post.snippet}
+                        />
+                    </>
+                )}
+                {data.post.cover && (
+                    <>
+                        <meta property="og:image" content={data.post.cover} />
+                        <meta name="twitter:card" content={data.post.cover} />
+                        <meta name="twitter:image" content={data.post.cover} />
+                    </>
+                )}
+                {<meta property="og:url" content="The URL of your blog post" />}
+                <meta name="twitter:creator" content="@gianlu.ventu" />
+            </Head>
             {data.post.date && (
                 <h3 className="text-neutral-400">
                     {formatDate(data.post.date)}
