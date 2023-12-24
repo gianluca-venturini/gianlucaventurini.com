@@ -9,7 +9,13 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
 };
 
 const components: Record<string, (props: object) => JSX.Element> = {
-    Visualization: (props: { title?: string }) => {
-        return <h1>{props.title}</h1>;
-    },
+    Visualization: (props: { title?: string }) => <h1>{props.title}</h1>,
+    Video: (props: { src?: string }) =>
+        props.src ? (
+            <video loop autoPlay playsInline muted>
+                <source src={props.src} />
+            </video>
+        ) : (
+            <div />
+        ),
 };

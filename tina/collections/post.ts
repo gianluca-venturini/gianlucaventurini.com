@@ -46,6 +46,17 @@ export default {
                         },
                     ],
                 },
+                {
+                    name: 'Video',
+                    label: 'Video',
+                    fields: [
+                        {
+                            name: 'src',
+                            label: 'Source',
+                            type: 'string',
+                        },
+                    ],
+                },
             ],
         },
     ],

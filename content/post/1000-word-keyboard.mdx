@@ -1,0 +1,38 @@
+---
+title: 1000 word keyboard
+snippet: Using Copilot to code faster on repetitive tasks.
+cover: /uploads/keyboard.png
+date: 2023-04-30T07:00:00.000Z
+---
+
+This post is about how I use GitHub Copilot to be a more efficient developer.
+
+Copilot is an AI-powered code-completion tool that pairs with the developer while coding. It's a glorified auto-completion that is trained on a large body of open-source code. It has a nice VSCode extension and works out of the box with any language, I only tested it with Typescript.
+
+## How do I use Copilot?
+
+I find Copilot quite useful for simple, repetitive code-formatting tasks. There are two ways to use Copilot: single-line completion and synthesizing multiple lines (activated with the VSCode command "GitHub Copilot: Open Completions Panel"). I mostly use the former because I like to proofread line by line rather than copying large blocks of code.
+
+Since Copilot heavily relies on examples, after a couple of lines of repetitive code it gets the intention and starts pattern-matching quite accurately. It occasionally makes mistakes, but since I'm completing line-by-line I catch them and either add or subtract words.
+
+I'm using Copilot as a keyboard that has 1000 keys with words instead of individual characters. It's increasing my touch-typing speed from 64 words per minute to 1 line per second (yes, auto-completion is synthesized that fast).
+
+## Copilot as a keyboard
+
+My typing accuracy oscillates between 94% and 98%. My fingers are sometimes mistyping letters and similarly, Copilot completes with the wrong line, misses one term at the end of the function call chain, or uses a weird name that needs to be corrected.
+
+Most of the developer's job involves refactoring old code that sometimes involves making mechanical changes like renaming functions, variables, and modules with the help of the IDE. Other times require changing the structure of the code a little bit: converting from one format to another that is almost semantically equivalent. As long as I can supply an example, my 1000-word Copilot keyboard can hallucinate the code somewhat accurately.
+
+<Video src="/uploads/copilot.webm" />
+
+## Limitations
+
+Copilot rarely makes syntactic mistakes, almost all the errors are semantic, so we moved from mistyping words to having code that always compiles, but may be semantically incorrect, which is arguably worse. Remember: it's just a keyboard, it's on you to correct the typos.
+
+Another less obvious limitation is the limited context. Copilot is not trained on our codebase, nor we are feeding all our modules for every autocompletion. It just receives a few lines before and a few lines after the cursor and it's guessing what we are trying to insert between. It is very good at inferring intent from natural language comments, but it can only learn by example if it doesn't find any.
+
+![](</uploads/copilot-screenshot.png>)
+
+## Closing thoughts
+
+While you could be tempted to delegate more of your code-writing to Copilot, for example letting it implement simple functions providing high-level descriptions, where I found the most benefit is speeding up my typing speed during code refactoring. I occasionally ask it to implement simple snippets and take note of what APIs it would use, so I can learn some new patterns every day.
