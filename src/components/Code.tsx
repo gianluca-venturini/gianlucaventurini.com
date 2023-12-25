@@ -19,6 +19,7 @@ const CIRCLE_STYLE: React.CSSProperties = {
 vscDarkPlus.comment.color = 'rgb(113, 113, 113)';
 
 export const Code: React.FC<CodeProps> = ({ children, language, style }) => {
+    const showLineNumbers = language !== 'bash';
     return (
         <pre
             style={{
@@ -50,21 +51,29 @@ export const Code: React.FC<CodeProps> = ({ children, language, style }) => {
                     style={{ ...CIRCLE_STYLE, background: 'rgb(97, 197, 84)' }}
                 ></div>
             </div>
-            <SyntaxHighlighter
-                showLineNumbers
-                useInlineStyles
-                // wrapLongLines
-                language={language}
-                style={vscDarkPlus}
-                customStyle={{
-                    fontSize: 12,
-                    padding: '10px 0 20px',
-                    borderRadius: 0,
-                    // background: null,
+            <div
+                style={{
+                    // Add some padding when not showing line numbers
+                    paddingLeft: !showLineNumbers ? 16 : undefined,
+                    paddingRight: !showLineNumbers ? 16 : undefined,
                 }}
             >
-                {children}
-            </SyntaxHighlighter>
+                <SyntaxHighlighter
+                    showLineNumbers={showLineNumbers}
+                    useInlineStyles
+                    // wrapLongLines
+                    language={language}
+                    style={vscDarkPlus}
+                    customStyle={{
+                        fontSize: 12,
+                        padding: '10px 0 20px',
+                        borderRadius: 0,
+                        // background: null,
+                    }}
+                >
+                    {children}
+                </SyntaxHighlighter>
+            </div>
         </pre>
     );
 };
