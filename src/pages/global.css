@@ -18,7 +18,7 @@ body {
 
 /* Markdown custom style */
 .markdown {
-    p, ul {
+    p, ul, pre {
         @apply mb-4;
     }
 
