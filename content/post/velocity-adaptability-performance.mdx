@@ -1,0 +1,73 @@
+---
+title: 'Velocity, adaptability and performance'
+snippet: >-
+  The intricate balance between the three critical aspects of startup coding:
+  development velocity, code adaptability, and code performance.
+cover: >-
+  /uploads/velocity-adaptability-performance/velocity-adaptability-performance-cover.jpg
+date: 2023-04-02T07:00:00.000Z
+---
+
+In this post, I'll be diving into the thrilling world of startup code development, revealing the delicate balancing act between development velocity, code adaptability, and code performance.
+
+Picture this: you're at a critical point in your startup's journey, and the stakes are high. You need to develop new features quickly (development velocity), but you also want your system to be flexible enough to evolve with changing requirements (code adaptability). And let's not forget that the code needs to execute at lightning speed (code performance). How do you prioritize these seemingly conflicting aspects of code development?
+
+Development velocity - How fast we can develop a new feature.
+
+Code adaptability - How well the system can change to accommodate new requirements.
+
+Code performance - How fast the code executes.
+
+![](/uploads/velocity-adaptability-performance/triangle.png)
+
+## Extreme velocity
+
+Imagine you're working on a groundbreaking new feature, and you need to get it out to your customers ASAP. Enter Extreme Velocity Mode! This approach allows you to rapidly ship new features without stressing over performance or adaptability, but be warned - it comes with a side of technical debt. It's perfect for small experiments, MVPs, or when you need to validate your ideas on the fly. However, if a feature requires more than a month of work (this is my rule of thumb), you might want to pump the brakes and trade some speed for adaptability. Cutting too many corners could slow you down in the long run.
+
+I often use extreme velocity to prove to myself that “it can be done”. Sometimes after validating the approach I throw away the code while other times I heavily refactor it to make it clean and re-usable, paying back technical debt.
+
+![](/uploads/velocity-adaptability-performance/velocity.png)
+
+## Extreme adaptability
+
+When a feature is crucial for our product and has potential for growth, it's wise to invest time in writing adaptable code. This approach works best for long-lasting, evolving systems, such as those in infrastructure that are costly to change if not initially designed well.
+
+However, avoid overloading the code with abstractions before knowing its future evolution. Striking the right balance between current implementation and future design is key. One helpful method is to draft long-term specifications but only implement what the startup needs now. Stick to the YAGNI (You aren't gonna need it) principle that states you \*\*\*\*should not add a functionality until deemed necessary.
+
+Adaptable code can bring indirection, affecting performance. To maintain balance, ensure abstractions are justified by their potential to boost future velocity.
+
+Take internationalization, for example. There's no need to create abstractions for 200 languages right away; instead, focus on translating key pages in a few languages. But be prepared to adapt quickly for right-to-left languages and external translators if success demands it.
+
+In contrast, adaptability is non-negotiable for authentication and authorization frameworks. As they will continuously evolve with the startup and are costly to replace, it's crucial to get them right from the start.
+
+![](/uploads/velocity-adaptability-performance/adaptability.png)
+
+## Extreme performance
+
+“premature optimization is the root of all evil” — Donald Knuth
+
+It's a rare occasion when we need to whip up high-performance systems at a startup. Most of the time, we're crafting a bunch of "good enough performance" systems, as long as they don't turn into snail-paced bottlenecks or burn a hole in our pockets. So, let's focus on keeping things simple and ensuring our code is a breeze to read instead of chasing performance in most cases.
+
+Now, there are moments when speed is the name of the game. Take rendering a webpage, for instance – it's got to be lightning fast to deliver a top-notch user experience. When the business needs an optimized system, measure, tweak, and measuring again until you achieve the desired performance. Keep an eye out for the 20% of changes that'll bring in 80% of the performance boost, like adding caches, co-locating data, or choosing more efficient data structures.
+
+But let's not go overboard and obsess over micro-performance at the expense of code readability, a.k.a. early optimization. As engineers, we're often guilty of diving deep into performance discussions and sinking hours into investigations – let's admit it, it can be quite fun! Many of these debates pop up in code reviews, with the classic "have you tried this other, seemingly faster method?" question. In most cases, the only way to crown a winner is to test them all and measure which one reigns supreme, sometimes with surprising outcomes. However, these conversations can easily steer us away from our main goal of shipping code and divert our precious engineering resources to less important tasks.
+
+If we find ourselves caught in the same performance debate again and again, let's just stick with the most readable option and let the linter lay down the law on that code style from then on.
+
+On the other side, completely ignoring performance while writing a new system is also a big no-no. To strike the right balance, focus on macro-performance upfront without getting bogged down by micro-performance. Ask yourself: What's the big-O complexity of this algorithm? What happens if we don't have a cache and Postgres takes a hit with every request? Should we build this feature atop the data warehouse or the relational database?
+
+![](/uploads/velocity-adaptability-performance/performance.png)
+
+## Different tradeoffs for different startup phases
+
+In the journey of growing our startup, we often find ourselves at the crossroads of prioritization: which feature should we build first? And how much time should we dedicate to perfecting it?
+
+Initially, it's all about gaining momentum: investors focus more on the functionality of our demo rather than the aesthetics or efficiency of our code. Of course, there are a few exceptions for critical systems – we wouldn't want to compromise on security or struggle with systems that will hinder our progress the moment we revisit them.
+
+As we hit market fit and begin expanding our engineering team, it's time to ramp up the performance of those resource-hungry systems nibbling away at our margins or causing bottlenecks in crucial business processes. For instance, supercharging the analytics pipeline to slash in-product report latency from days to mere minutes, delighting our users in the process.
+
+![](/uploads/velocity-adaptability-performance/velocity-adaptability.png)
+
+Throughout the team's growth, we must ensure our most vital systems remain adaptable, enabling multiple engineers to work on them at breakneck speeds. The real challenge lies in determining which systems are significant enough to warrant the time investment.
+
+In the fast-paced world of startups, timing is everything. Striking the perfect balance between development velocity, code adaptability, and code performance for each system in every phase of the startup is crucial for success.
