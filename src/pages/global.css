@@ -47,4 +47,9 @@ body {
         
         transition: box-shadow 0.3s;
     }
+
+    ul {
+        list-style-type: disc;
+        margin-left: 20px;
+    }
 }
