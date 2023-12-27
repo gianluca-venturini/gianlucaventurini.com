@@ -1,0 +1,202 @@
+---
+title: Talk with books using a Vector DB and an LLM
+snippet: Learnings from building a simple system to extract information from books
+cover: /uploads/talk-with-books-using-a-vector-db-and-an-llm/first.png
+date: 2023-08-27T07:00:00.000Z
+---
+
+Today I wanted to build [a simple system to extract information from books](https://github.com/gianluca-venturini/libro), and I learned a couple of things about Vector Databases along the way.
+
+In this post we will
+
+* Load a book into a Vector Database.
+* Retrieve book snippets relevant for answering our question from the Vector Database.
+* Aggregate the snippets retrieved from the book and pass them to a LLM
+
+## Load the book
+
+Before being able to interrogate our book, we must load it into a Vector Database. I chose [Chroma](https://www.trychroma.com/) for no reason other that I read a blog post about it few weeks ago [while enjoying the midnight sun in Iceland](https://www.dropbox.com/scl/fi/hx2vli4ha2tfflqi26jht/2023-07-28-20.01.28.jpg?rlkey=du6udvksb039xbtaatyvv65vg\&dl=0).
+
+Let’s load our book:
+
+```python
+import chromadb
+
+words\_in\_chunk=100
+chroma\_client = chromadb.PersistentClient(path=constants.DB\_PATH)
+collection = chroma\_client.create\_collection(name=constants.COLLECTION\_NAME)
+id = 0
+stats\_line\_processed = 0
+with open(filename, 'r') as file:
+    words = \[]
+    for line in file:
+        for word in line.split():
+            words.append(word)
+            if len(words) >= words\_in\_chunk:
+                collection.add(
+                    documents=\[' '.join(words)],
+                    ids=\[f"id{id}"]
+                )
+                id += 1
+                words.clear()
+    collection.add(
+        documents=\[' '.join(words)],
+        ids=\[f"id{id}"]
+    )
+```
+
+At the end of the operation we will have our book fragmented in chunks of maximum 100 words and inserted into the Vector Database. Every chunk is represented by an embedding, you can think of an embedding as a representation of the meaning of the chunk as a list of numbers. chunks that contains words with similar meaning, will be represented as vector with low distance. I just used the default Chroma embedding algorithm because seemed to work ok.
+
+## Ask questions to the book
+
+Now to the interesting part: I want to be able to ask questions to the book, and I want my program to either answer (hopefully in the correct way) or tell me that it doesn’t know the answer (without trying to hallucinate one that is not contained in the book).
+
+Let’s start by retrieving an arbitrary number of chunks (I used 10):
+
+```python
+results = collection.query(
+    \# The user question generates an embedding
+    \# used to search the chunks in the DB
+    query\_texts=\[question],
+    \# Retrieve the 10 chunks that are semantically
+    \# close to our question
+    n\_results=10
+)
+```
+
+Then let’s concatenate these chunks and feed them to an LLM to summarize them:
+
+```python
+snippet = '\\\n\\\n'.join(results\['documents']\[0])
+
+\# Format data for easy LLM consumption
+data = {
+    "model": "gpt-4",
+    "messages": \[
+        {
+            \# Describe the LLM chat model role and feed the snippet
+            "role": "system", 
+            "content": f"""You will be asked for content of a book 
+                           from a reader that doesn't know anything 
+                           from the book. Answer only with content 
+                           contained in the book say you don't know 
+                           otherwise. 
+                           Relevant chunks of the content 
+                           of the book: {snippet}"""
+        },
+        {
+            \# Feed the user question
+            "role":  "user", 
+            "content": question
+        }
+    ]
+}
+\# Make the API request
+response = requests.post(OPENAI\_API\_URL, headers=headers, data=json.dumps(data))
+```
+
+Let’s try it all together:
+
+```bash
+❯ python3 ingest.py harry\_potter\_1.txt
+❯ API\_KEY=🔑 python3 ask.py "Why is Voldemort a bad guy?"
+Voldemort is considered a bad guy because he embodies the 
+traits of a dark wizard, seeking power at all costs. He 
+gathered followers, used fear as a means to control others, 
+and was intent on harming or killing those who opposed him. 
+He sought the Philosopher's Stone in an attempt to secure 
+his immortality, and he even attempted to kill Harry Potter 
+when Harry was just a baby. Voldemort doesn't distinguish 
+between good and evil, only seeing power and those weak 
+enough not to seek it.
+```
+
+Pretty cool right? The part that impressed me is that the Vector Database retrieves chunks of text that contain vague references about Voldemort, then the LLM is doing the heavy lifting connecting them together and creating a coherent narrative.
+
+Let’s just make sure it doesn’t hallucinate random answers:
+
+```bash
+❯ API\_KEY=🔑 python3 ask.py "Who is Darth Vader?"         
+The book does not provide any information about Darth Vader.
+```
+
+Ok fair enough no Start Wars crossover, but let’s see if it will hallucinate details from book 2 without being fed the correct chunks:
+
+```bash
+❯ API\_KEY=🔑 python3 ask.py "Who is Tom Riddle?"
+I'm sorry, but based on the provided book snippets, there is no information given about a character named Tom Riddle.
+```
+
+That’s pretty good, looks like my prompt is keeping the LLM in check only using it for summaries rather than content hallucination.
+
+## Misspelling produces inconsistent results
+
+Ok we’ve seen that it answers correctly easy questions. But what about if we are adding typos in the question?
+
+```bash
+❯ API\_KEY=🔑 python3 ask.py "What is Griffindor?"
+The book does not provide information on what Gryffindor is.
+```
+
+That’s pretty interesting, it found out that I’m talking about “Gryffindor”, even though I spelled it “Griffindor”. Looking at the snippet that got fed to the LLM there should be enough context to answer, but it seems that the LLM is not confident enough to answer the question, but it gets confused in how to spell “Griffindor” from my question. Maybe not paying enough **[attention](https://arxiv.org/abs/1706.03762)**?
+
+```bash
+❯ API\_KEY=🔑 python3 ask.py "What is Griffindor?"
+Gryffindor is one of the four houses at Hogwarts 
+School of Witchcraft and Wizardry, the school 
+which the main character, Harry Potter, attends. 
+The houses are part of the school's tradition and 
+students are sorted into them upon their arrival.
+```
+
+Much more interestingly, 20% of the times it corrects the misspelling and answers question I had in mind. That’s interesting because it means that depending on what chunks (and I bet a lot of other factors, like [GPT internal randomness](https://community.openai.com/t/why-is-gpt-4-giving-different-answers-with-same-prompt-temperature-0/143513)) the LLM decides to correct me or not answer.
+
+## Conclusions
+
+The process to extract answers from a book is simple: fragment the book into chunks of arbitrary length arbitrarily overlapped, load the chunks into a Vector Database, retrieve the chunks that contain information relevant to answer a question and feed chunks and question to an LLM hoping that it will be able to make sense of them.
+
+I learned how to wire Vector Databases to LLMs and how the whole system is reliable on certain questions, but quickly become unreliable when the question contains typos.
+
+I played with this toy implementation for half an hour and I definitely have many follow up questions:
+
+* What Vector Database should I use? What are the differences?
+* What embedding generation algorithm should I use?
+* How large should I make the chunks?
+* How much overlap should the chunks have?
+* How should I configure the search?
+* What role does Stochastic rounding play in the incorrect results?
+* How many chunks should I feed the LLM in order to answer the question?
+
+I’m pretty happy that the tooling around LLMs are very fast to learn and with defaults that are good enough to start seeing good results in minutes.
+
+## Appendix
+
+Let's see all the chunks that have been retrieved and how the LLM deduce a summary:
+
+```bash
+❯ API\_KEY=🔑 DEBUG=true python3 ask.py "Why is Voldemort a bad guy?"
+Debug on.
+Question: Why is Voldemort a bad guy?
+Snippets: I traveled around the world. A foolish young man I was then, full of ridiculous ideas about good and evil. Lord Voldemort showed me how wrong I was. There is no good and evil, there is only power, and those too weak to seek it.... Since then, I have served him faithfully, although I have let him down many times. He has had to be very hard on me." Quirrell shivered suddenly. "He does not forgive mistakes easily. When I failed to steal the stone from Gringotts, he was most displeased. He punished me... decided he would have to keep
+
+was this wizard who went... bad. As bad as you could go. Worse. Worse than worse. His name was..." Hagrid gulped, but no words came out. "Could you write it down?" Harry suggested. "Nah -can't spell it. All right -- Voldemort. " Hagrid shuddered. "Don' make me say it again. Anyway, this -- this wizard, about twenty years ago now, started lookin' fer followers. Got 'em, too -- some were afraid, some just wanted a bit o' his power, 'cause he was gettin' himself power, all right. Dark days, Harry. Didn't know who ter trust, didn't dare get friendly with
+
+that are worst for them." Harry lay there, lost for words. Dumbledore hummed a little and smiled at the ceiling. "Sir?" said Harry. "I've been thinking... sir -- even if the Stone's gone, Vol-, I mean, You-Know- Who --" "Call him Voldemort, Harry. Always use the proper name for things. Fear of a name increases fear of the thing itself." "Yes, sir. Well, Voldemort's going to try other ways of coming back, isn't he? I mean, he hasn't gone, has he?" "No, Harry, he has not. He is still out there somewhere, perhaps looking for another body to share... not
+
+it into a school for the Dark Arts! Losing points doesn't matter anymore, can't you see? D'you think he'll leave you and your families alone if Gryffindor wins the house cup? If I get caught before I can get to the Stone, well, I'll have to go back to the Dursleys and wait for Voldemort to find me there, it's only dying a bit later than I would have, because I'm never going over to the Dark Side! I'm going through that trapdoor tonight and nothing you two say is going to stop me! Voldemort killed my parents, remember?" He
+
+grief and remorse, great tears leaking down into his beard. "Hagrid, he'd have found out somehow, this is Voldemort we're talking about, he'd have found out even if you hadn't told him." "Yeh could've died!" sobbed Hagrid. "An' don' say the name!" "VOLDEMORT!" Harry bellowed, and Hagrid was so shocked, he stopped crying. "I've met him and I'm calling him by his name. Please cheer up, Hagrid, we saved the Stone, it's gone, he can't use it. Have a Chocolate Frog, I've got loads...." Hagrid wiped his nose on the back of his hand and said, "That reminds me. I've
+
+sitting back down on the sofa, which this time sagged right down to the floor. Harry, meanwhile, still had questions to ask, hundreds of them. "But what happened to Vol--, sorry -- I mean, You-Know-Who?" "Good question, Harry. Disappeared. Vanished. Same night he tried ter kill you. Makes yeh even more famous. That's the biggest myst'ry, see... he was gettin' more an' more powerful -- why'd he go? "Some say he died. Codswallop, in my opinion. Dunno if he had enough human left in him to die. Some say he's still out there, bidin' his time, like, but I don'
+
+'You- Know-Who' nonsense -- for eleven years I have been trying to persuade people to call him by his proper name: Voldemort." Professor McGonagall flinched, but Dumbledore, who was unsticking two lemon drops, seemed not to notice. "It all gets so confusing if we keep saying 'You-Know-Who.' I have never seen any reason to be frightened of saying Voldemort's name. "I know you haven 't, said Professor McGonagall, sounding half exasperated, half admiring. "But you're different. Everyone knows you're the only one You-Know- oh, all right, Voldemort, was frightened of." "You flatter me," said Dumbledore calmly. "Voldemort had powers I
+
+and James... I can't believe it... I didn't want to believe it... Oh, Albus..." Dumbledore reached out and patted her on the shoulder. "I know\... I know\..." he said heavily. Professor McGonagall's voice trembled as she went on. "That's not all. They're saying he tried to kill the Potter's son, Harry. But -- he couldn't. He couldn't kill that little boy. No one knows why, or how, but they're saying that when he couldn't kill Harry Potter, Voldemort's power somehow broke -- and that's why he's gone. Dumbledore nodded glumly. "It's -- it's true?" faltered Professor McGonagall. "After all he's
+
+I want to know the truth about...." "The truth." Dumbledore sighed. "It is a beautiful and terrible thing, and should therefore be treated with great caution. However, I shall answer your questions unless I have a very good reason not to, in which case I beg you'll forgive me. I shall not, of course, lie." "Well... Voldemort said that he only killed my mother because she tried to stop him from killing me. But why would he want to kill me in the first place?" Dumbledore sighed very deeply this time. "Alas, the first thing you ask me, I cannot
+
+to me by that time, trying to find out how far I'd got. He suspected me all along. Tried to frighten me - as though he could, when I had Lord Voldemort on my side...." Quirrell came back out from behind the mirror and stared hungrily into it. "I see the Stone... I'm presenting it to my master... but where is it?" Harry struggled against the ropes binding him, but they didn't give. He had to keep Quirrell from giving his whole attention to the mirror. "But Snape always seemed to hate me so much." "Oh, he does," said Quirrell
+Summarizing with LLM...
+{'id': 'chatcmpl-7sPfWxpxTwwea2ID0xqbnwQoBxj3l', 'object': 'chat.completion', 'created': 1693202738, 'model': 'gpt-4-0613', 'choices': \[{'index': 0, 'message': {'role': 'assistant', 'content': "Voldemort is considered a bad guy because he embodies the traits of a dark wizard, seeking power at all costs. He gathered followers, used fear as a means to control others, and was intent on harming or killing those who opposed him. He sought the Philosopher's Stone in an attempt to secure his immortality, and he even attempted to kill Harry Potter when Harry was just a baby. Voldemort doesn't distinguish between good and evil, only seeing power and those weak enough not to seek it."}, 'finish\_reason': 'stop'}], 'usage': {'prompt\_tokens': 1481, 'completion\_tokens': 100, 'total\_tokens': 1581}}
+Voldemort is considered a bad guy because he embodies the traits of a dark wizard, seeking power at all costs. He gathered followers, used fear as a means to control others, and was intent on harming or killing those who opposed him. He sought the Philosopher's Stone in an attempt to secure his immortality, and he even attempted to kill Harry Potter when Harry was just a baby. Voldemort doesn't distinguish between good and evil, only seeing power and those weak enough not to seek it.
+```

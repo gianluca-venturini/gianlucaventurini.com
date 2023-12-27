@@ -76,7 +76,7 @@ export const Layout = (props: React.PropsWithChildren) => {
             </header>
             <main
                 className="max-w-[48rem] flex-col py-8 px-4 mx-auto"
-                style={{ maxWidth: 600 }}
+                style={{ maxWidth: 680 }}
             >
                 {props.children}
             </main>
