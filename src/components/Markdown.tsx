@@ -25,8 +25,18 @@ const components: Components<CustomComponents> = {
             <div />
         ),
     img: (props) => (
-        <span className="flex flex-col">
-            {props?.url ? <img src={props.url} alt={props?.alt} /> : null}
+        <span className="flex flex-col items-center">
+            {props?.url ? (
+                <img
+                    src={props.url}
+                    alt={props?.alt}
+                    style={{
+                        maxHeight: '50vh',
+                        width: 'auto',
+                        objectFit: 'contain',
+                    }}
+                />
+            ) : null}
             <span className="text-sm text-neutral-400">{props?.caption}</span>
         </span>
     ),
