@@ -21,7 +21,7 @@ export default function PostList(
     return (
         <>
             <h1 className="text-5xl font-bold mb-8">Posts</h1>
-            <div className="flex flex-col divide-y">
+            <div className="flex flex-col divide-y text-md">
                 {postsList.map((post) => (
                     <Link
                         key={post?.node?.id}
@@ -29,21 +29,19 @@ export default function PostList(
                         className="flex flex-col gap-1 py-4"
                     >
                         <div className="flex flex-row gap-2 flex-wrap">
-                            <span className="text-sm whitespace-nowrap">
+                            <span className="whitespace-nowrap">
                                 {post?.node?.title}
                             </span>
                             {post?.node?.date && (
                                 <>
-                                    <span className="text-sm">&mdash;</span>
-                                    <span className="text-sm font-thin whitespace-nowrap">
+                                    <span>&mdash;</span>
+                                    <span className="font-thin whitespace-nowrap">
                                         {formatDate(post?.node?.date)}
                                     </span>
                                 </>
                             )}
                         </div>
-                        <div className="text-sm font-thin">
-                            {post?.node?.snippet}
-                        </div>
+                        <div className="font-thin">{post?.node?.snippet}</div>
                     </Link>
                 ))}
             </div>
