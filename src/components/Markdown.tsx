@@ -1,4 +1,5 @@
-import { TinaMarkdown } from 'tinacms/dist/rich-text';
+/* eslint-disable react/prop-types */
+import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
 
@@ -10,17 +11,31 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     );
 };
 
-const components: Record<string, (props: object) => JSX.Element> = {
+interface CustomComponents {
+    Visualization: { title?: string };
+    Video: { src?: string };
+}
+
+const components: Components<CustomComponents> = {
     // Override default markdown components
-    code_block: (props: any) =>
-        props.lang &&
-        props.value && <Code language={props.lang}>{props.value}</Code>,
+    code_block: (props) =>
+        props?.lang && props.value ? (
+            <Code language={props.lang}>{props.value}</Code>
+        ) : (
+            <div />
+        ),
+    img: (props) => (
+        <span className="flex flex-col">
+            {props?.url ? <img src={props.url} alt={props?.alt} /> : null}
+            <span className="text-sm text-neutral-400">{props?.caption}</span>
+        </span>
+    ),
     // Custom components
-    Visualization: (props: { title?: string }) => <h1>{props.title}</h1>,
-    Video: (props: { src?: string }) =>
-        props.src ? (
+    Visualization: (props) => <h1>{props?.title}</h1>,
+    Video: (props) =>
+        props?.src ? (
             <video loop autoPlay playsInline muted>
-                <source src={props.src} />
+                <source src={props?.src} />
             </video>
         ) : (
             <div />

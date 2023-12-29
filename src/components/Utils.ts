@@ -11,3 +11,7 @@ export function formatDate(date: string) {
 
     return [year, month, day].join('-');
 }
+
+export function is<T>(value: T): T {
+    return value;
+}
