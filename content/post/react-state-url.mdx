@@ -1,0 +1,138 @@
+---
+title: Store React state in the URL
+snippet: >-
+  Serialize the state of your React components inside the query string part of
+  the URL to allow the user to navigate back and forth between states.
+date: 2023-01-22T08:00:00.000Z
+---
+
+# Your views deserve predictable URLs
+
+Every well-designed app UX is designed around objects (the “big nouns”) and the affordances: actions that can be taken on objects (the “verbs”). The Material web UI is centered around messages, phishing cases, accounts, groups, rules, and features. Every one of these objects has one or more views that display the object properties and allows the user to take actions like marking the message “sensitive” or triage the phishing case as “malicious” by applying a “delete from all mailboxes” remediation.
+
+Objects have multiple views: full page, modal on top of another page, drawer, or row in a table. We often want to link these views from different parts of the app, for example, we may want to navigate to a full-page message from a message table. To simplify how we link object views it’s a good idea to have a predictable URL pattern like this:
+
+* /search/messages?query=foo table of messages, the URL contains the filters.
+* /message/\:messageId full page view requires a messageId.
+* /case/\:caseId/message/\:messageId message in a modal on top of a phishing case full page view.
+
+This pattern will provide a nice navigation experience because when the user hits the “back button” the UI will always assume the previous state since the URL contains complete information. In contrast, we want to avoid losing the UI state while navigating back (e.g. if the user was editing some information in a modal, the modal should still be open on the way back).
+
+The rule of thumb is to save enough in the URL that allows you to render a  consistent view every time. If you are rendering a message you just need the messageId, you can ask the backend for the rest of the content. If you are rendering a table you may want to save all the filters so if the user decides to go back to that view, will find the table exactly as they have left it. Don’t save ephemeral state, e.g. if you have a dropdown menu open or closed, that can be a React component state.
+
+# When creating objects store the state in the URL
+
+If the user is entering new information, it’s a good idea to store this information in the URL until the moment we are ready to persist it, so if the user for any reason navigates away (either because they want to look up extra information or by mistake) they can always resume where they have left. A concrete example is the search rule creation flow, imagine a search rule as “if a message matches this filter, then mark it sensitive”. The rule creation flow happens entirely inside a modal, where the user may also preview messages inside the table. If a previewed message catches the user's attention they may temporarily step away for drilling down into message details full page view. When the user comes back they expect the state exactly the way they left it.
+
+# An abstraction to save React state in the URL
+
+Now that we learned why saving the state in the URL is important, let’s see a couple of tools that can make our life easy.
+
+We can build a custom hook inspired to React.useState(), in order to leverage React Router to keep the URL search params in sync with an instance variable.
+
+```typescript
+const [state, setState] = useLocationState({ query: undefined }, STATE_SCHEMA);
+```
+
+The first parameter indicates a “default” state, it allows us to omit the search parameter in the URL when it assumes the default value and have a shorter URL. The second parameter explains how to deserialize the search parameters, it’s required since type information is lost when serializing the parameters.
+
+We want to make possible to use \`useLocationState()\` in multiple components mounted in the same page.
+
+```typescript
+const SensitiveMessagePage = () => {
+    // This will only be setting the "domain" parameter
+    const [{ domain }, setState] = useLocationState(
+        { domain: undefined },
+        DOMAIN_STATE_SCHEMA
+    );
+    return (
+        <>
+            <SelectDomain setDomain={({ domain }) => setState({ domain })} />
+            <SensitiveMessageTable domain={domain} />
+        </>
+    );
+};
+
+const SensitiveMessageTable = ({ domain: string }) => {
+    // This will only be setting the "query" parameter
+    const [{ query }, setState] = useLocationState(
+        { query: undefined },
+        MESSAGE_TABLE_STATE_SCHEMA
+    );
+    return (
+        <>
+            <Search
+                query={query}
+                setQuery={(newQuery) => setState({ query: newQuery })}
+            />
+            <MessageTable params={{ query, domain }} />
+        </>
+    );
+};
+```
+
+Let’s now see at a high level how this abstraction is implemented. The functions deserializeSearchParams() and createSearchParams() specify how your parameters are serialized/deserialized, it’s up to you deciding how pretty your URLs will look like.
+
+```typescript
+export function useLocationState<T extends object>(
+    defaultState: T,
+    schema: T
+): [T, (params: Partial<T>) => void] {
+    const location = useLocation();
+    const history = useHistory();
+    // Deserialize search parameters from the URL
+    // if the parameter is not present, the default value is assumed
+    const params = deserializeSearchParams<T>(
+        location.search,
+        defaultState,
+        schema
+    );
+
+    React.useEffect(() => {
+        return () => {
+            // When the component unmounts, remove the params from the URL
+            const searchParams = new URLSearchParams(document.location.search);
+            keys(schema).forEach((paramToDelete) => {
+                searchParams.delete(paramToDelete);
+            });
+            history.replace({
+                search: searchParams.toString(),
+            });
+        };
+    }, [schema, history]);
+
+    const setParams = React.useCallback(
+        (newParams: Partial<T>): void => {
+            // Build a URLSearchParams() object containing params and newParams
+            const searchParams = createSearchParams(
+                { ...params, ...newParams },
+                defaultState
+            );
+            const originalSearchParams = new URLSearchParams(location.search);
+            const paramNames = new Set<string>(keys(schema));
+            originalSearchParams.forEach((value, key) => {
+                // Copy over all the parameters that are not in the schema
+                // because they should not be altered by this hook
+                if (!paramNames.has(key)) {
+                    searchParams.set(key, value);
+                }
+            });
+            history.replace(`${location.pathname}?${searchParams.toString()}`);
+        },
+        [
+            schema,
+            location.search,
+            location.pathname,
+            defaultState,
+            history,
+            params,
+        ]
+    );
+
+    return [params, setParams];
+}
+```
+
+# Conclusions
+
+In this post, I illustrated why you should be storing your React state directly in the URL with examples of good UX enabled by this pattern. In the second part, we took a look at how easy it’s to implement this pattern with a simple react hook.
