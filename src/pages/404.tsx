@@ -1,10 +1,3 @@
-import { useEffect } from 'react';
-import { navigate } from 'gatsby';
-
-export default function(): React.ReactNode {
-    useEffect(() => {
-        /** Every missing page goes to the homepage */
-        navigate('/');
-    }, []);
-    return null;
-};
+export default function Custom404() {
+    return <h1>Page Not Found</h1>;
+}

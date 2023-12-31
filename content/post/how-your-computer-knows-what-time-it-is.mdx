@@ -1,0 +1,64 @@
+---
+title: How Your Computer Knows What Time It Is
+snippet: Dive into the complexities of how your computer maintains accurate timekeeping.
+date: 2022-12-29T08:00:00.000Z
+---
+
+Have you ever wondered how your computer can tell you what time it is right now? Has probably something to deal with atomic clocks, some network protocol, and some timezone convention, right?
+
+I developed the following abstraction, that may help understand different concepts like Standard Time, Civil Time, UTC vs GMT and where the leap seconds are coming from.
+
+![](</uploads/time abstraction.png>)
+
+## International Atomic Time (IAT)
+
+A set of 450 atomic clocks connected using Two-Way Satellite Time and Frequency Transfer measures proper time with incredible accuracy. We can only measure proper time here on Earth because General Relativity prevents us from creating a notion of absolute time.
+
+## Universal Time (UT0 and UT1)
+
+UT0 is the time measure obtained from the Earth-Sun's angle concerning distant stars, nowadays we are using quasars. UT1 is UT0 with small adjustments for polar motion.
+
+## Coordinated Universal Time (UTC)
+
+Adopted in 1972. It does not serve as a civil time for any country or territory; instead, it serves as the foundation from which other countries and territories derive their respective time zones. It's kept in sync with UT1 using leap seconds.
+
+UTC = IAT + \<sum\_leap\_seconds>
+
+A leap second is a one-second adjustment that is occasionally added or, theoretically, subtracted from UTC, to accommodate the difference between the IAT, and observed Universal Time UT1. The leap seconds cannot be predicted more than 6 months in advance due to the unpredictable rate of the Earth's rotation.
+
+A leap day is added pretty regularly every 4 years to keep in sync with the earth's orbital period. Sometimes it's skipped to keep into account that the 4-times orbit is not exactly 365 \* 4 + 1 day.
+
+## Standard Time (UTC + timezone offset)
+
+It's a static offset from UTC set in a country by law. It's multiple of half an hour (with few exceptions like Nepal that have multiple of 15 minutes). Funny enough there are weird places like Kiribati (middle of the Pacific Ocean) in a UTC+14h timezone, which means they are more than one day ahead of their neighbor Baker Island (UTC-12).
+
+Examples of Standard Time timezones are Standard Pacific Time (PST) and Greenwich Mean Time (GMT).
+
+GMT and UTC are identical in practice, but they are at different levels in our abstraction. UTC is the reference time, it doesn't understand the concept of timezone. GMT is a time zone officially used in some European and African countries. Neither UTC nor GMT ever changes for Daylight Saving Time. For example, the United Kingdom is not on GMT all year, it uses British Summer Time (BST).
+
+## Civil time (Standard Time + Daylight Saving Time)
+
+It's the time you are using every day. It's a national standard time in a time zone at a fixed offset from Coordinated Universal Time (UTC), adjusted by daylight saving time during part of the year.
+
+## Daylight saving time
+
+It's the practice of advancing clocks (typically by one hour) during warmer months so that darkness falls at a later clock time. Happens on different days in different regions. For example, in the United States, DST starts on Second Sunday in March at 2 am (standard time of the timezone), while in the European Union Last Sunday in March at 1 am UTC.
+
+## Other time standards
+
+I just wanted to mention a couple of other noteworthy time standards:
+
+* Local time: introduced in 1883, it's a function of longitude, there were 144 local times in North America.
+* Solar time: used since the 2nd millennium BC, usually measured using a sundial. Note that the Universal Time (UT1) is just a more advanced measurement of Solar Time with some extra mathematical error correction.
+
+## Network Time Protocol
+
+I want to conclude with a practical example of how your computer keeps the clock in sync with UTC, timezone and daylight saving calculations are done locally.
+
+At regular intervals your computer synchronizes the local time with an NTP server. Goal of the synchronization process is to estimate the time offset and the round trip delay. There are different “stratum” in the NTP protocol, stratum 0 means the Atomic Clock hardware itself, stratum 1 a computer directly wired to the Atomic Clock, stratum 2 a computer that synchronized with a stratum 1 and peer-to-peer with other stratum 2 servers.
+
+If you want to know the stratum of your time provider, you can use this command.
+
+```bash
+sntp -d time.google.com
+```

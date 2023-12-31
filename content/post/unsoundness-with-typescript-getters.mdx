@@ -1,0 +1,55 @@
+---
+title: Unsoundness with TypeScript Getters
+snippet: >-
+  I explore an intriguing method to trick TypeScript's type inference system
+  using getters.
+cover: /uploads/unsoundness-with-typescript-getters/typescript fire dog.jpg
+date: 2023-07-27T07:00:00.000Z
+---
+
+While reading [The Seven Sources of Unsoundness in TypeScript](https://effectivetypescript.com/2021/05/06/unsoundness/) I was thinking other methods to trick TypeScript in inferring the incorrect type. Turns out you can use getters to trick typeguards into thinking a variable has a certain type at compile time, while at runtime it has another.
+
+We can exploit the TypeScript behavior that expects a getter to return the last value that was set on an object in the same synchronous scope and the fact that a getter is a function that can return anything it wants at runtime.
+
+The following code will compile without problems, but at runtime it will call callAliveCat() with a DeadCat half of the times.
+
+```typescript
+class Box {
+    get observe(): AliveCat | DeadCat {
+        if (Math.random() > 0.5) {
+            return { name: 'Silvestro', meow: true };
+        } else {
+            return { name: 'Grumpy Cat', doNothing: true }
+        }
+    }
+}
+
+function callAliveCat(cat: AliveCat) {
+    console.log(cat.meow);
+}
+
+function f() {
+    const box = new Box();
+    if (isAlive(box.observe)) {
+        // Half the times the cat is dead, 
+        // but TypeScript thinks it's always alive
+        callAliveCat(box.observe);
+    }
+}
+```
+
+For the entire if block the compiler thinks box.observe is AliveCat, just because it was when isAlive() was invoked.
+
+If we make observe() a function instead everything works correctly.
+
+```typescript
+function f() {
+    const box = new Box();
+    if (isAlive(box.observe())) {
+        // Now this is a compile error
+        callCat(box.observe());
+    }
+}
+```
+
+In my opinion TypeScript should be fixed to keep into account this edge case rather than assuming the developer never implements dynamic getters.

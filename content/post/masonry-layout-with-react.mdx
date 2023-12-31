@@ -1,0 +1,195 @@
+---
+title: Masonry layout with React
+snippet: How to crate a Masonry grid layout
+cover: /uploads/masonry-layout-with-react/love page.png
+date: 2023-02-25T08:00:00.000Z
+---
+
+Masonry is a grid-like layout that arranges elements to fill empty spaces and create an aesthetically pleasing grid. At Material, we use it on our "love page" to showcase social media posts and Tweets from our users.
+
+Let's explore how to create this layout from the ground up using a React component.
+
+## Why implement Masonry from scratch
+
+When solving a front-end problem, we should consider whether to use a third-party library or create our own solution. Advantages of third-party libraries such as react-masonry-component and material-ui/react-masonry include being already implemented and tested in production, while their disadvantages include a less flexible interface and no control over rendering performance.
+
+In our use case, we want to display an ordered list of social media posts. The most relevant ones should be rendered at the top of the page. Each post has the same width, but the height varies depending on the content.
+
+To produce a more uniform look, the first step is to discretize the heights. The minimum post height step will become the height of the CSS grid row.
+
+We want to dynamically determine the number of columns based on the browser width for improved performance. Additionally, we must ensure the website works well with Server Side Rendering to make social media posts available for SEO.
+
+We decided to implement the requirements from scratch using CSS Grid and standard CSS properties to control the look and feel. This design choice allows anyone with knowledge of CSS to make visual changes to the design.
+
+## General Architecture
+
+To make a component work quickly, you should use as little JavaScript as possible and let the browser's CSS engine do most of the work. This will give the best performance for the user, as browsers are designed to work well with CSS.
+
+![CSS grid](/uploads/masonry-layout-with-react/css-grid.png "CSS grid")
+
+The CSS grid layout almost meets our needs, but we need to manually calculate the coordinates of each post in the grid system to preserve the vertical order. The default CSS grid positioning won't work, as it positions posts left to right without taking the vertical order into account.
+
+![CSS grid with manual element positioning](/uploads/masonry-layout-with-react/with-masonry.png "CSS grid with manual element positioning")
+
+To accurately place each post on the grid, we need to know its height. Instead of trying to estimate it, we render invisible posts first to read their height directly from the DOM. This technique is better than guessing the height, as it takes into account paddings, font sizes, line heights, and any other CSS property of the post without needing a complex calculation. The downside is that it uses the first render on invisible components.
+
+After calculating the position of each post in the grid system, we need to write the CSS properties style.gridColumnStart, style.gridRowStart, and style.gridRowEnd into the DOM nodes of each post. This provides the information necessary for CSS grid to render the posts in their correct positions, ensuring that they do not overlap.
+
+Whenever the container's size changes, we recalculate the positions. To ensure optimal performance, we add a throttle to the resize handler, as it is called frequently and can result in excessive DOM manipulation.
+
+## Implementation
+
+Let’s now see a simplified implementation of the component. Note that we are using standard CSS grid properties to control the layout.
+
+These are the steps:
+
+1. Render invisible posts to get the actual height
+2. Calculate every post position on the grid and set the element CSS properties
+3. When a resize happens, re-render
+
+```typescript
+const MasonryWrapper = styled.div<{ minWidth: string }>`
+    display: grid;
+    grid-column-gap: 24px;
+    grid-row-gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(80vw, 1fr));
+    grid-auto-rows: 6px;
+`;
+
+export const Masonry: React.FC<{}> = (props) => {
+    const { children } = props;
+    const masonryEl = React.useRef(null);
+
+    React.useEffect(() => {
+        // Calculate "column", "row start" and "row end"
+        // for every post
+        function calculateLayout() { ... }
+
+        function handleResize() {
+            if (!masonryEl?.current) {
+                return;
+            }
+            const grid = masonryEl.current;
+            // This is the same as step (1)
+            for (const item of grid.childNodes) {
+                // CSS grid index is 1-based
+                item.style.gridColumnStart = 1;
+                item.style.opacity = 0;
+            }
+
+            // Give the browser time to render the invisible posts
+            window.requestAnimationFrame(calculateLayout);
+        }
+
+        // Throttled version that prevents excessive DOM manipulation
+        // when resize is happening
+        const throttledHandleResize = throttle(handleResize, 100);
+
+        // 2. Initial layout calculation
+        // It's guaranteed to run after the post height is
+        // already defined
+        calculateLayout();
+
+        // 3. Add event listener to recalculate layout on resize
+        window.addEventListener('resize', throttledHandleResize);
+
+        // Remove event listener on cleanup
+        return () => {
+            window.removeEventListener('resize', throttledHandleResize);
+        };
+    }, []);
+
+    return (
+        <MasonryWrapper minWidth={minWidth} ref={masonryEl}>
+            {React.Children.map(children, (child, i) => (
+                <div
+                    key={i}
+                    // 1. Render the invisible posts
+                    style={{ opacity: 0 }}
+                >
+                    {child}
+                </div>
+            ))}
+        </MasonryWrapper>
+    );
+};
+```
+
+The calculateLayout() function is the core of our component, it’s where we assign a position in our grid system to every social media post.
+
+```typescript
+function calculateLayout() {
+    const grid = masonryEl.current;
+
+    // Read the grid parameters from the DOM
+    const numColumns = window
+        .getComputedStyle(grid)
+        .getPropertyValue('grid-template-columns')
+        .split(' ').length;
+    const rowHeight = parseInt(
+        window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'),
+        10
+    );
+    const rowGap = parseInt(
+        window.getComputedStyle(grid).getPropertyValue('grid-row-gap'),
+        10
+    );
+    // This array keeps track of the first available row in every column
+    // 1-based index for CSS grid system
+    const firstAvailableRowInColumn: number[] = range(numColumns).map(() => 1);
+
+    // Selects the column that has an available space with minimum Y
+    function getFirstColumnWithMinAvailableRow() {
+        return firstAvailableRowInColumn.indexOf(
+            min(firstAvailableRowInColumn)
+        );
+    }
+
+    // For every card, write the coordinates directly in the
+    // DOM node style
+    for (const item of grid.childNodes) {
+        const column = getFirstColumnWithMinAvailableRow();
+        const rowStart = firstAvailableRowInColumn[column];
+
+        const content = item?.querySelector('.content');
+        // Get the card height from the DOM
+        // note that we have this information because we render
+        // the card at least once
+        const contentHeight: number =
+            content?.getBoundingClientRect().height ?? 0;
+        const container = item?.querySelector('.container');
+
+        // Calculate how many rows are needed by the card
+        // approximating by excess
+        const rowSpan = Math.ceil(
+            (contentHeight + rowGap) / (rowHeight + rowGap)
+        );
+        const rowEnd = rowStart + rowSpan;
+
+        // Mark the space taken by the card as not availble anymore
+        firstAvailableRowInColumn[column] = rowEnd;
+
+        // Set the card coordinate
+        item.style.gridRowStart = rowStart;
+        item.style.gridRowEnd = rowEnd;
+        // CSS grid index is 1-based
+        item.style.gridColumnStart = column + 1;
+        // Now we can show the card because position and size are correct
+        item.style.opacity = 1;
+
+        // Make sure the height is a multiple of the row size
+        container.style.height = `${
+            rowSpan * rowHeight + (rowSpan - 1) * rowGap
+        }px`;
+    }
+}
+```
+
+## Final thoughts
+
+The Masonry layout we just implemented can be used to display multiple similar elements neatly arranged in a grid-like system, avoiding the "everything fits into a square" look. The advantage of our CSS grid implementation is that we can use any of the standard CSS grid layout properties to style it. This allows us to dynamically adjust the gap between elements and the number of columns based on our responsive design. This isn't something we can easily do with third-party libraries, as they usually require non-standard layout properties or access to their internals, which I try to avoid when possible.
+
+In the future, there are several improvements we can make to our component:
+
+1. Use IntersectionObserver instead of getBoundingClientRect() for better performance.
+2. Use ReactDOM.render() or ReactDOM.createPortal() to render the posts synchronously in a separate hidden container, instead of using the first component render.

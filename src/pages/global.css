@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --magicRose: rgba(255, 82, 82, 0.40);
+}
+
+body {
+    @apply bg-neutral-100 dark:bg-neutral-800;
+    @apply text-neutral-600 dark:text-gray-300;
+}
+
+::selection {
+    @apply bg-neutral-700;
+    @apply text-red-400;
+}
+
+/* Markdown custom style */
+.markdown {
+    p, ul, pre {
+        @apply mb-4;
+    }
+
+    h1 {
+        @apply text-4xl font-bold mb-4 mt-8;
+    }
+
+    h2 {
+        @apply text-3xl font-bold mb-4 mt-8;
+    }
+
+    h3 {
+        @apply text-2xl font-bold mb-4 mt-8;
+    }
+
+    img {
+        @apply bg-neutral-100;
+    }
+
+    a {
+        text-decoration: none;
+        box-shadow: inset 0 -0.4em 0 0 var(--magicRose), 0 0.25em 0 0 var(--magicRose);
+        &:hover {
+            box-shadow: inset 0 -1.2em 0 0 var(--magicRose), 0 0.25em 0 0 var(--magicRose);
+        }
+        
+        transition: box-shadow 0.3s;
+    }
+
+    ul {
+        list-style-type: disc;
+        margin-left: 20px;
+    }
+}

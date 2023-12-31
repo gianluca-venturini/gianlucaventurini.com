@@ -1,77 +1,38 @@
-import { graphql, PageProps } from "gatsby";
-import React from "react";
-import { PrismicImage, PrismicImageProps } from "../components/PrismicImage";
-import { Page } from "../components/Page";
-import styled from "styled-components";
-import { DESCRIPTION_320 } from "../components/Constants";
-import { GithubIcon, TwitterIcon } from "../components/Icons";
-import { RichText, RichTextField } from "../components/RichText";
+import { type InferGetStaticPropsType } from 'next/types';
+import { tinaField, useTina } from 'tinacms/dist/react';
 
+import { client } from '../../tina/__generated__/client';
+import { Markdown } from '../components/Markdown';
 
-export const Greetings = styled.div`
-    display: grid;
-    grid-template-columns: auto auto;
-    column-gap: 10px;
-    align-items: center;
-`;
+export default function Home(
+    props: InferGetStaticPropsType<typeof getStaticProps>
+) {
+    // data passes though in production mode and data is updated to the sidebar data in edit-mode
+    const { data } = useTina({
+        query: props.query,
+        variables: props.variables,
+        data: props.data,
+    });
 
-export const Content = styled.div`
-    display: grid;
-    row-gap: 20px;
-`;
-
-export const SocialContainer = styled.div`
-    display: flex;
-`;
-
-interface HomeData {
-    prismicHome: {
-        data: {
-            avatar: PrismicImageProps,
-            greetings: { raw: RichTextField },
-            long_description: { raw: RichTextField }
-        }
-    }
-}
-
-export default function IndexPage(props: PageProps<HomeData>) {
-    console.log('test');
+    const content = data.page.body;
     return (
-        <Page title="" description={DESCRIPTION_320} location={props.location}>
-            <Content>
-                <Greetings>
-                    <PrismicImage round {...props.data.prismicHome.data.avatar} />
-                    <RichText richText={props.data.prismicHome.data.greetings.raw} />
-                </Greetings>
-                <RichText richText={props.data.prismicHome.data.long_description.raw} />
-                <SocialContainer>
-                    <TwitterIcon />
-                    <GithubIcon />
-                </SocialContainer>
-            </Content>
-        </Page>
+        <div data-tina-field={tinaField(data.page, 'body')}>
+            <Markdown content={content} />
+        </div>
     );
 }
 
-export const IndexQuery = graphql`
-    query Home {
-        prismicHome {
-            data {
-                avatar {
-                    url
-                    alt
-                    dimensions {
-                        height
-                        width
-                    }
-                }
-                greetings {
-                    raw
-                }
-                long_description {
-                    raw
-                }
-            }
-        }
-    }
-`
+export const getStaticProps = async () => {
+    const { data, query, variables } = await client.queries.page({
+        relativePath: 'home.mdx',
+    });
+
+    return {
+        props: {
+            data,
+            query,
+            variables,
+            // myOtherProp: 'some-other-data',
+        },
+    };
+};
