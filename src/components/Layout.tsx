@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { Analytics } from '@vercel/analytics/react';
 import Head from 'next/head';
 import Link from 'next/link';
 
@@ -80,6 +81,7 @@ export const Layout = (props: React.PropsWithChildren) => {
             >
                 {props.children}
             </main>
+            <Analytics />
         </>
     );
 };
