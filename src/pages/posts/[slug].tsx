@@ -52,8 +52,10 @@ export default function Home(
                         <meta name="twitter:image" content={data.post.cover} />
                     </>
                 )}
-                {<meta property="og:url" content="The URL of your blog post" />}
-                <meta name="twitter:creator" content="@gianlu.ventu" />
+                <meta property="og:url" content="The URL of your blog post" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:creator" content="@gianlu_ventu" />
+                <meta name="twitter:site" content="@gianlu_ventu" />
             </Head>
             {data.post.date && (
                 <h3 className="text-neutral-400">
