@@ -1,0 +1,134 @@
+---
+title: 'Blockchain''s Practical Use: Paying for Global Internet Access'
+snippet: >-
+  Using the Blockchain to pay for mobile internet connection without the need to
+  purchase an (e)SIM card before.
+cover: >-
+  /uploads/blockchains-practical-use-paying-for-global-internet-access/ad9536484f36a3a0387a56124866b2bf.webp
+date: 2023-12-30T08:00:00.000Z
+---
+
+Ever found yourself fumbling with SIM cards or contracts while trying to get online during your travels or few days before?
+
+While traveling to Costa Rica this holiday season, I found myself purchasing yet another month of [Google Fi](https://fi.google.com/) data, once again waiting for a physical SIM card to arrive in the mail. So, after conducting this thought experiment and realizing the idea may work, I wanted to share it.
+
+## TL;DR
+
+* Pay for your mobile internet connectivity with your crypto wallet anywhere in the world, no (e)SIM card nor contract required.
+* Sign a [blockchain](https://en.wikipedia.org/wiki/Blockchain) transaction offline transferring crypto to the Internet Service Provider (ISP). This solves the chicken-egg problem of needing to be online to purchase an (e)SIM card.
+* Give the transaction that you signed offline to the ISP, that will take care of broadcasting it online to the blockchain.
+* Make frequent multiple small transactions to "pay as you go", switch operator anytime if the coverage is better in the new area. No traditional contract is needed.
+
+## What’s the problem?
+
+Getting online often requires being online first or visiting a store. Commonly, this means purchasing an (e)SIM card or subscribing to a landline contract, either online or in-store. You can't do it on your phone while offline.
+
+This is needed so ISPs can verify your payment ability and link your ID to the service. It’s very slow and can take hours or days to activate the service.
+
+## What’s the solution?
+
+How do we solve this chicken-egg problem? With a system that confirms your identity and payment capacity, not needing online access first.
+
+Imagine sending a digital 'IOU' to your ISP to be cashed in offline. You authorize the fund transfer, the ISP checks the validity and you're online. This system can be implemented using a blockchain.
+
+Users send ISPs a signed transaction for fund transfer, offline via any public unencrypted channel. ISPs then validate and broadcast these to the blockchain, enabling connectivity for anyone within their network through such transactions.
+
+No need for physical contracts or (e)SIMs, just blockchain-based smart contract transactions.
+
+## Why using a Blockchain?
+
+You should be skeptical every time someone proposes to use a blockchain to solve a problem, often, simpler, cheaper options exist.
+
+But here's the thing — using a blockchain in this case makes perfect sense. It's like having a digital handshake that ensures trust between you and your ISP.
+
+* The ISP doesn’t need to trust a third party. This removes dependencies on banks and payment processors, allowing ISPs to collect money from anyone willing to purchase their service.
+* The user doesn’t need to trust the ISP. At most, the ISP can access funds only from the initial transaction. Constant user transaction signing prevents further unauthorized access.
+* Transactions are signed offline using the user's private key.
+
+This standard protocol enables ISPs globally to offer internet access to all, independent of nationality or credit card systems. It's not tied to any banking system like SWIFT, allowing services like satellite ISPs to bypass political restrictions and sanctions, i.e. you don’t need to accept dollars or euros once your customers can pay in crypto.
+
+## How to implement it
+
+The simplest POC is connecting a laptop to a WiFi network. We can create a captive portal (initially not connected to the Internet) that is interacting with MetaMask (or equivalent in-browser wallet), it's prompting the user to sign a transaction, verifying that the transaction is valid and then connect the user to the Internet.
+
+The ISP generates the transaction with the expected recipient\_address and the desired price:
+
+```python
+from eth_account import Account
+import eth_utils
+
+recipient_address = "0x4eC2D4e0fA522479e2d8b8e8C6B5e7B5A6f1b9d9"  # ISP wallet public key
+amount = eth_utils.to_wei(0.01, 'ether')
+nonce = 0  # Replace with non-guessable nonce
+gas_price = eth_utils.to_wei(50, 'gwei')  # Adjust as needed
+gas_limit = 21000  # Standard for a simple transfer
+chain_id = 1  # For Ethereum mainnet
+
+transaction = {
+    'to': recipient_address,
+    'value': amount,
+    'gas': gas_limit,
+    'gasPrice': gas_price,
+    'nonce': nonce,
+    'chainId': chain_id
+}
+
+raw_transaction = eth_account.transactions.Transaction.from_dict(transaction)
+send_transaction_to_client(raw_transaction)
+```
+
+The client receives the transaction, inspects it and signs if they decide to purchase the data:
+
+```python
+from eth_account import Account
+
+private_key = "0xc4922a4e7e1bed838ed3ddc5a48047e783d7ea725481da8570759bf7e198c359"  # The client private key
+raw_transaction = get_transaction_from_isp()
+
+if is_good(raw_transaction):
+    # Sign the transaction
+    signed_transaction = Account.sign_transaction(raw_transaction, private_key)
+    send_to_isp(signed_transaction)
+```
+
+A more interesting use-case is **mobile internet**. The ISP will need to provide a transaction to the user to sign as part of the "join my network" handshake when the phone first contacts the cell tower. The transaction will transfer a small amount of crypto to the ISP, providing proof of funds and paying and at the same time. The user can keep signing more transactions if they wish to purchase more data.
+
+Note that the user doesn’t need prior access to the internet; they simply provide a valid signed transaction to the ISP, which then broadcasts it to the blockchain. Also note that the user doesn't need to trust the ISP, they can stop signing transactions at any moment and use a different ISP.
+
+![](</uploads/blockchains-practical-use-paying-for-global-internet-access/crypto ISP diagram.png>)
+
+## What are the challenges?
+
+There are two major adoption challenges:
+
+* Every user needs to have a crypto wallet with funds and an application that signs "get online" transactions that the ISP generates.
+  * I don't know how large the addressable market is here, my hypothesis is that people that travel a lot will be very happy to stop relying on (e)SIM cards (GoogleFi is a step in the right direction, but you still need to purchase it online before the trip).
+  * Crypto adoption is on the rise and tools are becoming friendlier for users by the day. We already have easy-to-use wallet in the browser and in mobile apps.
+* Chicken egg problem with telecom companies, phone manufacturers and users. Currently there are no users, because no phone supports it and no carrier network has it.
+  * Ideally, signing the transaction happens as part of the "join the network" handshake when the phone connects to the cell tower, thus requiring support from phone manufacturers and ISPs. Currently smartphone radio stacks aren’t capable of interacting with crypto wallets.
+  * The good news is that ISPs write part of the radio firmware on the phone and they decide how users join their network. It's also possible to create virtual operators. So maybe there's only one entity to convince and it can be created from scratch (e.g. no need to convince Verizon, just create Cryptozon).
+
+## Possible objections
+
+* What if the government wants to know who you are?
+  * People can get their wallet "verified" attaching a government issued id similarly to what we do for crypto exchanges.
+  * Every telecom can decide to accept only from whitelisted wallets.
+* What if the blockchain is slow?
+  * ISP can validate the transaction immediately.
+  * Require a minimum amount of [gas](https://en.wikipedia.org/wiki/Ethereum#Gas) to ensure the transaction will get incorporate in a block in the next 5minutes with 99% probability.
+  * Assume 99% of the transactions will go in and start providing service immediately, if after 10min the transaction is rejected just stop providing the service.
+* What if you want to audit the smart contract, but you can’t because you are offline when signing?
+  * Even if you can't see the smart contract while offline, you can see how much crypto your are transferring, but I acknowledge that signing transaction that interact with unknown contracts is an attack vector.
+  * This can be mitigated whitelisting a bunch of contract addresses for the major ISPs.
+* What if the ISP doesn’t provide internet access after paying?
+  * The user needs to evaluate if they trust the vendor, this is happening all the time on the internet already.
+  * We can use PKI to validate the authenticity of the ISP cryptographically even when offline (e.g. a random attacker won't be able to impersonate Verizon with a fake cell tower)
+  * The transaction can be split in multiple smaller transactions with less monetary value, so if the ISP stops providing the service, the customer stops paying.
+
+## Conclusion
+
+I travel a lot. Every time I travel I find myself throwing away money purchasing at least a month worth of data in this or that country. I sometimes use GoogleFi that works in most countries, but not everywhere, not always very well and still requires a SIM card or an eSIM card and an internet connection to subscribe initially.
+
+I would love to see a "join my network, paying only for what you use with your crypto wallet" open source protocol getting created and virtual operators popping up in every country to support it.
+
+In that world you have a phone without an eSIM card, travel anywhere in the world and join any mobile network that operates in the place where you are, only paying for the traffic that you are using, with a crypto wallet that lives on your phone, just make sure you keep enough funds!
