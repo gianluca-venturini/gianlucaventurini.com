@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Elon Musk
-    author: Walter Isaacson
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -119,6 +117,8 @@ book:
   - title: 'Einstein: His Life and Universe'
     author: Walter Isaacson
   - title: Leonardo da Vinci
+    author: Walter Isaacson
+  - title: Elon Musk
     author: Walter Isaacson
 ---
 
