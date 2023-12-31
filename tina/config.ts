@@ -6,7 +6,7 @@ import post from './collections/post';
 
 export const config = defineConfig({
     clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
-    branch: 'nextjs',
+    branch: 'master',
     token: process.env.TINA_TOKEN,
     media: {
         // If you wanted cloudinary do this
