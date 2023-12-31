@@ -1,12 +1,14 @@
 ---
 book:
+  - title: Elon Musk
+    author: Walter Isaacson
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
     author: Dale Carnegie
   - title: The Three-Body Problem
     author: Cixin Liu
-  - title: "QED: The Strange Theory of Light and Matter"
+  - title: 'QED: The Strange Theory of Light and Matter'
     author: Richard Feynman
   - title: Clean Code
     author: Robert Martin
@@ -18,14 +20,14 @@ book:
     author: Jason Fried
   - title: The 4-Hour Workweek
     author: Timothy Ferriss
-  - title: "Surely You're Joking, Mr. Feynman!"
+  - title: 'Surely You''re Joking, Mr. Feynman!'
     author: Richard Feynman
   - title: The Age of Surveillance Capitalism
     author: Shoshana Zuboff
   - title: Dune
     author: Frank Herbert
   - title: An Intuitive Guide to Maxwell's Equations
-    author: Nikola Miljkovic, Alex Dowad
+    author: 'Nikola Miljkovic, Alex Dowad'
   - title: The Algorithm Design Manual
     author: Steven Skiena
   - title: Master The Real Estate License Exams
@@ -46,15 +48,15 @@ book:
     author: Saifedean Ammous
   - title: Influence - the Psychology of Persuasion
     author: Robert Cialdini
-  - title: "The Clean Coder: A Code of Conduct for Professional Programmers"
+  - title: 'The Clean Coder: A Code of Conduct for Professional Programmers'
     author: Robert Cecil Martin
-  - title: "Don't Make Me Think: A Common Sense Approach to Web Usability"
+  - title: 'Don''t Make Me Think: A Common Sense Approach to Web Usability'
     author: Steve Krug
   - title: The Design of Everyday Things
     author: Don Norman
   - title: This is Marketing
     author: Seth Godin
-  - title: "Get Together: How to Build a Community with Your People"
+  - title: 'Get Together: How to Build a Community with Your People'
     author: Bailey Richardson
   - title: The Cuckoo's Egg
     author: Cliff Stoll
@@ -72,7 +74,7 @@ book:
     author: Cal Newport
   - title: Never Split the Difference
     author: Chris Voss
-  - title: "Four Thousand Weeks: Time Management for Mortals"
+  - title: 'Four Thousand Weeks: Time Management for Mortals'
     author: Oliver Burkeman
   - title: Why We Sleep
     author: Matthew Walker
@@ -80,12 +82,12 @@ book:
     author: Josh Rogin
   - title: Immune
     author: Philipp Dettmer
-  - title: "This Is How They Tell Me the World Ends: The Cyberweapons Arms Race"
+  - title: 'This Is How They Tell Me the World Ends: The Cyberweapons Arms Race'
     author: Nicole Perlroth
   - title: High Output Management
     author: Andy Grove
   - title: The Age of AI
-    author: Henry A Kissinger, Eric Schmidt, Daniel Huttenlocher
+    author: 'Henry A Kissinger, Eric Schmidt, Daniel Huttenlocher'
   - title: The Sovereign Individual
     author: James Dale Davidson
   - title: The Neatest Little Guide to Stock Market Investing
@@ -93,7 +95,7 @@ book:
   - title: The Lazarus Heist
     author: Geoff White
   - title: The Pragmatic Programmer
-    author: Andre Hunt, David Thomas
+    author: 'Andre Hunt, David Thomas'
   - title: Project Hail Mary
     author: Andy Weir
   - title: How the Hippies Saved Physics
@@ -102,19 +104,19 @@ book:
     author: Yuval Noah Harari
   - title: The Staff Engineer's Path
     author: Tanya Reilly
-  - title: "Staff Engineer: Leadership beyond the Management Track"
+  - title: 'Staff Engineer: Leadership beyond the Management Track'
     author: Will Larson
   - title: Chip War
     author: Chris Miller
   - title: Fundamentals of Software Architecture
     author: Mark Richards and Neal Ford
-  - title: "Lifespan: Why We Age, and Why We Don't Have To"
+  - title: 'Lifespan: Why We Age, and Why We Don''t Have To'
     author: David A. Sinclair
-  - title: "Outlive: The Science and Art of Longevity"
-    author: Peter Attia MD, Bill Gifford
-  - title: "Ghost In The Wires: My Adventures as the World's Most Wanted Hacker"
+  - title: 'Outlive: The Science and Art of Longevity'
+    author: 'Peter Attia MD, Bill Gifford'
+  - title: 'Ghost In The Wires: My Adventures as the World''s Most Wanted Hacker'
     author: Kevin Mitnick and William L. Simon
-  - title: "Einstein: His Life and Universe"
+  - title: 'Einstein: His Life and Universe'
     author: Walter Isaacson
   - title: Leonardo da Vinci
     author: Walter Isaacson
