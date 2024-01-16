@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Holiday Country
-    author: İnci Atrek
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -122,5 +120,7 @@ book:
     author: Walter Isaacson
   - title: Elon Musk
     author: Walter Isaacson
+  - title: Holiday Country
+    author: İnci Atrek
 ---
 
