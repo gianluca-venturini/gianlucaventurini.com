@@ -122,5 +122,7 @@ book:
     author: Walter Isaacson
   - title: Holiday Country
     author: İnci Atrek
+  - title: Steve Jobs
+    author: 'Walter Isaacson '
 ---
 
