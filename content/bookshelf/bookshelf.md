@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Zero to One
-    author: ' Blake Masters and Peter Thiel'
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -128,5 +126,7 @@ book:
     author: 'Walter Isaacson '
   - title: Seven and a Half Lessons About the Brain
     author: Lisa Feldman Barrett
+  - title: Zero to One
+    author: ' Blake Masters and Peter Thiel'
 ---
 
