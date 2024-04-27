@@ -1,9 +1,5 @@
 ---
 book:
-  - title: >-
-      Everybody Lies: Big Data, New Data, and What the Internet Can Tell Us
-      About Who We Really Are
-    author: 'Seth Stephens-Davidowitz, Steven Pinker'
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -132,5 +128,9 @@ book:
     author: Lisa Feldman Barrett
   - title: Zero to One
     author: ' Blake Masters and Peter Thiel'
+  - title: >-
+      Everybody Lies: Big Data, New Data, and What the Internet Can Tell Us
+      About Who We Really Are
+    author: 'Seth Stephens-Davidowitz, Steven Pinker'
 ---
 
