@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Zen and the Art of Motorcycle Maintenance
+    author: 'Robert M. Pirsig, Peter Flannery'
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
