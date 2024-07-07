@@ -1,5 +1,7 @@
 ---
 book:
+  - title: The Subtle Art of Not Giving a F*ck
+    author: Mark Manson
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
