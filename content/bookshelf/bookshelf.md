@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Zen and the Art of Motorcycle Maintenance
-    author: 'Robert M. Pirsig, Peter Flannery'
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -138,5 +136,7 @@ book:
     author: Mark Manson
   - title: Stories of Your Life and Others
     author: Ted Chiang
+  - title: Zen and the Art of Motorcycle Maintenance
+    author: 'Robert M. Pirsig, Peter Flannery'
 ---
 
