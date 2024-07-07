@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Stories of Your Life and Others
+    author: Ted Chiang
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
