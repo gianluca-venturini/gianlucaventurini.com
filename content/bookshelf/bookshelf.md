@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Stories of Your Life and Others
-    author: Ted Chiang
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -136,5 +134,7 @@ book:
     author: 'Seth Stephens-Davidowitz, Steven Pinker'
   - title: The Subtle Art of Not Giving a F*ck
     author: Mark Manson
+  - title: Stories of Your Life and Others
+    author: Ted Chiang
 ---
 
