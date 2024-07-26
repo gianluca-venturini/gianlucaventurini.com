@@ -138,5 +138,7 @@ book:
     author: Ted Chiang
   - title: Zen and the Art of Motorcycle Maintenance
     author: 'Robert M. Pirsig, Peter Flannery'
+  - title: The Biggest Ideas in the Universe
+    author: Sean M. Carroll
 ---
 
