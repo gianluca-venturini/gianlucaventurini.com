@@ -23,7 +23,7 @@ export const GET = async () => {
             <title>${p?.title}</title>
             <link>${BASE_URL}/posts/${p?._sys.filename}</link>
             <description>${p?.snippet}</description>
-            <dc:creator>Gianluca Venturini</dc:creator>
+            <author>Gianluca Venturini</author>
             <pubDate>${new Date(p?.date ?? '').toUTCString()}</pubDate>
         </item>`
         )
