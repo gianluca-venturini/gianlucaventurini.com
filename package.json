@@ -10,6 +10,8 @@
         "lint": "eslint ./src --ext .tsx,.ts,.js"
     },
     "dependencies": {
+        "@mailchimp/mailchimp_marketing": "^3.0.80",
+        "@types/mailchimp__mailchimp_marketing": "^3.0.20",
         "@vercel/analytics": "^1.1.1",
         "@vercel/speed-insights": "^1.0.2",
         "next": "14.0.4",

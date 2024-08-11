@@ -3,6 +3,7 @@ import { type InferGetStaticPropsType } from 'next/types';
 import { useTina } from 'tinacms/dist/react';
 
 import { client } from '../../../tina/__generated__/client';
+import { SubscribeForm } from '../../components/SubscribeForm';
 import { formatDate } from '../../components/Utils';
 
 export default function PostList(
@@ -21,6 +22,7 @@ export default function PostList(
     return (
         <>
             <h1 className="text-5xl font-bold mb-8">Posts</h1>
+            <SubscribeForm />
             <div className="flex flex-col divide-y text-md">
                 {postsList.map((post) => (
                     <Link
