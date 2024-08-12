@@ -17,17 +17,17 @@ export const GET = async () => {
     <title>Gianluca Venturini RSS Feed</title>
     <link>${BASE_URL}</link>
     <description>Gianluca Venturini's personal blog</description>
-    ${posts
-        ?.map(
-            (p) => `        <item>
-            <title>${p?.title}</title>
-            <link>${BASE_URL}/posts/${p?._sys.filename}</link>
-            <description>${p?.snippet}</description>
-            <author>Gianluca Venturini</author>
-            <pubDate>${new Date(p?.date ?? '').toUTCString()}</pubDate>
-        </item>`
-        )
-        .join('\n')}
+${posts
+    ?.map(
+        (p) => `    <item>
+        <title>${p?.title}</title>
+        <link>${BASE_URL}/posts/${p?._sys.filename}</link>
+        <description>${p?.snippet}</description>
+        <author>Gianluca Venturini</author>
+        <pubDate>${new Date(p?.date ?? '').toUTCString()}</pubDate>
+    </item>`
+    )
+    .join('\n')}
     </channel>
 </rss>`;
 
