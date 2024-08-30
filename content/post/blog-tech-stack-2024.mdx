@@ -15,18 +15,42 @@ Outline:
 - Writing and synching tools
 
 # Why blogging
-- Slow intentional activity
-- Searching for people similar to me
-- Technical challenge of creating a modern blog from scratch
-# A good blog should be a good website
-- Performance, simple stack, little busy work
+I started blogging few years ago with the goal of becoming a better communicator. Writing about ideas and rewriting multiple times helps me clarifying my thinking and often highlight that I don’t know as much as I thought about a topic.
+
+At a time dominated by social media attention-grabbing fast content, curating a blog is a slow and intentional activity. It allows me to think about a concept for hours at a time, write about it from multiple angles, and then rewrite until it’s simple enough that can be digested in few minutes. I hope to attract a crowd of like-minded peers and have engaging discussions with on a wide range of topics I care about.
+
+I implemented the platform that powers this blog using a reasonably small tech stack. I decided to not rely on any existing blogging platform because I enjoy the process of implementing a feature with the smallest amount of code possible. It’s all available in this GitHub repo, so you can go there and read every single commit.
+
 # Future proofing
+I want this blog to remain online for the years to come, with minimal maintenance. For this reason I decided to build a static website.
+
+I don’t want to rely on any third party platform that can go out of business or start monetizing my content. I want to own as much as possible of the stack and only take dependencies on commoditized services that I can easily replace when needed. I currently host the website on Vercel, served on my own domain. It re-deploys automatically when I merge a commit to `master` through a GitHub integration. The domain auto-renews and everything else is completely hands off. I don’t need to worry about the blogging service shutting down years from now, I can easily move to a separate hosting provider or replace React and Nextjs with another JSX-based static website generator framework.
+
+I decided to store both blog code and content in the same Git repository. For the content format I decided to use markdown, it’s very standardized and supported by a large number of commodity libraries I can swap if the one I’m using becomes deprecated. I’m using a markdown extension called `mdx` that allows me to embed custom JSX components together with formatted text, that will make complex things possible.
+
 - Control full stack, domain
-- Minimize party framework
+- Minimize third party framework
 - Stateless, good abstractions, without dependencies on third party services, all content in git repo
+
+# A good blog should be a good website
+The blog should load fast in your browser. I’m serving all the static assets from a couple CDNs: Vercel Edge Network for javascript bundle and styles and Tina CMS for images. Both services are very easy to replace in the future.
+
+I’m collecting user experience metrics and keep an eye on how much time is needed to render it on the users browser.
+
+- Performance, simple stack, little busy work
+
 # Optimize for writing
+I optimized for writing the blog on a text editor. The goal is to never touch the code unless I need to implement a new feature.
+
+When I’ve an idea, I just open Obsidian on iPad and start writing, distraction free. I commit often the progress on a git branch with Working Copy. When I’m done with a post, I simply merge to master and it’s live a couple of minutes later.
+
+I use Obsidian copilot: it’s a great plugin that allows to co-edit text with LLMs directly in the text editor. It supports custom prompts so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I ported the plugin on mobile because I really liked it and wanted to make it available to mobile users like myself.
+
 - No complex workflows, open Obsidian and write
 - Automatic deployment when pushing to `master`
+- Obsidian, editor, on iOS and OSX
+- iOS Working Copy
+- Obsidian copilot (wrote mobile support)
 # Tech stack
 - Abstractions
 - Store content in mdx files, markdown, but supports custom React components for more complex inline demos
@@ -37,10 +61,6 @@ Outline:
 - Push to git repo, Vercel auto deploy
 - TinaCMS serves images
 - Feed RSS, email every day
-# Tools for writing
-- Obsidian, editor, on iOS and OSX
-- iOS Working Copy
-- Obsidian copilot (wrote mobile support)
 # Conclusion
 - Writing for more thinking clearly
 - Writing a new blog post should be fast and easy and support the best tools
