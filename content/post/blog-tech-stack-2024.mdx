@@ -31,8 +31,9 @@ I decided to store both blog code and content in the same Git repository. For th
 - Control full stack, domain
 - Minimize third party framework
 - Stateless, good abstractions, without dependencies on third party services, all content in git repo
+- Semi-structured tags at the beginning
 
-# A good blog should be a good website
+# A good blog starts with a good website
 The blog should load fast in your browser. I’m serving all the static assets from a couple CDNs: Vercel Edge Network for javascript bundle and styles and Tina CMS for images. Both services are very easy to replace in the future.
 
 I’m collecting user experience metrics and keep an eye on how much time is needed to render it on the users browser.
@@ -51,17 +52,34 @@ I use Obsidian copilot: it’s a great plugin that allows to co-edit text with L
 - Obsidian, editor, on iOS and OSX
 - iOS Working Copy
 - Obsidian copilot (wrote mobile support)
+
 # Tech stack
+When choosing the tech stack, I carefully evaluate, third-party services, and frameworks. Dependencies and abstractions add complexity, so they must offer significant benefits to justify maintenance. I start by writing everything from scratch to identify problems that need extensive code and won’t make the website better or more maintainable. E.g. doesn’t make sense to implement from scratch yet another React-like JSX rendering engine, my own CDN or an headless CMS. Those problems are good candidates to be solved with a framework. In my case I decided to render the front end with React JSX components, generate static pages with Nextjs, serve content and static images through TinaCMS and static assets through Vercel. The harder the dependency is to replace, the more established and robust framework you want to use.
+
+I assess dependencies, third-party services, and frameworks when selecting a tech stack. New . . Use frameworks for problems that need a lot of code. I use React JSX for the front end, Nextjs for static pages, TinaCMS for content and images, and Vercel for static assets. Use established, robust frameworks for hard-to-replace dependencies.
+
+I built abstractions around the frameworks used, to make easy to transition to something else. I store both code and content in the same monorepo to ensure they will always be accessible in the future.
+
+Every page content is in mdx format: a superset of Markdown that supports custom JSX components. Custom components make hard things possible for example adding interactive web components to certain pages. I’m anticipating being easy to move the blog to any other rendering engine.
+
+I use React to render JSX components, Tailwind for styling them and Nextjs to generate static pages. React and Tailwind are pretty established and Nextjs is mostly boiler plate around JSX components and can easily be replaced.
+
+I host the website on Vercel, that runs the Nextjs static build generator every time I push to `master`. I use TinaCMS as headless CMS to make content edits and upload images from the web UI, it automatically creates a git commit on content edit. This last dependency can be removed if I decided to never make edits from the web. Serving static pages from Vercel and images from TinaCMS CDNs ensures consistent delivery time. Vercel only calls the build command and stores the output in its CDN, it’s very easy to replace and offers great performance with minimal Initial configuration because its defaults are reasonable.
+
+The RSS feed is a Nextjs function that simply pulls the most recent blog posts and formats the output in XML with few lines of code, no library needed here. I use Mailchimp for sending updates to subscribers, it takes the RSS feed as input at a specific time of the day and if it’s changed from the day before it sends an email. I didn’t put much though into it since it’s trivial to replace.
+
 - Abstractions
-- Store content in mdx files, markdown, but supports custom React components for more complex inline demos
-- Nextjs
-- TinaCMS as headless CMS (edits directly on their web UI) and CDN for images
+	- Blog content: Store content in mdx files, markdown, but supports custom React components for more complex inline demos. TinaCMS headless CMS edits directly on their web UI, build-only dependency
+	- Rendering frontend: nextjs, static website, mdx embed custom components
+	- Infrastructure
+		- serving the website:  CDN static assets TinaCMS, compression
+		- RSS feed, mailing list
 - Tools be around for a while, we’re at mid life
-# Deploy pipeline
-- Push to git repo, Vercel auto deploy
-- TinaCMS serves images
-- Feed RSS, email every day
+
 # Conclusion
-- Writing for more thinking clearly
+Spending time writing about a topic helps me reflecting about it. Publishing for other people to read motivates me to improve communication. Using tools like Obsidian Copilot makes the activity quite fun since I keep learning new communication tricks from various LLMs. Maintaining proficiency on modern web technologies gives a purpose to all the hours spent learning about them.
+
+I’m mainly wiring this blog for myself, but as a nice side-effect it often connects me with new and interesting people that end up here. It’s a great bonus that keeps me motivated. I’m expecting this content to be training material of future LLMs, that is quite thrilling and terrifying.
+
+- Writing for thinking clearly
 - Writing a new blog post should be fast and easy and support the best tools
-- Make complex things possible
