@@ -15,58 +15,57 @@ Outline:
 - Writing and synching tools
 
 # Why blogging
-I started blogging few years ago with the goal of becoming a better communicator. Writing about ideas and rewriting multiple times helps me clarifying my thinking and often highlight that I don’t know as much as I thought about a topic.
+I started blogging few years ago with the goal of becoming a better communicator. Writing about ideas and rewriting multiple times helps me refining my thinking and often highlight that I don’t know as much as I thought about a topic.
 
-At a time dominated by social media attention-grabbing fast content, curating a blog is a slow and intentional activity. It allows me to think about a concept for hours at a time, write about it from multiple angles, and then rewrite until it’s simple enough that can be digested in few minutes. I hope to attract a crowd of like-minded peers and have engaging discussions with on a wide range of topics I care about.
+At a time dominated by social media attention-grabbing useless fast content, curating a blog is a slow paced intentional activity that allows me to be present in the moment. It allows me to think about a concept for hours at a time, write about it from multiple angles, and then rewrite until it’s simple enough that can be digested in few minutes. I hope to attract a crowd of like-minded peers and have engaging discussions with on a wide range of topics I care about.
 
-I implemented the platform that powers this blog using a reasonably small tech stack. I decided to not rely on any existing blogging platform because I enjoy the process of implementing a feature with the smallest amount of code possible. It’s all available in this GitHub repo, so you can go there and read every single commit.
+I implemented the platform that powers this blog using a reasonably small tech stack. I decided to not rely on any existing blogging platform because I enjoy the process of implementing a feature with the smallest amount of code possible. It’s all available in this GitHub repo, so you can read every single commit.
 
 # Future proofing
-I want this blog to remain online for the years to come, with minimal maintenance. For this reason I decided to build a static website.
+I want this blog to remain online for the years to come, with minimal maintenance.
 
-I don’t want to rely on any third party platform that can go out of business or start monetizing my content. I want to own as much as possible of the stack and only take dependencies on commoditized services that I can easily replace when needed. I currently host the website on Vercel, served on my own domain. It re-deploys automatically when I merge a commit to `master` through a GitHub integration. The domain auto-renews and everything else is completely hands off. I don’t need to worry about the blogging service shutting down years from now, I can easily move to a separate hosting provider or replace React and Nextjs with another JSX-based static website generator framework.
+I don’t want to rely on any third party blogging platforms that can go out of business or start monetizing my content. I want to own as much as possible of the stack and only take dependencies on services and frameworks that I can easily replace. The domain auto-renews and everything else is completely hands off. I don’t need to worry about the blogging service shutting down years from now, I can easily move to a separate hosting provider or replace React and Nextjs with another JSX-based static website generator framework.
 
-I decided to store both blog code and content in the same Git repository. For the content format I decided to use markdown, it’s very standardized and supported by a large number of commodity libraries I can swap if the one I’m using becomes deprecated. I’m using a markdown extension called `mdx` that allows me to embed custom JSX components together with formatted text, that will make complex things possible.
-
-- Control full stack, domain
-- Minimize third party framework
-- Stateless, good abstractions, without dependencies on third party services, all content in git repo
-- Semi-structured tags at the beginning
+I decided to store both blog code and content in the same Git repository. For the content format I decided to use markdown, it’s very standardized and supported by a large number of commodity libraries I can swap if the one I’m using becomes deprecated. I decided to keep it completely stateless so I don’t need to maintain any database.
 
 # A good blog starts with a good website
-The blog should load fast in your browser. I’m serving all the static assets from a couple CDNs: Vercel Edge Network for javascript bundle and styles and Tina CMS for images. Both services are very easy to replace in the future.
+The blog should load fast in your browser. I opted for using a static website generator. I’m serving all the static assets from a couple CDNs: Vercel Edge Network for javascript bundle and styles and Tina CMS for images. Both services are very easy to replace in the future.
 
-I’m collecting user experience metrics and keep an eye on how much time is needed to render it on the users browser.
-
-- Performance, simple stack, little busy work
+I’m collecting user experience metrics with Vercel Speed Insights and keep an eye on how much time is needed to render it in the user’s browser. I didn’t think too hard about it, was easy to integrate in a couple of lines of code, it’s easy to replace, it’s free and confirms that the website feels fast for the majority of the users.
 
 # Optimize for writing
-I optimized for writing the blog on a text editor. The goal is to never touch the code unless I need to implement a new feature.
+I designed this blog to make it super easy to start writing a new blog post. The goal is to never touch the code unless I need to implement a new feature: every post is just a markdown file committed in the Git repo.
 
-When I’ve an idea, I just open Obsidian on iPad and start writing, distraction free. I commit often the progress on a git branch with Working Copy. When I’m done with a post, I simply merge to master and it’s live a couple of minutes later.
+When I’ve an idea, I open Obsidian on iPad, create a new text file and start writing. I commit often the progress on a git branch with Working Copy. When I’m done with a post, I merge it to `master` and it’s live a couple of minutes later.
 
-I use Obsidian copilot: it’s a great plugin that allows to co-edit text with LLMs directly in the text editor. It supports custom prompts so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I ported the plugin on mobile because I really liked it and wanted to make it available to mobile users like myself.
+As an alternative to the text editor, I use a headless CMS called Tina CMS that allows me to edit and preview content directly in the web UI. This makes the simple task of changing text and images very easy without even the need to open a text editor e.g. I can add a new sentence or replace a picture from mobile. On every edit it automatically creates a git commit.
 
-- No complex workflows, open Obsidian and write
-- Automatic deployment when pushing to `master`
-- Obsidian, editor, on iOS and OSX
-- iOS Working Copy
-- Obsidian copilot (wrote mobile support)
+To improve the write up I use Obsidian copilot: it’s a great plugin that allows to co-edit text with LLMs directly in the text editor. It supports custom prompts so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I ported the plugin on mobile because I really liked it and wanted to make it available to mobile users like myself.
 
-# Tech stack
-When choosing the tech stack, I carefully evaluate, third-party services, and frameworks. Dependencies and abstractions add complexity, so they must offer significant benefits to justify maintenance. I start by writing everything from scratch to identify problems that need extensive code and won’t make the website better or more maintainable. E.g. doesn’t make sense to implement from scratch yet another React-like JSX rendering engine, my own CDN or an headless CMS. Those problems are good candidates to be solved with a framework. In my case I decided to render the front end with React JSX components, generate static pages with Nextjs, serve content and static images through TinaCMS and static assets through Vercel. The harder the dependency is to replace, the more established and robust framework you want to use.
+# Choosing the tech stack
+When choosing the tech stack, I tried to minimize dependencies on third-party services and frameworks. Dependencies add complexity, so they must offer significant benefits to justify maintenance. I started writing the website from scratch to identify problems that need extensive code and won’t make the website better or more maintainable. E.g. doesn’t make sense to implement from scratch yet another React-like JSX rendering engine, a design system for UI components, my own CDN or an headless CMS. Those problems are good candidates to be delegated to a framework.
 
-I assess dependencies, third-party services, and frameworks when selecting a tech stack. New . . Use frameworks for problems that need a lot of code. I use React JSX for the front end, Nextjs for static pages, TinaCMS for content and images, and Vercel for static assets. Use established, robust frameworks for hard-to-replace dependencies.
+I decided to render the front end with React JSX components, generate static pages with Nextjs, serve content and static images through TinaCMS and static assets through Vercel. The harder the dependency is to replace, the more established and robust framework you want to use. I use the half-life rule of thumb: every technology will be maintained for double the time it has been around.
 
-I built abstractions around the frameworks used, to make easy to transition to something else. I store both code and content in the same monorepo to ensure they will always be accessible in the future.
+## Rendering the frontend
 
-Every page content is in mdx format: a superset of Markdown that supports custom JSX components. Custom components make hard things possible for example adding interactive web components to certain pages. I’m anticipating being easy to move the blog to any other rendering engine.
+I built abstractions around the frontend frameworks used, to make easy to transition to something else. I store both code and content in the same monorepo to ensure they will always be accessible in the future.
 
-I use React to render JSX components, Tailwind for styling them and Nextjs to generate static pages. React and Tailwind are pretty established and Nextjs is mostly boiler plate around JSX components and can easily be replaced.
+Every page content is in mdx format: a superset of Markdown that supports custom JSX components. Custom components make hard things possible for example adding interactive web components to only certain pages. I’m anticipating being easy to move the blog to any other mdx rendering engine.
 
-I host the website on Vercel, that runs the Nextjs static build generator every time I push to `master`. I use TinaCMS as headless CMS to make content edits and upload images from the web UI, it automatically creates a git commit on content edit. This last dependency can be removed if I decided to never make edits from the web. Serving static pages from Vercel and images from TinaCMS CDNs ensures consistent delivery time. Vercel only calls the build command and stores the output in its CDN, it’s very easy to replace and offers great performance with minimal Initial configuration because its defaults are reasonable.
+I use React to render JSX components, Tailwind for styling them and Nextjs to generate static pages. React and Tailwind are pretty established and Nextjs is mostly boiler plate around React components and can easily be replaced with another static website generator. I also played around with Gatsby but ultimately migrated to Nextjs because I was unsatisfied with the amount of boilerplate and busy work needed to introduce simple features like a site map or meta tags.
 
-The RSS feed is a Nextjs function that simply pulls the most recent blog posts and formats the output in XML with few lines of code, no library needed here. I use Mailchimp for sending updates to subscribers, it takes the RSS feed as input at a specific time of the day and if it’s changed from the day before it sends an email. I didn’t put much though into it since it’s trivial to replace.
+## Hosting service
+
+I host the website on Vercel, that runs the Nextjs static build generator every time I push to `master`. I use TinaCMS as headless CMS to make content edits and upload images from the web UI, it automatically creates a git commit on content edit. This last dependency can be removed if I decided to never make edits from the web.
+
+Serving static pages from Vercel and images from TinaCMS CDNs ensures consistent delivery time. Vercel only calls the Nextjs build command and stores the output in its CDN, it’s very easy to replace and offers great performance with minimal Initial configuration because its defaults are reasonable.
+
+## Additional features
+
+The RSS feed is a Nextjs function that simply pulls the most recent blog posts and formats the output in XML with few lines of code, no library needed here.
+
+I use Mailchimp for sending updates to subscribers, it takes the RSS feed as input at a specific time of the day and if it’s changed from the day before it sends an email. I didn’t put much though into it since I can export the subscribers list and replace it.
 
 - Abstractions
 	- Blog content: Store content in mdx files, markdown, but supports custom React components for more complex inline demos. TinaCMS headless CMS edits directly on their web UI, build-only dependency
@@ -77,9 +76,6 @@ The RSS feed is a Nextjs function that simply pulls the most recent blog posts a
 - Tools be around for a while, we’re at mid life
 
 # Conclusion
-Spending time writing about a topic helps me reflecting about it. Publishing for other people to read motivates me to improve communication. Using tools like Obsidian Copilot makes the activity quite fun since I keep learning new communication tricks from various LLMs. Maintaining proficiency on modern web technologies gives a purpose to all the hours spent learning about them.
+Spending time writing about a topic helps me reflecting about it. Publishing for other people to read motivates me to polish it enough to make it understandable. Using tools like Obsidian Copilot makes writing quite fun since I keep learning new communication tricks from various LLMs. The occasional update of parts of the stack gives a purpose to all the hours spent learning about modern web technologies.
 
-I’m mainly wiring this blog for myself, but as a nice side-effect it often connects me with new and interesting people that end up here. It’s a great bonus that keeps me motivated. I’m expecting this content to be training material of future LLMs, that is quite thrilling and terrifying.
-
-- Writing for thinking clearly
-- Writing a new blog post should be fast and easy and support the best tools
+I’m mainly wiring this blog for myself. As a nice side-effect it often connects me with new and interesting people that end up here. It’s a great bonus that keeps me motivated. I’m expecting this content to be training material for future LLMs, that is quite thrilling and equally terrifying.
