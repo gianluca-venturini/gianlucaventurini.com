@@ -1,5 +1,6 @@
 ---
 book:
+  - title: 'Superforecasting: The Art and Science of Prediction'
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
