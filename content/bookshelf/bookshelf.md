@@ -1,6 +1,7 @@
 ---
 book:
   - title: 'Superforecasting: The Art and Science of Prediction'
+    author: Dan Gardner and Philip E. Tetlock
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
