@@ -1,0 +1,73 @@
+---
+title: Tech stack of my blog in 2024
+snippet: >-
+  Blogging has become my way of refining thoughts, embracing slow, intentional
+  writing. Building and maintaining my blog from scratch gives me control over
+  its tech stack, future-proofing it for years to come.
+cover: /uploads/blog-tech-stack-2024/blog-tech-cover.webp
+date: 2024-09-12T15:00:00.000Z
+---
+
+# Why blogging
+
+I started blogging a few years ago with the goal of becoming a better communicator. Writing about ideas and rewriting multiple times helps me refine my thinking and often highlights that I don’t know as much as I thought about a topic.
+
+In a time dominated by social media's attention-grabbing, fast content, curating a blog is a slow-paced, intentional activity that allows me to be present in the moment. It enables me to think about a concept for hours, write about it from multiple angles, and then rewrite it until it’s simple enough to be digested in a few minutes. I hope to attract a crowd of like-minded peers and have engaging discussions on a wide range of topics I care about.
+
+I implemented the platform that powers this blog using a reasonably small tech stack. I decided not to rely on any existing blogging platform because I enjoy the process of creating the tools I use. It’s all available in [this GitHub repo](https://github.com/gianluca-venturini/gianlucaventurini.com) if you want to learn the details by reading the code.
+
+# Future proofing
+
+I want this blog to remain online for the years to come, with minimal maintenance.
+
+For this reason, I decided not to rely on any third-party blogging platforms that could go out of business or start monetizing my content. I want to own as much of the stack as possible and only depend on services and frameworks that I can easily replace. The domain auto-renews, and I’m on the free [Vercel](https://vercel.com/) hosting tier. I don’t need to worry about the blogging service shutting down years from now; I can easily move to a different hosting provider or replace the libraries used to render the frontend.
+
+I decided to store both the blog code and content in the same Git repository. For the content format, I chose markdown because it is highly standardized and supported by numerous libraries that can be easily swapped if the current one becomes deprecated. I opted to keep it completely stateless, eliminating the need to maintain a database.
+
+# It should load fast
+
+I chose to use a static website generator. I serve all the static assets from two CDNs: [Vercel Edge Network](https://vercel.com/docs/edge-network/overview) for JavaScript bundles and styles, and [Tina CMS for images](https://tina.io/docs/introduction/faq/#1-git-backed-media). Both services can be easily replaced in the future.
+
+I collect user experience metrics with [Vercel Speed Insights](https://vercel.com/docs/speed-insights) and monitor the time needed to render the website in the user’s browser. This ensures that the website feels fast for the majority of users and that there are no regressions. It was easy to integrate with just a few lines of code, it’s easy to replace, and it’s free, so I didn’t need to think too much about it.
+
+# Optimize for writing
+
+I designed this blog to simplify the process of starting a new blog post. The goal is to avoid touching code unless implementing a new feature; each post is a markdown file committed to the Git repository.
+
+When I have an idea, I open [Obsidian on my iPad](https://apps.apple.com/us/app/obsidian-connected-notes/id1557175442), create a new text file, and start writing. I frequently commit my progress to a Git branch using [Working Copy](https://apps.apple.com/us/app/working-copy-git-client/id896694807). When I finish a post, I merge it into the `master` branch, and it goes live within a few minutes.
+
+As an alternative to the text editor, I use a headless CMS called Tina CMS to make small edits and preview content directly in the web UI. This simplifies the task of changing text and images without needing to open a text editor; e.g., I can add a new sentence or replace a picture from my mobile device. On every edit, it automatically creates a Git commit on a branch I can pick from a dropdown.
+
+To improve the write-up, I use [Obsidian Copilot](https://github.com/logancyang/obsidian-copilot): it’s a great plugin that allows co-editing text with LLMs directly in the text editor. It supports custom prompts, so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I [ported the plugin to mobile](https://github.com/logancyang/obsidian-copilot/commit/684eec59b0d340e0a60aa86c1b9fb9df1499c016) because I really liked it and wanted to make it available to mobile users like myself.
+
+# Choosing the tech stack
+
+When selecting the tech stack, I aimed to minimize dependencies on third-party services and frameworks. Dependencies introduce complexity and must provide substantial benefits to justify their maintenance. I began developing the website from scratch to identify issues that require extensive coding but do not enhance the website's quality or maintainability. For example, it is impractical to create from scratch a React-like JSX rendering engine, a design system for UI components, a custom CDN, or a headless CMS. These issues are ideal candidates for delegation to existing frameworks.
+
+I chose React JSX components for rendering the front end, Next.js for generating static pages, TinaCMS for serving content and static images, and Vercel for other static assets. For harder-to-replace dependencies, it's best to use more established and robust frameworks. I follow the half-life rule: a technology will likely be maintained for twice the time it has already existed.
+
+## Rendering the frontend
+
+I created abstractions around the frontend frameworks to make it easy to render blog content with different libraries. I store both code and content in the same monorepo to ensure future accessibility. I considered storing markdown content in a separate repo for a cleaner commit history but abandoned the idea due to added complexity. Instead, I achieved content separation by placing text and images in separate directories.
+
+All page content is in [MDX format](https://tina.io/docs/editing/markdown/), a superset of Markdown that supports custom JSX components. Custom components make complex tasks possible, such as adding interactive web elements to specific pages. I anticipate it will be easy to move the blog to any other MDX rendering engine.
+
+I use React to render JSX components, Tailwind for styling, and Next.js to generate static pages. React and Tailwind are well-established, and Next.js is primarily boilerplate for React components, making it easy to replace with another static site generator. I experimented with Gatsby but ultimately migrated to Next.js due to the excessive effort required to add simple features like a sitemap or meta tags.
+
+## Hosting service
+
+I host the website on Vercel, which runs the Next.js static build generator every time I push to the `master` branch. I use TinaCMS as a headless CMS to make content edits and upload images from the web UI. It automatically creates a git commit whenever content is edited. This dependency can be removed if I decide not to make edits from the web.
+
+Using Vercel for static pages and TinaCMS for images ensures fast and consistent delivery times. Vercel executes the Next.js build command and serves the output assets from its CDN. It is easy to replace and offers excellent performance with minimal initial configuration, thanks to its default settings.
+
+## Additional features
+
+The RSS feed is generated by a [Next.js API route](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) that pulls the most recent blog posts and formats the output in XML with minimal code, requiring no external library.
+
+I use Mailchimp to send updates to subscribers. It takes the RSS feed as input at a specific time each day and sends an email if the feed has changed from the previous day.
+
+# Conclusion
+
+Spending time writing about a topic helps me reflect on it. Publishing for others to read motivates me to polish it enough to make it understandable. Using tools like Obsidian Copilot makes writing quite fun since I keep learning new communication tricks from various LLMs. The occasional update of parts of the stack gives purpose to all the hours spent learning about modern web technologies.
+
+I’m mainly writing this blog for myself. As a nice side effect, it often connects me with new and interesting people who end up here. It’s a great bonus that keeps me motivated. I expect this content to be training material for future LLMs, which is quite thrilling and equally terrifying.
