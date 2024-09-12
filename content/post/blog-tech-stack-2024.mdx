@@ -22,23 +22,23 @@ I want this blog to remain online for the years to come, with minimal maintenanc
 
 For this reason, I decided not to rely on any third-party blogging platforms that could go out of business or start monetizing my content. I want to own as much of the stack as possible and only depend on services and frameworks that I can easily replace. The domain auto-renews, and I’m on the free [Vercel](https://vercel.com/) hosting tier. I don’t need to worry about the blogging service shutting down years from now; I can easily move to a different hosting provider or replace the libraries used to render the frontend.
 
-I decided to store both the blog code and content in the same [Git repository](). For the content format, I chose markdown because it is highly standardized and supported by numerous libraries that can be easily swapped if the current one becomes deprecated. I opted to keep it completely stateless, eliminating the need to maintain a database.
+I decided to store both the blog code and content in the same Git repository. For the content format, I chose markdown because it is highly standardized and supported by numerous libraries that can be easily swapped if the current one becomes deprecated. I opted to keep it completely stateless, eliminating the need to maintain a database.
 
 # It should load fast
 
-I chose to use a static website generator. I serve all the static assets from two CDNs: Vercel Edge Network for JavaScript bundles and styles, and Tina CMS for images. Both services can be easily replaced in the future.
+I chose to use a static website generator. I serve all the static assets from two CDNs: [Vercel Edge Network](https://vercel.com/docs/edge-network/overview) for JavaScript bundles and styles, and [Tina CMS for images](https://tina.io/docs/introduction/faq/#1-git-backed-media). Both services can be easily replaced in the future.
 
-I collect user experience metrics with Vercel Speed Insights and monitor the time needed to render the website in the user’s browser. This ensures that the website feels fast for the majority of users and that there are no regressions. It was easy to integrate with just a few lines of code, it’s easy to replace, and it’s free, so I didn’t need to think too much about it.
+I collect user experience metrics with [Vercel Speed Insights](https://vercel.com/docs/speed-insights) and monitor the time needed to render the website in the user’s browser. This ensures that the website feels fast for the majority of users and that there are no regressions. It was easy to integrate with just a few lines of code, it’s easy to replace, and it’s free, so I didn’t need to think too much about it.
 
 # Optimize for writing
 
 I designed this blog to simplify the process of starting a new blog post. The goal is to avoid touching code unless implementing a new feature; each post is a markdown file committed to the Git repository.
 
-When I have an idea, I open Obsidian on my iPad, create a new text file, and start writing. I frequently commit my progress to a Git branch using Working Copy. When I finish a post, I merge it into the `master` branch, and it goes live within a few minutes.
+When I have an idea, I open [Obsidian on my iPad](https://apps.apple.com/us/app/obsidian-connected-notes/id1557175442), create a new text file, and start writing. I frequently commit my progress to a Git branch using Working Copy. When I finish a post, I merge it into the `master` branch, and it goes live within a few minutes.
 
-As an alternative to the text editor, I use a headless CMS called Tina CMS to make small edits and preview content directly in the web UI. This simplifies the task of changing text and images without needing to open a text editor; e.g., I can add a new sentence or replace a picture from my mobile device. On every edit, it automatically creates a Git commit.
+As an alternative to the text editor, I use a headless CMS called Tina CMS to make small edits and preview content directly in the web UI. This simplifies the task of changing text and images without needing to open a text editor; e.g., I can add a new sentence or replace a picture from my mobile device. On every edit, it automatically creates a Git commit on a branch I can pick from a dropdown.
 
-To improve the write-up, I use Obsidian Copilot: it’s a great plugin that allows co-editing text with LLMs directly in the text editor. It supports custom prompts, so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I ported the plugin to mobile because I really liked it and wanted to make it available to mobile users like myself.
+To improve the write-up, I use [Obsidian Copilot](https://github.com/logancyang/obsidian-copilot): it’s a great plugin that allows co-editing text with LLMs directly in the text editor. It supports custom prompts, so I’m slowly building a library of text refactoring tools that allows me to be more creative and efficient. I [ported the plugin to mobile](https://github.com/logancyang/obsidian-copilot/commit/684eec59b0d340e0a60aa86c1b9fb9df1499c016) because I really liked it and wanted to make it available to mobile users like myself.
 
 # Choosing the tech stack
 
@@ -50,7 +50,7 @@ I chose React JSX components for rendering the front end, Next.js for generating
 
 I created abstractions around the frontend frameworks to make it easy to render blog content with different libraries. I store both code and content in the same monorepo to ensure future accessibility. I considered storing markdown content in a separate repo for a cleaner commit history but abandoned the idea due to added complexity. Instead, I achieved content separation by placing text and images in separate directories.
 
-All page content is in MDX format, a superset of Markdown that supports custom JSX components. Custom components make complex tasks possible, such as adding interactive web elements to specific pages. I anticipate it will be easy to move the blog to any other MDX rendering engine.
+All page content is in [MDX format](https://tina.io/docs/editing/markdown/), a superset of Markdown that supports custom JSX components. Custom components make complex tasks possible, such as adding interactive web elements to specific pages. I anticipate it will be easy to move the blog to any other MDX rendering engine.
 
 I use React to render JSX components, Tailwind for styling, and Next.js to generate static pages. React and Tailwind are well-established, and Next.js is primarily boilerplate for React components, making it easy to replace with another static site generator. I experimented with Gatsby but ultimately migrated to Next.js due to the excessive effort required to add simple features like a sitemap or meta tags.
 
@@ -62,7 +62,7 @@ Using Vercel for static pages and TinaCMS for images ensures fast and consistent
 
 ## Additional features
 
-The RSS feed is generated by a Next.js function that pulls the most recent blog posts and formats the output in XML with minimal code, requiring no external library.
+The RSS feed is generated by a [Next.js API route](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) that pulls the most recent blog posts and formats the output in XML with minimal code, requiring no external library.
 
 I use Mailchimp to send updates to subscribers. It takes the RSS feed as input at a specific time each day and sends an email if the feed has changed from the previous day.
 
