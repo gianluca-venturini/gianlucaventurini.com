@@ -27,6 +27,10 @@ export const config = defineConfig({
     schema: {
         collections: [page, post, bookshelf] as any,
     },
+    cmsCallback: (cms) => {
+        cms.flags.set('branch-switcher', true)
+        return cms
+    }
 });
 
 export default config;
