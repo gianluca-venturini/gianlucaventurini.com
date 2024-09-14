@@ -2,6 +2,7 @@
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
+import { StrangeAttractorViz, StrangeAttractorVizProps } from './StrangeAttractorViz';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     return (
@@ -12,7 +13,7 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
 };
 
 interface CustomComponents {
-    Visualization: { title?: string };
+    Visualization: { id: string };
     Video: { src?: string };
 }
 
@@ -41,7 +42,9 @@ const components: Components<CustomComponents> = {
         </span>
     ),
     // Custom components
-    Visualization: (props) => <h1>{props?.title}</h1>,
+    Visualization: (props) => (
+        props.id === 'strange-attractor' ? <StrangeAttractorViz name="strange attractor" /> : <div />
+    ),
     Video: (props) =>
         props?.src ? (
             <video loop autoPlay playsInline muted>
