@@ -23,7 +23,7 @@ export default function PostList(
         <>
             <h1 className="text-5xl font-bold mb-8">Posts</h1>
             <SubscribeForm />
-            <div className="flex flex-col divide-y text-md">
+            <div className="flex flex-col divide-y dark:divide-gray-700 text-md">
                 {postsList.map((post) => (
                     <Link
                         key={post?.node?.id}
@@ -62,7 +62,6 @@ export const getStaticProps = async () => {
             data,
             query,
             variables,
-            // myOtherProp: 'some-other-data',
         },
     };
 };

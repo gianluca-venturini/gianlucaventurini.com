@@ -30,7 +30,7 @@ export const SubscribeForm = () => {
 
     return (
         <form
-            className="flex gap-4 py-4 border-b"
+            className="flex gap-4 py-4 border-b dark:border-gray-700"
             style={{
                 paddingBottom: '1rem',
             }}
