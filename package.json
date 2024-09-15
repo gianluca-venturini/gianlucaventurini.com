@@ -6,17 +6,21 @@
         "dev": "tinacms dev -c \"next dev\"",
         "build": "tinacms build && next build",
         "start": "tinacms build && next start",
+        "analyze": "ANALYZE=true yarn build",
         "lint-next": "next lint",
         "lint": "eslint ./src --ext .tsx,.ts,.js"
     },
     "dependencies": {
         "@mailchimp/mailchimp_marketing": "^3.0.80",
+        "@next/bundle-analyzer": "^14.2.11",
         "@types/mailchimp__mailchimp_marketing": "^3.0.20",
+        "@types/three": "^0.168.0",
         "@vercel/analytics": "^1.1.1",
         "@vercel/speed-insights": "^1.0.2",
         "next": "14.0.4",
         "react": "^18",
         "react-dom": "^18",
+        "three": "^0.168.0",
         "tinacms": "^1.5.28"
     },
     "devDependencies": {

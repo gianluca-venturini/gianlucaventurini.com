@@ -1,8 +1,9 @@
 /* eslint-disable react/prop-types */
+
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
-import { StrangeAttractorViz, StrangeAttractorVizProps } from './StrangeAttractorViz';
+import StrangeAttractorViz from './StrangeAttractorViz';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     return (
@@ -13,7 +14,7 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
 };
 
 interface CustomComponents {
-    Visualization: { id: string };
+    Visualization: { title: string };
     Video: { src?: string };
 }
 
@@ -42,9 +43,8 @@ const components: Components<CustomComponents> = {
         </span>
     ),
     // Custom components
-    Visualization: (props) => (
-        props.id === 'strange-attractor' ? <StrangeAttractorViz name="strange attractor" /> : <div />
-    ),
+    Visualization: (props) =>
+        props.title === 'strange-attractor' ? <StrangeAttractorViz /> : <div />,
     Video: (props) =>
         props?.src ? (
             <video loop autoPlay playsInline muted>

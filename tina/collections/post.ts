@@ -40,8 +40,8 @@ export default {
                     label: 'Visualization',
                     fields: [
                         {
-                            name: 'id',
-                            label: 'Id',
+                            name: 'title',
+                            label: 'Title',
                             type: 'string',
                         },
                     ],
