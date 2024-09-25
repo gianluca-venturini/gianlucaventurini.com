@@ -6,7 +6,7 @@ cover:
 date: 2024-09-25T15:00:00.000Z
 ---
 
-# Consciousness
+# What’s consciousness?
 <!-- intro --> 
 Everyone experiences consciousness. It gives us a sense of individual identity, rather than making us see ourselves as just a collection of cells. Consciousness might be the feeling we have while our brain is functioning.
 
@@ -25,45 +25,49 @@ Consciousness potentially arises in the brain from a process that combines learn
 <!-- emergent behavior understanding -->
 Can consciousness, particularly self-awareness, be explained as a behavior emerging from a sufficiently complex dynamic system? Can consciousness be simulated? Is it even possible to distinguish a truly self-aware system from one that just imitates it, e.g. an LLM that provides a similar human output.
 
-Those are very tough philosophical questions. I won’t attempt to answer them. In the next section I will compare a complex brain with artificial neural networks.
+Those are very tough philosophical questions. I won’t attempt to answer them.
+
+
+# Single individual consciousness
+<!-- perceive as one when being two -->
+An interesting fact is how a human perceives themselve as one despite having brains with two distinct hemispheres connected together. These systems can operate so in synchrony that the feeling of a single “self” can arise.
+
+Some humans have the hemispheres connection disrupted with a surgical procedure or traumatic event. They effectively have two distinct brains that need to coordinate without directly sending signals to each other. A lot of experiments have been conducted on these split brain people. For example showing images to only one eye and ask the other hemisphere in charge of speech to articulate what they are seeing. While perception is definitely split, consciousness doesn’t seem to be. The two separate hemispheres somehow learn other ways of communicating and a single consciousness still emerges.
+
+Next let’s ask what’s necessary for multiple individuals to share the same consciousness.
+
+# Multi-individual consciousness
+<!-- how multiple humans can perceive as one? -->
+Now the next question to ask: can a multi-person consciousness emerge if people are interacting together? What’s the minimum bandwidth necessary?
+
+In the past three decades Internet facilitated the connection serving as medium, we’ve now more people connected at near speed of light than anytime in history. Unfortunately the bandwidth seems to be relatively small and very comparable to people talking together, we still type on keyboards, talk or read text. This is about to change in the next few years.
+
+What happens when neurons firing in one person brain influence neurons in another person brain? It’s very exiting that Brain Computer Interfaces (BCIs) are now a reality. For example Neuralink has a tech stack that works in humans. BCIs technology has a lot of momentum, funding and media attention. Now that the science works it’s becomes an engineering problem. The increase in bandwidth is a very similar problem to miniaturized and exponentially scaling the transistor based integrated circuits, so my expectation is that we will soon have more communication bandwidth that we ever had between individuals.
+
+I’m particularly exited about BCIs because is for the first time allowing us to read and write signals from individual neurons, allowing us to probe the brain at a sufficient low level that we may be able to start answering some of our questions that until now have been studied in philosophy or during tragic accidents where people loose certain brain functionality.
+
+I recommend this interesting 8 hours Neuralink immersion with different people involved in the project.
+
+<TODO: neuralink podcast>
+
+In the next section I want to step back from philosophical questions and compare complex biological brains with artificial neural networks.
+
+# Simulated consciousness
 
 <!-- dynamic system assumption -->
-Artificial neural networks are vaguely resembling the biological neural circuits of the brain. They are mostly modeling the firing of neurons when certain inputs are provided. A large amount of researchers is working on them experimenting with new architectures. I will make the far-fetched hypothesis that for consciousness to arise, is more important to have the right architecture with the right connection rather than accurately modeling all the little interactions of the biological systems.
-
-
-To model the brain as a dynamic system we firstly need to understand what’s the medium of the interaction, secondly we need to understand how the complex behavior emerges from simple interactions inside the medium. In an oversimplified way: the medium is circuits made of biological neural tissue firing under certain conditions. For our thought experiment we assume we can vastly simplify it and use artificial neural networks
-
-
-
-For our thought experiment is sufficient to assume that a model can be built and we can we can hypothesize that a model can be built, let’s not worry too much about details here and assume we can build a model and run simulations on it. Let’s focus on the second step that is much more interesting in my opinion. Given the simplified neural network model, consciousness could arise from the specific architecture used.
-
-The hypothesis here is that it’s sufficient for neurons to be wired in a specific way for the system to experience consciousness. I acknowledge that it’s quite speculative to reduce consciousness to an emergent behavior of an oversimplified system and to expect to be able to simulate it. Will the simulation of the sufficiently complex neural network with the right architecture really start feeling self-awareness the way humans do? I know it feels a little far-fetched, but it’s useful for a series of analogies, so for now let’s call it a conjecture and see where it brings us.
+Artificial neural networks (ANNs) are vaguely resembling the biological neural circuits of the brain. They simulate the firing of biological neurons when certain inputs are provided. A large amount of research is been conducted in the field of ANNs on them making them a good candidate for a model where consciousness could arise. I will make the far-fetched hypothesis that for consciousness to arise, is more important to have the right architecture with the right connection rather than accurately modeling all the interactions of the biological systems. Will a sufficiently complex ANN with the right architecture really start feeling self-awareness the way humans do? I know this conjecture feels a little far-fetched and unjustified with the tools we have today, but it’s useful for a series of analogies, so bare with me.
 
 <!-- analogy with mechanistic interpretability -->
-In the last few weeks I’ve been fascinated by the field of mechanistic interpretability of artificial neural networks. It's interesting that exponentially more facts can be learned and stored in network parameters compared to the number of neurons. Parameter in this context is a threshold that tells us if a ”simulated neuron” downstream is firing when a connected upstream neuron fires and with what intensity. Given enough parameters (enough complexity) the networks exhibits an emergent reasoning behavior. The network becomes for example capable of executing simple arithmetics or make simple deductions from facts it memorized rather than simply regurgitating text in the training set. In other words it has a simplified internal representation of the world and it can retrieve it given a certain input.
+In the last few weeks I’ve been learning the field of mechanistic interpretability of artificial neural networks. It's interesting to see how exponentially more facts can be stored in the network compared to the number of parameters. Loosely speaking number parameters in a ANN is a proxy for number of neurons. Given the right architecture e.g. transformer architecture and enough parameters (enough complexity) the network exhibits emergent reasoning behavior. The network becomes for example capable of simple arithmetic or make simple deductions from facts it memorized rather than simply regurgitating text in the training set. In other words it has a compressed internal representation of the world. Now that we’ve seen how reasoning and fact storage are very similar in brains and ANN, let’s see the differences and where the current ANN architectures fall short in simulating consciousness.
 
 <TODO: 3blue1brown video on storing facts>
 
 <!-- what’s missing -->
-- Artificial nets don’t explain finding purpose
-- Feedback loops
-- Not coupled enough with environment
-- No drive to stay alive wired in the network, no goal
-- Consciousness can’t arise because of that
+Most of the complex ANNs are decoupled from the environment. The training step is done once and then the weights remain fixed for the whole functioning of the network. The networks don’t have the opportunity to keep probing the environment and somehow discover the boundary between what’s “self” and what’s environment. I believe this tight feedback loop is necessary to achieve self awareness. There are some experiments where agents interact with a simulated environment, I’m extremely curious to discover what emerging properties we will see there while using more complex architectures.
 
-# Single individual consciousness
-- perceive as one when being two
-Another interesting fact somewhat related to the conjecture is that a human perceives themselve as one despite having brains with two emispheres connected together. Two distinct systems can operate so in synchrony that the feeling of a single “self” can arise. A small number of humans have the emispheres connection disrupted with a surgical procedure or traumatic event. They effectively have two distinct brains that need to coordinate without directly sending neural signals to each other. A lot of experiments have been conducted on these split brain people, for example showing images to only one eye and ask the other emisphere in charge of speech to articulate what they are seeing. While perception is definitely split, consciousness doesn’t seem to be. The two separate emispheres somehow learn other ways of communicating and consciousness still emerges.
+Another arguably even more important missing element is the drive to survive. If self-awareness arise from evolutionary pressure of self-preservation, removing it signals the network during the training that resources dedicated to self-preservation could be allocated to something else. Following this reasoning line, self-awareness is a building block of self-preservation. Without demanding the latter to emerge in the loss function we may have hard time to create the former.
 
-
-# Multi-individual consciousness
-
-- how multiple humans can perceive as one?
-Now the next question to ask: can a multi-person consciousness emerge if multiple people are interacting together? What’s the minimum bandwidth necessary? In the past three decades Internet facilitated the connection serving as medium, but the bandwidth seems to be relatively small and very comparable to people talking together. This is about to change in the next few years. What happens when neurons firing in one person brain influence neurons in another person brain? The very exciting part here is that BCIs like Neuralink are now a reality. The company has proven that the entire stack works in multiple humans and the technology has a lot of momentum in term of funding and media attention. Now that the science work it becomes an engineering problem. The increase in bandwidth is a very similar problem to miniaturized and exponentially scaling the transistor based Integrated circuits.
-
-I recommend this interesting 8 hours Neuralink immersion.
-
-<TODO: neuralink podcast>
+<TODO: simulated agents video>
 
 - Consciousness arises from complexity and evolution pressure to maintain an internal state of the world
 - sequential VS combinatorics logic
