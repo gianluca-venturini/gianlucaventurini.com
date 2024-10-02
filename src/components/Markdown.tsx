@@ -54,8 +54,8 @@ const components: Components<CustomComponents> = {
         ),
     VideoYoutube: (props) =>
         props?.id ? (
-            <p style={{ aspectRatio:'16 / 9' }}>
-                <iframe 
+            <p style={{ aspectRatio: '16 / 9' }}>
+                <iframe
                     allowFullScreen
                     src={`https://www.youtube.com/embed/${props.id}`}
                     title="YouTube video player"
