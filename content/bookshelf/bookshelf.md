@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Gomorrah
+    author: Roberto Saviano
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
