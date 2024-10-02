@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Gomorrah
-    author: Roberto Saviano
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -144,5 +142,7 @@ book:
     author: Sean M. Carroll
   - title: 'Superforecasting: The Art and Science of Prediction'
     author: Dan Gardner and Philip E. Tetlock
+  - title: Gomorrah
+    author: Roberto Saviano
 ---
 
