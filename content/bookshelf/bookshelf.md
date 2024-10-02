@@ -142,7 +142,7 @@ book:
     author: Sean M. Carroll
   - title: 'Superforecasting: The Art and Science of Prediction'
     author: Dan Gardner and Philip E. Tetlock
-  - title: Gomorrah
+  - title: Gomorra
     author: Roberto Saviano
 ---
 
