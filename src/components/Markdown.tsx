@@ -14,6 +14,8 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
 interface CustomComponents {
     Visualization: { title?: string };
     Video: { src?: string };
+    VideoYoutube: { id?: string };
+    Comment: { comment?: string };
 }
 
 const components: Components<CustomComponents> = {
@@ -50,4 +52,22 @@ const components: Components<CustomComponents> = {
         ) : (
             <div />
         ),
+    VideoYoutube: (props) =>
+        props?.id ? (
+            <p style={{ aspectRatio:'16 / 9' }}>
+                <iframe 
+                    allowFullScreen
+                    src={`https://www.youtube.com/embed/${props.id}`}
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                    }}
+                />
+            </p>
+        ) : (
+            <div />
+        ),
+    Comment: () => <></>,
 };
