@@ -57,6 +57,28 @@ export default {
                         },
                     ],
                 },
+                {
+                    name: 'VideoYoutube',
+                    label: 'VideoYoutube',
+                    fields: [
+                        {
+                            name: 'id',
+                            label: 'Youtube id',
+                            type: 'string',
+                        },
+                    ],
+                },
+                {
+                    name: 'Comment',
+                    label: 'Comment',
+                    fields: [
+                        {
+                            name: 'comment',
+                            label: 'Comment',
+                            type: 'string',
+                        },
+                    ],
+                },
             ],
         },
     ],
