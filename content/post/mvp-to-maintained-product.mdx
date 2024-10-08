@@ -5,30 +5,27 @@ cover: TODO
 date: 2024-10-10T15:00:00.000Z
 ---
 
-In this post I’ll talk about Minimum Viable Product (MVP): reasons for building one, how to build it and with who and finally few traps I’ve fallen into too many times and how to avoid them.
+Let’s talk about Minimum Viable Product (MVP). Why you should build one, how to build it and with who and finally few traps I’ve fallen into too many times and how to avoid them.
 
-Building an MVP is a great tool to de-risk complex projects early on. If done correctly it’s cheap and improves estimating the complexity of the project by order of magnitudes. Conversely, if done incorrectly could lead to wasting a lot of time obsessing on the wrong prototype details rather than collecting valuable signal needed to take decisions. For example, we may collect the wrong signals mistaking an underwhelming market response due to an excessively buggy initial prototype for a lack of interest, while taking a better and simpler UI could have led to more accurate data collection that reflect interest in the idea.
+Building an MVP is a great tool to de-risk complex projects early on. If done right it’s cheap and help estimating the complexity of the project. Conversely, if done incorrectly could lead to wasting a lot of time obsessing on the wrong problems and not make any meaningful step towards proving the idea. For example, we may mistake an underwhelming market response due to an excessively buggy initial prototype for a lack of interest in the product, while building a simpler UI could have led to success.
 
 # Why MVP
-There are many reasons for building an MVP. The first one that comes to mind is to convince ourselves that a specific technical approach is viable with the goal of increasing or decreasing the level of confidence in the proposal.
+There are many reasons to build an MVP. Firstly, we might want to confirm that a specific technical approach is feasible. This helps us either increase or decrease our confidence in the proposal.
 
-The second reason is for convincing others. We may want to convince investors that we can deliver results with a small demo. We may reassure the product manager that a specific implementation is feasible in a reasonable amount of time. Furthermore, we may want to convince the leadership of the company that we can go from idea to market fast and create a new lucrative business line.
+The second reason is to persuade others. We might want to convince investors that we can deliver results with a small demo. We may also reassure the product manager that a specific implementation is achievable within a reasonable timeframe. Additionally, we might aim to convince company leadership that we can quickly move from idea to market and create a new profitable business line.
 
-We may want to test different things: using a specific technical approach like adopting a third party library or a team dynamic like embedding machine learning researchers, designers and full stack engineers in the same team.
+We might want to test various elements. This could include using a specific technical approach, such as adopting a third-party library. It could also involve trying a new team dynamic, like integrating machine learning researchers, designers, and full-stack engineers into the same team.
 
-Next, let’s take who should we build the MVP with.
+The Moonshot MVP is a highly technically challenging piece of software with many unknown unknowns. In this case, we should prioritize uncovering problems early over the quality or scalability of the initial prototype. I call Execution Heavy MVP when the goal is clear. We should prioritize execution speed and the final quality of the prototype, especially if we're aiming to create something 10x better than the competition.
 
-- Convince yourself
-- Convince others. Investor: person with money, product manager, CEO, company that is hiring you with a take home.
-- Moonshot VS need to show a lot of execution capabilities
-- Hackathon (fun) VS Company (to evaluate an investment)
+Next, let's consider who should be involved in building the MVP.
 
 # Who to build it with
-I mostly build MVPs alone. They are the fastest to build because I have a clear goal in mind and I don’t need to coordinate with anyone else. I mostly use MVPs to make up my mind and sometimes as a tool to present a complex idea to colleagues and leadership: MVPs are incredible tools to persuade people that my idea is a good investment.
+I usually build MVPs on my own. They are the quickest to create because I have a clear goal and don't need to coordinate with others. I mainly use MVPs to clarify my thoughts and occasionally to present a complex idea to colleagues and leadership. MVPs are excellent tools for convincing others that my idea is a worthwhile investment.
 
-We may want to build MVPs with friends, for fun during hackathons or with colleagues during Hackweek. Building MVPs can help strengthen bonds between people. I find extremely satisfying when I can prove that an idea either works or doesn’t with high confidence, I can get it out of my head forever.
+We might want to build MVPs with friends for fun during hackathons or with colleagues during Hackweek (a company-wide week where any engineer can work on any project). Creating MVPs can help strengthen relationships between people. I find it extremely satisfying to prove whether an idea works or not with high confidence. Even if the MVP proves that the idea is not worth to pursue further, I have a much better understanding of the challenges that need to be solved in order to make it a reality.
 
- I empirically found out that a team between 2 and 4 highly technical people works the best. All discussions are focused on problems, everyone understands what everyone else is working on.
+I have found through experience that a team of 2 to 4 highly technical people works best. All discussions stay focused on problems, and everyone understands what others are working on.
 
 Next, let’s take a look how to build a successful MVP.
 
@@ -40,18 +37,18 @@ Next, let’s take a look how to build a successful MVP.
 - Company: with core the team that will implement it. To check team dynamics as well as convince ourselves and others that can be built and scaled.
 
 # How to build it
-Depending on why you’re building the MVP and with which people you may adopt different strategies. If you’re building for yourself it’s only important to implement enough to convince yourself that the approach is solid, so it’s necessary to uncover all the unknown unknowns, and derisk most of the known unknowns.
+Depending on why you're building the MVP and who you're working with, you may adopt different strategies. If you're building it for yourself, it's crucial to implement just enough to confirm that the approach is solid. This involves uncovering all the unknown unknowns, which are problems you didn't know existed, and addressing most of the known unknowns, which are problems you're aware of.
 
-If you’re building for validating a marked hypothesis it’s necessary to polish enough the prototype that you will collect valuable market signals on the idea, rather than feedback about your bad UI. You should keep the amount of feature to the minimum necessary to prove or disprove a hypothesis that you agree upon before starting building.
+If we're building to validate a market hypothesis, it's essential to polish the prototype enough to gather valuable market signals about the idea, rather than feedback on a poor UI. You should limit the features to the minimum necessary to prove or disprove a hypothesis agreed upon before starting.
 
-If you’re building a take-home project for being hired by a company, implement one or two complex features to show off your skills and leave a lot of opportunities to discuss how some of the non-implemented features could improve on top of the MVP.
+If we're building a take-home project for a job interview, implement one or two complex features to showcase your skills. Leave plenty of opportunities to discuss how some non-implemented features could enhance the MVP. Prioritize polishing code and architecture over implementing rich functionalities, since you’ll need to present them.
 
 <Comment comment="uncertainty tradeoff" />
-If you’ve building a Moonshot MVP you may want to iterate really fast and sometimes implement different solutions to the same problem multiple times. High level tests help a lot here, for example integration tests will make sure you’re not introducing regressions without being prescriptive on the interfaces between components, that you are free to change and iterate on very fast.
+If we're building a Moonshot MVP, you may want to iterate quickly and sometimes implement different solutions to the same problem multiple times. High-level tests are very helpful here. For example, integration tests ensure you're not introducing regressions without being strict about the interfaces between components, allowing you to change and iterate rapidly.
 
-If you’ve building an Execution Heavy MVP, you may want to focus on team velocity. You want to figure out who are the best people to leverage for the well defined tasks and how to effectively communicate with each other. Since it’s clear what to build, can be convenient to specify interfaces between components defined in advance and leverage unit tests to catch regressions.
+If we’ve building an Execution Heavy MVP, we want to focus on team velocity. We want to figure out who are the best people to leverage for the well-defined tasks and how to effectively communicate with each other. Since it’s clear what to build, can be convenient to specify interfaces between components defined in advance and leverage unit tests to catch regressions.
 
-Next let’s take a look at traps I’ve feel into in the past and how to avoid them.
+Next let’s take a look at traps I've felt into in the past and how to avoid them.
 
 - Yourself: jankyest of all, focus on the hardest part you don’t know you can build, no UI
 - Company to hire you (take home): make it flashy, implement something hard to impress, leave a lot of space to expand in the discussion. No need to scale
@@ -59,22 +56,27 @@ Next let’s take a look at traps I’ve feel into in the past and how to avoid 
 - Execution-heavy: implement with the team to show case the velocity of the team.
 
 # Traps to avoid
-Scope creep is the enemy #1 of MPVs. Adding unplanned features will delay the launch and dilutes the signal. If an MVP fails because of a missing features, then it was doomed from the beginning. My recommendation is to be ruthless on the number of features to leave out of MVP and implement as “fast follows”. My guess is that engineers know what’s the real MVP but they later self-convince themselves that it’s necessary to have feature X, Y, Z. You should fight it, if you don’t leave out 10% of the features you really want to implement, you’re not leaving out enough.
+Scope creep is the worst enemy of an MVP. Adding unplanned features will delay the launch and dilute the signal. If the launch fails only due to a few missing features, it was doomed from the start. I recommend being ruthless about which features to exclude from the MVP and only implementing them as "fast follows" after a successful launch. Engineers often know what the real MVP is, but during development, we keep having more ideas and convince ourselves we can't launch without additional features. We should resist this urge. If we don't leave out about 20% of the features, we're not excluding enough.
 
-It happened to me while developing an AI assistant at SPC hackathon in 2024. I added the unnecessary feature of crossing questions from the public that the presented answered. It’s a lot of complexity and didn’t add much to the demo, in fact it even failed on stage hurting the presentation.
-- TODO: Video of my presentation at SPC
-- TODO: Video of my presentation at SPC, live
+This happened to me while developing an AI assistant at the SPC hackathon in 2024. I added the unnecessary feature of crossing questions from the public that the presenter answered. It added a lot of complexity and didn't contribute much to the demo. In fact, it even failed on stage, during the presentation.
 
-Beware of MVPs that show value but are too constrained. For example a demo that only works well on certain data and will be really hard to extend to a real case. I often find this problem with MVPs of systems that use Machine Learning, where the demo works flawlessly due to cherry-picking the right inputs, but then the system fails miserably while used generally.
+<VideoYoutube id="CrNaF-vG7tA" />
 
-Another trap is not accepting that the MVP can fail. Not all the tools need to exist. Sometimes the idea is good, but it’s too early or too late or there are better solutions out there or the implementation has major issues. Kill MVPs that for whatever reason fail to find traction after a time boxed amount of time. MVPs are cheap only if you cut the losses them reasonably early.
+Beware of MVPs that seem valuable in limited scenarios but won't scale for regular use. This failure is similar to a perfect Figma mockup that doesn't resemble the implemented version once real data is rendered. For example, a demo might work well with cherry-picked inputs but struggle with all the edge cases. I'm referring to problems where moving from 80% to 100% is very challenging. Consider LLM summarization of books: if the summary of an obscure book contains a hallucinated sentence 5% of the time, users will quickly find many examples and speak negatively. This rapidly erodes trust in the product, regardless of how perfect the initial MVP is.
 
-Building too slow is definitely an MVP killer. I believe you should find some sort of unfair advantage when building an MVP. Maybe a new technology made a previously hard to attach problem 10x faster and the problem is now a low hanging fruit. Sometimes it’s new libraries, sometimes are new developer tools that make you much faster. Sometimes you can create your advantage adding the right people with a lot of energy and positive attitude to the team and spending a lot of hours together. Whatever is the “unfair advantage”, if you don’t find it, and it seems that ”this MVP is taking forever”, you better take the loss and start pushing.
+Another trap is not accepting that the MVP can fail. Not all tools need to exist. Sometimes the idea is good, but it's either too early, too late, or there are better solutions available. The implementation might also have major issues. Abandon MVPs that fail to gain traction after a set period. MVPs are cost-effective only if you cut your losses early.
+
+Building too slowly is another mistake. We should find some sort of unfair advantage when creating an MVP. Perhaps a new technology makes a previously difficult problem 10x faster, turning it into low-hanging fruit. Sometimes it's new libraries or developer tools that speed up the process. Other times, it's adding the right people with energy and a positive attitude to the team and spending many hours together. Whatever the "unfair advantage" is, if you don't find it and the MVP seems to be taking forever, it's better to cut your losses.
 
 - Keep adding features. Scope creep
 - Building without value proposition: we don’t know what we’re building
-- Scalability. Demo looks great, but then never scales to real-word scenario. Avoid magical thinking, make the demo as open as possible e.g. user can bring their own data rather than providing a specially crafted set of data and handholding the user through the demo.
+- Scalability. Demo looks great, but then never scales to real-world scenario. Avoid magical thinking, make the demo as open as possible e.g. user can bring their own data rather than providing a specially crafted set of data and handholding the user through the demo.
 - Not considering that the MVP can fail
 - Building too slow: too many people involved, not much progress made, not knowing what other people are working on, duplicated features implementation. Keep the team very small, check progress often, once every few hours, work in the same place physically.
-- Building for too long: too much scope creep, not clear when to abandon the project. Timebox it, have an exit criteria.
+- Building for too long: too much scope creep, not clear when to abandon the project. Timebox it, have an exit criterion.
+
+# Conclusion
+In this post we have seen different type of MVPs: Moonshots and Execution Heavy. We discussed when and how to build one versus the other and then few things to avoid.
+
+Building MVPs is more art than science. I really think we should be leveraging this tool much more in software development. Especially now that implementing multiple solutions to the same problem is becoming exponentially faster with AI assisted code writing (e.g. Copilot or Cursor).
 
