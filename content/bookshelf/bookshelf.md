@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Nexus
+    author: Yuval Noah Harari
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
