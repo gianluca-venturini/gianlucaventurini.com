@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Nineteen Eighty-Four
-    author: George Orwell
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -148,5 +146,7 @@ book:
     author: Roberto Saviano
   - title: Nexus
     author: Yuval Noah Harari
+  - title: Nineteen Eighty-Four
+    author: George Orwell
 ---
 
