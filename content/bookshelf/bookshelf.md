@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Nineteen Eighty-Four
+    author: George Orwell
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
