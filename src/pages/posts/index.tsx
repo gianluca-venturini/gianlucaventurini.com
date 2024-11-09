@@ -24,28 +24,35 @@ export default function PostList(
             <h1 className="text-5xl font-bold mb-8">Posts</h1>
             <SubscribeForm />
             <div className="flex flex-col divide-y dark:divide-gray-700 text-md">
-                {postsList.map((post) => (
-                    <Link
-                        key={post?.node?.id}
-                        href={`/posts/${post?.node?._sys.filename}`}
-                        className="flex flex-col gap-1 py-4"
-                    >
-                        <div className="flex flex-row gap-2 flex-wrap">
-                            <span className="whitespace-nowrap">
-                                {post?.node?.title}
-                            </span>
-                            {post?.node?.date && (
-                                <>
-                                    <span>&mdash;</span>
-                                    <span className="font-thin whitespace-nowrap">
-                                        {formatDate(post?.node?.date)}
-                                    </span>
-                                </>
-                            )}
-                        </div>
-                        <div className="font-thin">{post?.node?.snippet}</div>
-                    </Link>
-                ))}
+                {postsList
+                    .filter((p) => p?.node?.date)
+                    .map((post) => (
+                        <Link
+                            key={post?.node?.id}
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                            href={`/posts/${new Date(post?.node?.date!)
+                                .getFullYear()
+                                .toString()}/${post?.node?._sys.filename}`}
+                            className="flex flex-col gap-1 py-4"
+                        >
+                            <div className="flex flex-row gap-2 flex-wrap">
+                                <span className="whitespace-nowrap">
+                                    {post?.node?.title}
+                                </span>
+                                {post?.node?.date && (
+                                    <>
+                                        <span>&mdash;</span>
+                                        <span className="font-thin whitespace-nowrap">
+                                            {formatDate(post?.node?.date)}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                            <div className="font-thin">
+                                {post?.node?.snippet}
+                            </div>
+                        </Link>
+                    ))}
             </div>
         </>
     );
@@ -54,7 +61,7 @@ export default function PostList(
 export const getStaticProps = async () => {
     const { data, query, variables } = await client.queries.postConnection({
         sort: 'date',
-        last: 10,
+        last: 100,
     });
 
     return {

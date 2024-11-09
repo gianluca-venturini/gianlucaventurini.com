@@ -7,10 +7,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { useTina } from 'tinacms/dist/react';
 
-import { client } from '../../../tina/__generated__/client';
-import { type PostPartsFragment } from '../../../tina/__generated__/types';
-import { Markdown } from '../../components/Markdown';
-import { formatDate } from '../../components/Utils';
+import { client } from '../../../../tina/__generated__/client';
+import { type PostPartsFragment } from '../../../../tina/__generated__/types';
+import { Markdown } from '../../../components/Markdown';
+import { formatDate } from '../../../components/Utils';
 
 export default function Home(
     props: InferGetStaticPropsType<typeof getStaticProps>
@@ -81,11 +81,22 @@ export const getStaticPaths: GetStaticPaths = async () => {
     const { data } = await client.queries.postConnection();
     const paths = data.postConnection.edges
         ?.map((x) => {
-            return { params: { slug: x?.node?._sys.filename } };
+            if (!x?.node?.date) {
+                throw new Error(
+                    `Post date is missing ${x?.node?._sys.filename}`
+                );
+            }
+            return {
+                params: {
+                    slug: x?.node?._sys.filename,
+                    year: new Date(x?.node?.date).getFullYear().toString(),
+                },
+            };
         })
         .filter((path) => !!path) as Array<{
         params: {
             slug: string;
+            year: string;
         };
     }>;
 
@@ -96,9 +107,19 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async (ctx) => {
-    const { data, query, variables } = await client.queries.post({
-        relativePath: `${ctx.params?.slug as string}.mdx`,
-    });
+    let response;
+    try {
+        response = await client.queries.post({
+            relativePath: `${ctx.params?.year as string}/${
+                ctx.params?.slug as string
+            }.mdx`,
+        });
+    } catch (error) {
+        return {
+            notFound: true,
+        };
+    }
+    const { data, query, variables } = response;
 
     return {
         props: {
