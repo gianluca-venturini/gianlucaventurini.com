@@ -1,0 +1,25 @@
+name: Build Check
+
+on:
+  pull_request:
+    branches:
+      - main  # Or any other branch you want to protect
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Use the Node.js version required for Next.js
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Next.js build
+        run: npm run build
