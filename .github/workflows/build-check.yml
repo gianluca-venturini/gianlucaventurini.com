@@ -9,6 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      NEXT_PUBLIC_TINA_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_TINA_CLIENT_ID }} 
+      TINA_TOKEN: ${{ secrets.TINA_TOKEN }} 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
