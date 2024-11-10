@@ -148,5 +148,7 @@ book:
     author: Yuval Noah Harari
   - title: Nineteen Eighty-Four
     author: George Orwell
+  - title: Zero Zero Zero
+    author: Roberto Saviano
 ---
 
