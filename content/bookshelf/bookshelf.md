@@ -152,5 +152,7 @@ book:
     author: Roberto Saviano
   - title: The Code Breaker
     author: Walter Isaacson
+  - title: Permutation City
+    author: Greg Egan
 ---
 
