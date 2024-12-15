@@ -1,0 +1,43 @@
+---
+title: TODO
+snippet: TODO
+cover: /uploads/blog-subscribe/blog-subscribe-cover.webp
+date: 2024-12-20T15:00:00.000Z
+---
+I always find declarative programming fascinating: you just need to describe the result you want and a simplified representation of the problem and an oracle conjures a solution for you. In practice a lot of smart people spent a decades packaging algorithms in solvers of various kinds.
+
+In this post I want to describe what I learned solving a toy flow optimization problem with MIP and SAT solvers. I picked the belt balancer from the Factorio video game. It looks innocuous, but it has NP-hard complexity and a lot of nuances and hidden challenges. It's possible to solve intuitively small versions, making it fun, but it quickly scales to humanly impossible even for medium instances. What the majority of players do is to use online solutions that people come up with. One of the game mechanics is sharing the designs, called blueprints, as a string and there's a thriving community built around increasingly complex and more efficient designs.
+
+Let's define the problem next.
+
+# The Throughput-Unlimited Factorio Belt Balancer
+
+
+
+- Learning how to use constraint programming
+- Tools
+	- Integration tests
+    - Single character visualizer
+    - Flow visualizer
+    - Blueprint visualizer
+    - Testing on the game
+    - Loading solution: used to debug the model isolating one constraint at a time to check which one makes it infeasible
+- Naïve model — MIP
+    - Problems: numeric instability
+    - Very long time to converge
+    - Inverting flows 1min
+    - Can’t compute 4x4
+- Discretize flow Migrate to CP-SAT: satisfiability
+    - Compute 4x4
+- Edge cases
+    - When not fully optimized the behavior may be broken because angles are not complete and loads items on half row
+- Model underground flow rather than transporting it to the exit
+    - Compute 6x6
+    - Compute 8x8
+- Adding flow hints
+    - Improve 8x8
+- Pre-computing flows with banes networks and flow of 1
+    - Find 16x16 with some fixed variables in 1:30h
+- Symmetry breaking
+    - Optimized 16x16 in 55min
+- Clos and Banes networks [https://en.wikipedia.org/wiki/Clos_network](https://en.wikipedia.org/wiki/Clos_network)
