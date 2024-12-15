@@ -11,33 +11,45 @@ In this post I want to describe what I learned solving a toy flow optimization p
 Let's define the problem next.
 
 # The Throughput-Unlimited Factorio Belt Balancer
+A core dynamic in Factorio is transporting items between different production buildings using conveyor belts, e.g., transporting raw stone from a mining drill to a Stone Furnace to be transformed into a brick. Since the throughput of a belt lane is limited, it's necessary to have multiple parallel lanes. In order to help prevent bottlenecks in the factory, parallel lanes needs to be balanced, for examples preventing a slow furnace lane from slowing down mining, automatically redirecting the excess throughput to other lanes.
 
+To perfectly balance two belt lanes, we can use Mixer component, that's a 2x2 Belt Balancer. The problem arises when you have more than two lanes, e.g., four lanes. There are two problems that need to be solved at the same time: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is very easy to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead is making sure that every input flow is evenly distributed in all the outputs.
 
+Finding a feasible solution is NP-hard, because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution is NP-complete, because will require enumerating all the possible solutions in order to find the best one. For the purpose of this post, I'll focus on feasibility because 2D space occupied is more important than minimizing the quantity of components used. Additionally, it's necessary to discard certain feasible non-optimal solutions. That's because of a subtle game mechanics. Fortunately I found a greedy algorithm to do it we can keep the complexity to NP-hard, still not great, but do-able for finding meaningfully large solutions.
 
-- Learning how to use constraint programming
-- Tools
-	- Integration tests
-    - Single character visualizer
-    - Flow visualizer
-    - Blueprint visualizer
-    - Testing on the game
-    - Loading solution: used to debug the model isolating one constraint at a time to check which one makes it infeasible
+# First implementation: Mixer Integer Programming
 - Naïve model — MIP
     - Problems: numeric instability
     - Very long time to converge
     - Inverting flows 1min
     - Can’t compute 4x4
+
+### How to test the solution
+- Tools
+	- Integration tests
+	- Single character visualizer
+	- Flow visualizer
+	- Blueprint visualizer
+	- Testing on the game
+	- Loading solution: used to debug the model isolating one constraint at a time to check which one makes it infeasible
+
+# Discretize flows: CP-SAT
 - Discretize flow Migrate to CP-SAT: satisfiability
     - Compute 4x4
 - Edge cases
     - When not fully optimized the behavior may be broken because angles are not complete and loads items on half row
-- Model underground flow rather than transporting it to the exit
-    - Compute 6x6
-    - Compute 8x8
+Model underground flow rather than transporting it to the exit
+Compute 6x6
+Compute 8x8
 - Adding flow hints
     - Improve 8x8
-- Pre-computing flows with banes networks and flow of 1
-    - Find 16x16 with some fixed variables in 1:30h
-- Symmetry breaking
-    - Optimized 16x16 in 55min
+
+# Pre-computing flow between mixers with Banes Networks
+- Find 16x16 with some fixed variables in 1:30h
+- Symmetry breaking 55min
 - Clos and Banes networks [https://en.wikipedia.org/wiki/Clos_network](https://en.wikipedia.org/wiki/Clos_network)
+
+
+# Conclusions
+
+
