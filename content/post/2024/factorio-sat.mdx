@@ -4,45 +4,60 @@ snippet: TODO
 cover: /uploads/blog-subscribe/blog-subscribe-cover.webp
 date: 2024-12-20T15:00:00.000Z
 ---
-I always find declarative programming fascinating: you just need to describe the result you want and a simplified representation of the problem and an oracle conjures a solution for you. In practice a lot of smart people spent a decades packaging algorithms in solvers of various kinds.
+I always find declarative programming fascinating: we just describe the result we want and an “oracle” conjures a solution for us. A lot of smart people spent a decades packaging algorithms in solvers of various kinds and I wanted an excuse to go and play with some of these solvers to try to demystify them.
 
 In this post I want to describe what I learned solving a toy flow optimization problem with MIP and SAT solvers. I picked the belt balancer from the Factorio video game. It looks innocuous, but it has NP-hard complexity and a lot of nuances and hidden challenges. It's possible to solve intuitively small versions, making it fun, but it quickly scales to humanly impossible even for medium instances. What the majority of players do is to use online solutions that people come up with. One of the game mechanics is sharing the designs, called blueprints, as a string and there's a thriving community built around increasingly complex and more efficient designs.
 
 Let's define the problem next.
 
 # The Throughput-Unlimited Factorio Belt Balancer
-A core dynamic in Factorio is transporting items between different production buildings using conveyor belts, e.g., transporting raw stone from a mining drill to a Stone Furnace to be transformed into a brick. Since the throughput of a belt lane is limited, it's necessary to have multiple parallel lanes. In order to help prevent bottlenecks in the factory, parallel lanes needs to be balanced, for examples preventing a slow furnace lane from slowing down mining, automatically redirecting the excess throughput to other lanes.
+A core dynamic in Factorio is transporting items between different production buildings using conveyor belts, e.g., transporting raw stone from a mining drill to a Stone Furnace to be transformed into a brick. Since the throughput of a belt lane is limited, it's necessary to have multiple parallel lanes. To help prevent bottlenecks in the factory, parallel lanes needs to be balanced, for examples preventing a slow furnace from slowing down mining.
 
-To perfectly balance two belt lanes, we can use Mixer component, that's a 2x2 Belt Balancer. The problem arises when you have more than two lanes, e.g., four lanes. There are two problems that need to be solved at the same time: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is very easy to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead is making sure that every input flow is evenly distributed in all the outputs.
+To perfectly balance two belt lanes, we can use Mixer component, that's a 2x2 Belt Balancer. The problem arises when you have more than two lanes. We want two properties: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is very easy to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead ensures that every input flow is evenly distributed across all the outputs
 
-Finding a feasible solution is NP-hard, because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution is NP-complete, because will require enumerating all the possible solutions in order to find the best one. For the purpose of this post, I'll focus on feasibility because 2D space occupied is more important than minimizing the quantity of components used. Additionally, it's necessary to discard certain feasible non-optimal solutions. That's because of a subtle game mechanics. Fortunately I found a greedy algorithm to do it we can keep the complexity to NP-hard, still not great, but do-able for finding meaningfully large solutions.
+Finding a feasible solution is NP-hard, because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution (e.g. minimum number of components) is NP-complete, because will require enumerating all the possible solutions in order to find the best one. For this project, I focused on feasibility and making the balancer in a reasonably small 2D space, since the player cares about area occupied, not number of components. Additionally, it's necessary to discard certain feasible non-optimal solutions because of a subtle game mechanics I'll explain in a bit. Fortunately I found a greedy algorithm to do it and the overall complexity is NP-hard, still not great, but spending few hours it's possible to find solutions to a meaningful-sized problem, like a 16x16 balancer on a 16x16 grid.
 
+Let's see next a simple implementation using Mixed Integer Programming.
 # First implementation: Mixer Integer Programming
-- Naïve model — MIP
-    - Problems: numeric instability
-    - Very long time to converge
-    - Inverting flows 1min
-    - Can’t compute 4x4
+This first model is Mixed Integer Programming, I used the SCIP solver and Google OR-tools framework. I created a binary variable array for every cell, every component and every direction. We have three type of components: belts, underground belts and mixers. Belts take up one cell, mixers take up two cells, and underground belts take up two cells. Underground belts are set apart up to a maximum distance, modeled as an extra dimension on the array e.g. entrance 3 cells away is `u[x][y][d][3]` where x, y are the coordinates of the cell that contains the entrance, d is the direction and 3 is the distance of the exit in direction `d` from the entrance.
 
+// TODO: add variable code
+
+This first implementation works correctly for small grids, for example it can compute a 2x2 balancer and invert two flows (in about 1minute of computation), that are both trivial problems that can be solved by hand. The main problem of this approach is numeric instability: since the flows are modeled as floating point variables and there are a lot of "equal" constraints, on everything larger than a 2x3 grid the numeric errors accumulated and made those constraints not satisfied producing an infeasible solution or never terminating.
+
+Since this model doesn't even scale to a 3x3 I needed to explore alternative approaches. Before migrating to a different solver I built tests and tooling to inspect the solution.
 ### How to test the solution
-- Tools
-	- Integration tests
-	- Single character visualizer
-	- Flow visualizer
-	- Blueprint visualizer
-	- Testing on the game
-	- Loading solution: used to debug the model isolating one constraint at a time to check which one makes it infeasible
+Firstly I needed to decide how to represent the output in console, for me to understand if it makes sense or something went wrong.
 
+// TODO: belt notation
+
+Secondly I built tests around very simple cases:
+- transport a single flow on opposite side of the grid
+- mix two flows with a single mixer
+- use underground belts to minimize the number of components used
+These tests give me confidence that every change I make doesn't cause previous solutions to break. I used the notation I invented above to have a quick visual feedback when a test fails.
+
+It proved to be very valuable to also represent flows in every cell, in order to validate that every component is moving the flows according to the constraint I intended. Many times I modeled the constraints incorrectly and the solver cleverly exploited bugs in my model to quickly reach an incorrect solution.
+
+Another very useful tool is testing the solution inside the game. Factorio conveniently accept a base64 representation of the components on the 2D grid, so I can easily export what I believe being the solution and validate that it's indeed correct inside the game.
+
+Lastly a powerful debugging technique I invented to spot out broken constraints is providing a known solution and see what constraints it violates. Proving that a known solution is correct in my experience helps to find 90% of the mistakes, even the very subtle one.
+
+With all these new fancy tools we can next migrate to CP-SAT.
 # Discretize flows: CP-SAT
-- Discretize flow Migrate to CP-SAT: satisfiability
-    - Compute 4x4
-- Edge cases
-    - When not fully optimized the behavior may be broken because angles are not complete and loads items on half row
-Model underground flow rather than transporting it to the exit
-Compute 6x6
-Compute 8x8
-- Adding flow hints
-    - Improve 8x8
+CP-SAT is a Satisfiability solver built at Google. It can't deal with floating variables, so I discretized the flows. This solves the numeric instability problem, but raises the new issue: needing to know how many times the input flows will be split before reaching the output. It's necessary to set the input flow to at least that number (or a multiple of it) since the solver can only deal with integers and splitting integers in two not always returns an integer.
+
+Besides changing the flow variables type, nothing else in the model needed to be changed and worked much better out-of-the-box yielding immediately solutions up to 6x6 in very little time. The 8x8 solution was feasible after 30min of computation, suggesting an excessive number of free binary variables in the model and a very large search space.
+
+A very useful optimization I implemented was to represent underground belts as two independent components and model the underground flow with a second flow grind, that interacts with the rest of the flow grid through underground belt components.
+
+// Show visualization underground grid
+
+An additional improvement I adopted was hinting to the underground flows to be zero. I don't know exactly why it works, but a plausible explanation is that zeroing underground flow implies not using underground belts, and since they are very sparse in known solutions it converges faster. After this optimization we can find a 8x8 solution in 15minutes.
+
+Additionally, if we assume that the first and the last rows must have mixers and we add a couple of belts (breaking the symmetry) the solver finds an 8x8 solution in just 83s, impressive!
+
+// TODO: supply incomplete solution
 
 # Pre-computing flow between mixers with Banes Networks
 - Find 16x16 with some fixed variables in 1:30h
