@@ -55,16 +55,39 @@ A very useful optimization I implemented was to represent underground belts as t
 
 An additional improvement I adopted was hinting to the underground flows to be zero. I don't know exactly why it works, but a plausible explanation is that zeroing underground flow implies not using underground belts, and since they are very sparse in known solutions it converges faster. After this optimization we can find a 8x8 solution in 15minutes.
 
-Additionally, if we assume that the first and the last rows must have mixers and we add a couple of belts (breaking the symmetry) the solver finds an 8x8 solution in just 83s, impressive!
+Additionally, if we assume that the first and the last rows must have mixers and we add a couple of belts (breaking the symmetry) the solver finds an 8x8 solution in just 83s, great improvement!
 
 // TODO: supply incomplete solution
 
-# Pre-computing flow between mixers with Banes Networks
-- Find 16x16 with some fixed variables in 1:30h
-- Symmetry breaking 55min
-- Clos and Banes networks [https://en.wikipedia.org/wiki/Clos_network](https://en.wikipedia.org/wiki/Clos_network)
+As a rule of thumb: the lower the number of free binary variables the solver needs to find, the faster it will find a feasible solution. Using this heuristic I removed the `direction` as a dimension in every component vector (reducing the number of every vector by 75%) and set it as stand-alone variable. That allows us to remove few redundant variables.
 
+// TODO: add direction as additional parameter in the conditional constraint
+
+After spending many hours experimenting with various problem formulations, objective functions, hints, and solver strategies to find a feasible solution, I eventually hit a wall trying to and was never able to find a 16x16 balancer. Just to double-check if limited memory in my laptop was an issue I executed on a 48-core, 384 GB ram machine, with no feasible solution after few hours. With no other better idea in mind, I decided to decompose the problem in sub-problems I could solve independently, let's see how in the new section.
+
+# Pre-computing flow between mixers with Banes Networks
+Trying to model some balancer by hand I noticed a common abstract structure: two sources are mixed together, then the two resulting flows are mixed with two other flows with two mixers, than the four flows with other four etc. This suggests that I can abstract how flows are mixed and provide an abstract representation of the network and pass it to the solver in form of constraints. Modeling this problem in this way tell the solver exactly how many mixers it will need to place, as well as input and output of every mixer. Then the solver only needs to decide where to place the components. Every flow can only assume three values: -1, 0 and 1. 
+
+In order to force the output of a mixer to go as input of the next one I made them different flows: that's a [https://en.wikipedia.org/wiki/Graph_coloring](graph coloring problem). Empirically I observed that the number of flows remains the same, although I haven't studied the properties so it may be wrong at dimensions higher than 16x16.
+
+// TODO: representation of the network as suggestion
+
+Doing some research I found out that these abstract flow networks with two inputs and two outputs are called Banes networks, they are a special case of [https://en.wikipedia.org/wiki/Clos_network](Clos Networks).
+
+These networks are very easy to build by hand since they follow a regular structure, next step could be designing a greedy algorithm to build them. For now I resorted in hard-coding them as input.
+
+This technique, combined with fixing few mixers at the beginning and at the end and symmetry breaking allowed me to find the solution of the 16x16 balancer in 1:30h. I'm pretty satisfied about the result and I think I'll stop here for the time being since finding a 32x32 is exponentially harder and will require many additional architecture innovations and model optimizations.
+
+# A curious bug
+While testing a balancer in game, I realized it was producing less than the maximum theoretical throughput on some outputs. That was due to belt not curving as a consequence of an adjacent straight belt. This condition happens only if we're merging flows from two belts to one, but this should never happen because every flow starts in a mixer and always end in a mixer.
+
+// TODO: picture of straight belt half flow
+
+After some debugging a realized that it's due to the solver stopping when it finds a feasible solution, without trying to remove unnecessary components and leaving extra belts around in empty spaces. The solution is very simple: add an objective function that penalizes solutions that are using more components. It's not necessary to run the solver much longer than without the objective function, since once found a feasible solution it's trivial to remove components that don't contribute to the solution.
 
 # Conclusions
+We started this journey building a linear model and having SCIP finding very simple solutions, but could not even crack a 4x4 balancer that is easy to build by hand. Migrating to CP-SAT and applying various optimizations allowed us to arrive at an 8x8 balancer that is definitely very hard to build by hand. Splitting the problems in two sub-problems: pre-compute mixer wiring with Banes Networks and then placement with CP-SAT allowed us to scale and find the exponentially harder 16x16 that I can confidently say it's impossible to find by hand.
 
+It's been an interesting journey. I learned a lot along the way: how to model a problem for SCIP and CP-SAT. All the different type of linear and non-linear constraints. The role of the objective function.
 
+// Table of running time
