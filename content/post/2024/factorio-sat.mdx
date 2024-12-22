@@ -27,7 +27,6 @@ This first model is Mixed Integer Programming, we use the SCIP solver and Google
 
 ```python
 # flow of a source in a direction
-
 f = [[[[solver.NumVar(-1, 1, f'f_{i}_{j}_{s}_{d}') for d in DIRECTIONS] for s in range(num_sources)] for j in range(H)] for i in range(W)]
 
 # belt in a direction
@@ -155,7 +154,45 @@ solve_factorio_belt_balancer(
 
 As a rule of thumb: the lower the number of free binary variables the solver needs to find, the faster it will find a feasible solution. We can move the `direction` dimension from every component vector and create a separate variable, reducing the size of every vector by 75%. We can add multiple independent variables in constraints.
 
-// TODO: add direction as additional parameter in the conditional constraint
+```python
+# Belt
+b = [[solver.NewBoolVar(f'b_{i}_{j}') for j in range(H)] for i in range(W)]
+
+# Mixer. note that i, j are the left cell of the mixer
+m = [[solver.NewBoolVar(f'm_{i}_{j}') for j in range(H)] for i in range(W)]
+
+# Underground belt in a direction
+# Entrance
+ua = [[solver.NewBoolVar(f'ua_{i}_{j}') for j in range(H)] for i in range(W)]
+# Exit
+ub = [[solver.NewBoolVar(f'ub_{i}_{j}') for j in range(H)] for i in range(W)]
+
+# Flow of a source
+f = [[[[solver.NewIntVar(-max_flow, max_flow, f'f_{i}_{j}_{s}_{d}') for d in DIRECTIONS] for s in range(num_sources)] for j in range(H)] for i in range(W)]
+
+# Underground flow of a source
+uf = [[[[solver.NewIntVar(-max_flow, max_flow, f'uf_{i}_{j}_{s}_{d}') for d in DIRECTIONS] for s in range(num_sources)] for j in range(H)] for i in range(W)]
+
+# Direction of the component
+dc = [[[solver.NewBoolVar(f'd_{i}_{j}_{d}') for d in DIRECTIONS] for j in range(H)] for i in range(W)]
+```
+
+The direction variable `dc` can be combined with the other variables (e.g. the belts variable `b`) to enforce the constraints only if they are both `True`.
+```python
+# Flow Conservation for Belts
+# Flow into the belt must equal the flow out of the belt
+for i in range(W):
+	for j in range(H):
+		for s in range(num_sources):
+			for d in range(len(DIRECTIONS)):
+				solver.Add(
+					sum(
+						f[i][j][s][di] 
+						for di in range(len(DIRECTIONS))
+					) == 0
+				).only_enforce_if([b[i][j], dc[i][j][d]])
+```
+
 
 After spending few hours changing the problem formulation, objective function, using hints, and solver strategies, I eventually hit a wall trying to and was never able to find a 16x16 balancer. To confirm that the problem wasn't the limited amount of memory of my laptop, I executed on a 48-core, 384 GB ram machine, that didn't find any feasible solution for few hours. Next trick in the book is decomposing in sub-problems that could be solved independently.
 # Pre-computing flow between mixers with Banes Networks
