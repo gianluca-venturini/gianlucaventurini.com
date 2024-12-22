@@ -100,13 +100,58 @@ Besides changing the flow variables type, nothing else in the model needs to be 
 
 Next, we can represent underground belts as two independent components, rather than an extra dimension in the belt array. We can model the underground flow with a second flow grid, that interacts with the rest of the flow through underground belt components.
 
-// Show visualization underground grid
+// Show underground grid variables
 
 We can provide hints to the solver that the underground flow is zero in most cases. I don't know exactly why it works, but a plausible explanation is that zeroing underground flow implies not using underground belts, and since they are very sparse in known solutions it converges faster. After this optimization we can find a 8x8 solution in 15minutes.
 
 Additionally, if we assume that the first and the last rows must have mixers and we add a couple of belt components at random, applying a technique called [symmetry breaking](https://en.wikipedia.org/wiki/Symmetry-breaking_constraints), the solver finds a 8x8 solution in just 83s, great improvement!
 
-// TODO: supply incomplete solution
+```python
+solve_factorio_belt_balancer(
+	 grid_size=(8, 10),
+	 num_sources=8,
+	 input_flows=[
+		# Inputs
+		(0, 0, 'S', 0, 8),
+		(1, 0, 'S', 1, 8),
+		(2, 0, 'S', 2, 8),
+		(3, 0, 'S', 3, 8),
+		(4, 0, 'S', 4, 8),
+		(5, 0, 'S', 5, 8),
+		(6, 0, 'S', 6, 8),
+		(7, 0, 'S', 7, 8),
+		# Outputs
+		(0, 9, 'N', 0, -1),
+		(0, 9, 'N', 1, -1),
+		(0, 9, 'N', 2, -1),
+		(0, 9, 'N', 3, -1),
+		(0, 9, 'N', 4, -1),
+		(0, 9, 'N', 5, -1),
+		(0, 9, 'N', 6, -1),
+		(0, 9, 'N', 7, -1),
+		...
+		(7, 9, 'N', 0, -1),
+		(7, 9, 'N', 1, -1),
+		(7, 9, 'N', 2, -1),
+		(7, 9, 'N', 3, -1),
+		(7, 9, 'N', 4, -1),
+		(7, 9, 'N', 5, -1),
+		(7, 9, 'N', 6, -1),
+		(7, 9, 'N', 7, -1),
+	],
+	solution=
+		'↿↾↿↾↿↾↿↾' +
+		'‧‧‧‧‧‧‧▲' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧‧' +
+		'‧‧‧‧‧‧‧△' +
+		'↿↾↿↾↿↾↿↾'
+)
+```
 
 As a rule of thumb: the lower the number of free binary variables the solver needs to find, the faster it will find a feasible solution. We can move the `direction` dimension from every component vector and create a separate variable, reducing the size of every vector by 75%. We can add multiple independent variables in constraints.
 
