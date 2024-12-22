@@ -1,6 +1,6 @@
 ---
 title: TODO
-snippet: TODO
+snippet: I built a Factorio belt balancer solver. From tiny 2x2 grids to a massive 16x16 monster, every step revealed new solver tricks, numeric hiccups, and devious debugging puzzles.
 cover: /uploads/blog-subscribe/blog-subscribe-cover.webp
 date: 2024-12-23T15:00:00.000Z
 ---
@@ -99,9 +99,18 @@ Besides changing the flow variables type, nothing else in the model needs to be 
 
 Next, we can represent underground belts as two independent components, rather than an extra dimension in the belt array. We can model the underground flow with a second flow grid, that interacts with the rest of the flow through underground belt components.
 
-// Show underground grid variables
+```python
+# Underground belt in a direction
+# Entrance
+ua = [[solver.NewBoolVar(f'ua_{i}_{j}') for j in range(H)] for i in range(W)]
+# Exit
+ub = [[solver.NewBoolVar(f'ub_{i}_{j}') for j in range(H)] for i in range(W)]
 
-We can provide hints to the solver that the underground flow is zero in most cases. I don't know exactly why it works, but a plausible explanation is that zeroing underground flow implies not using underground belts, and since they are very sparse in known solutions it converges faster. After this optimization we can find a 8x8 solution in 15minutes.
+# Underground flow of a source
+uf = [[[[solver.NewIntVar(-max_flow, max_flow, f'uf_{i}_{j}_{s}_{d}') for d in DIRECTIONS] for s in range(num_sources)] for j in range(H)] for i in range(W)]
+```
+
+We can provide hints to the solver that the underground flow is zero in most cases. I don't know exactly why it works, but a plausible explanation is that zeroing underground flow implies not using underground belts, and since they are very sparse in known solutions it converges faster.
 
 Additionally, if we assume that the first and the last rows must have mixers and we add a couple of belt components at random, applying a technique called [symmetry breaking](https://en.wikipedia.org/wiki/Symmetry-breaking_constraints), the solver finds a 8x8 solution in just 83s, great improvement!
 
@@ -214,23 +223,23 @@ While testing a balancer in game, I realized it was producing less than the maxi
 
 // TODO: picture of straight belt half flow
 
-After some debugging, I realized that it's due to the solver stopping when it finds the first feasible solution, without trying to remove unnecessary components and leaving extra belts around where it should leave empty spaces. The solution is simple: add an objective function that penalizes solutions using more components. Finding a slightly more optimal solution than the first feasible one is trivial and doesn't take the solver much time. Counterintuitively, adding an objective function brought down the time for solving a 16x16 to 55min, likely because having an objective skews the solver towards a feasible solution faster than random search.
+After some debugging, I realized that it's due to the solver stopping when it finds the first feasible solution, without trying to remove unnecessary components and leaving extra belts around where it should leave empty spaces. The solution is simple: add an objective function that penalizes solutions using more components. Finding a slightly more optimal solution than the first feasible one is trivial and doesn't take the solver much time. Counterintuitively, adding an objective function brought down the time for solving a 16x16 to 30min, likely because having an objective skews the solver towards a feasible solution faster than random search.
 # Conclusions
 
 We started this journey building a linear model with continuous variables and having SCIP finding very simple solutions, but could not even crack a 4x4 balancer that is easy to build by hand. Migrating to CP-SAT and applying various optimizations allowed us to obtain a 8x8 balancer that is definitely very hard to build by hand. Splitting the problems in two sub-problems: pre-computing mixer wiring with Banes Networks and placement with CP-SAT allowed us to scale and find the exponentially harder 16x16 balancer that I can confidently say it's impossible to find by hand.
 
-Here's the table of time needed to find a solution on my 12 cores Macbook Pro M4:
+Here's the table of CPU time needed to find a solution on my 12 cores Macbook Pro M4:
 
-| Balancer | MIP SCIP | CP-SAT   | CP-SAT Banes Networks | CP-SAT Banes Networks fully optimized        |
-| -------- | -------- | -------- | --------------------- | -------------------------------------------- |
-| 2x2      | 0.06s    | 4.94s    | 0.17s                 | 0.19s                                        |
-| 3x3      | --       | 22.34s   | 22.42s                | 23.80s                                       |
-| 4x4      | --       | 25.50s   | 22.83s                | 19.95s                                       |
-| 6x6      | --       | --       |                       |                                              |
-| 8x8      | --       | 5669.16s | 2716.66s              | 14727.74s                                    |
-| 16x16    | --       | --       | --                    | ~55min (placed mixers and symmetry breaking) |
+| Balancer | MIP SCIP | CP-SAT   | CP-SAT Banes Networks | CP-SAT Banes Networks fully optimized                             |
+| -------- | -------- | -------- | --------------------- | ----------------------------------------------------------------- |
+| 2x2      | 0.06s    | 4.94s    | 0.17s                 | 0.19s                                                             |
+| 3x3      | --       | 22.34s   | 22s                   | 23s                                                               |
+| 4x4      | --       | 25.50s   | 22s                   | 19s                                                               |
+| 6x6      | --       | --       | 2583s                 | 2399s                                                             |
+| 8x8      | --       | 5669.16s | 543s ??               | 2168s                                                             |
+| 16x16    | --       | --       | --                    | 19173s (heuristic initial mixers placement and symmetry breaking) |
 
-It's been an interesting journey. I learned how to model for SCIP and CP-SAT solvers, using different type of linear and non-linear constraints. The role of the objective function.
+It's been an interesting journey. We learned how to model for SCIP and CP-SAT solvers, using different type of linear and non-linear constraints, how small changes to the model wildly change the solving time and the role of the objective function in finding a solution that works well in practice.
 
 CP-SAT - 82d9734faa62195a59941d9318516266bbca50ba
 CP-SAT Banes Networks - 8637ff8d38e5acb2f1e62b2c5040aa65bd44b946
@@ -245,8 +254,10 @@ CP-SAT Banes Networks, direction optimized - 81cd1a99820d1af18321359722dd461f164
 0eJydltFugyAUhl+l4douAmpbL/cay7Joe9KQUCSAS5vGd9+xNqYrNgVuNAp8n3j40StpZQ/aCOVIfSXCwYnUD/cyIpsWJN77BOlWbSMbtQezwgax75Ql9deVWHFUjRzHu4sG7HvDZEQ1p/HKmUZZ3Rm3RpIjAw5VBziTmg7fGQHlhBMwkW4Xlx/Vn1ow2GFmwFkbsHbd40hzNB2eJ1pGdGcR0KnRj9A8Ixc8ouX+MF3vdD92PAgD+6knNnsy5smslsI5bPMk9KOcNW+wPGEOPHUORYKM3mQ0XlYmyFiqrEp+jQ8yoYJcm+Rlx6JdW8/1FJcX9WL/Vx5bQO+i0SwUTfNoNl9iL70R6qf+dRDzexB5ANcPeGhZi/j1Sv3chxW2CJiJH/Owyj6xqyW2n+qwyoawU0I8VaCMDhZNSTFNlfkxDt0LE2Txweaz6t1H0A/2+/BVAdyYULNXXPxd+AVjp21pS4vNjm0qXhSc5cPwB6A++ck=
 
 6x6
+0eJydmdFuozAQRX+l8jNdBWMbk8f9jVW1SlqrQqIEAVk1qvLv65Qu6uJpfWdeWiWQM56xj8cJb+rYncMwtv2s9m+qncOL2n96r1Dd4Ri6+N7P0M13x0N36B/DeBcvtI+nflL7X29qap/7Q3f7/HwZQrz3HVOo/vByezWPh34aTuN8H0mzusaP9k/hVe3L60OhQj+3cxsW0vuLy+/+/HIMY7xhZYTXYQzTdL9hFWo4TfHjp/4WPSJ3hbrEvzHGUzuGx+WKuRYJWifocxzU+Dye4v8v4OUK/8jzdJ6H8+3GT8EcEaxKgk1D185zvJYE0T8slcOOwBoG1uBYy8A6HOsEFffbirc9VPCavXAaKg0K7YVrsvwfrQl0w0aXKLrcsdmaYlMTW6aafr1gqo8Fg3BTR3NjxtmpkvnV6Fb6N/6T0VJT89FqcbRU4Hy0Rhwt9RoTQgOrNvUY3aX1t3sGGSw1Ox9Mb4NRZSOj8WWvqLJRU6JT2fOZGCQTMhq/S1s4E0mbdkgm1NauJZtCDSw3MjXJnuCBYGRm6ZaANUSdb4haugFUwPzzG3lJsckTIL+Ta4pN1kRqd5XfFCt+Kzcwm9PKF4tjQwe4/Fbu4DGn1ubYNbr+qlTSHNvD45Y6iYxb6qQB2FInDVATqZPIuFMn8xtutdKZXdFILQWqZPgd11Fsalc0fFNreNx8Uz06u0bSTpvt7IK92/DVXfSyQCKS78nlSmceeYzkhK230cBTiOHbXVFlI9n8jmvQKbGS87QVFslK5bZ5ua1UbqRIUrmBybX8NtzA45a67IB689twCbPl5jr+PmFTdfO/8Tig+pKmbLdZgGo5fk92VCIkO9UW/e4oSCT1+OvZ8PhsOL7Diws1wOY7XFJs6mDh+A5rmM13uIJrwj9KG5jNb7aWYpPrT2KtW+m8w1bNt7ZGi1Tzm62H2fxm28Bsqag+31hqqag+v3BqqagIW3JwrlY6c1FKuq+RBuM0X/ux3XtgFfHPzDXFprZNz7fWo+P2fGsbmM23djGrAWoi+X25XOm8xxme83T430PnBigQ5/GwYXBTffOPnRGuxFS/LTr6WMfzu25DZ/JQqD9hnJZIvjR1o2tXGVPp3fX6F5rucIg=
 
 8x8
 0eJydmNtu4jAQhl+l8nW6IrZjA5f7GqtqFahVWQpO5DirIsS7ryEVexgLz8xVFJJ8P3P4fbqIw7C4KfqQxP4ifHInsf/rt0YM/cEN+bfvbkgvh37ow9HFl/zAH8cwi/2Pi5j9R+iH2/fpPLn87h3TiNCfbncp9mGexpheMymJa/40vLtPsW+vb41wIfnk3Uq635x/huV0cDG/8GC4zym6eX6dp8GnlJ81Yhrn/OEYbroZtvnWNeKcr5n/7qM7rs/yLcBKAlbisYqA1XisJmANHtsB7JKrEj/imK9rpWCO7/A2w78KPS5pWm4vVsQMQ6zlilmGmOSKbYHYf+0OpNRDqoLeMeLQ3DjaDUOtY6tBZ9fVDFsNGr5WJIstUgtdX2OvjS3/ZcsSG1of28nyT5Z8AEkqisEBAdfJEpEk6P8aW5fYpsSGdq+xOzQbuhvbpvJ5mxYrAA2Pa1NEBSTH3utwr562UlEMuhvnCYUIhO5lWWKXyi2hl7EjLiNJ0Ny4vsUkie5lg04S3csWzaZ7ee1RjcgJx8vtg/7Ey8VI6F6W2EgU9DJupNb1KUfRravR/xtaF7vE0E/tVSqAos/LphRIkU23rkUnCVq3vjnpEFxo2/o2AsPlWtYgmpG+uG7RbK5BTT0nmjPZqgeduLrVXMsisqTps22HZnMdiqkAZ+Vs2RXg76UtQ42/mbbkVYrmb6YZYpwpWrPzyNlfd8zQOs6QYLhinN312o9buhjlNK39mli2iPMpzmJccYPgjBeaK0aZ4jtCxjgDg+UGAQeG+tnsDhEEHAPq6x8MF7q9fjqL4Bpo7Pq6CnDfGvHLxXmdK7ettjtpjdJayc31+hsxzQHI
 
 16x16
+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
