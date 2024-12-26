@@ -1,8 +1,8 @@
 ---
-title: TODO
+title: "Learning Solver Design: Automating Factorio Balancers"
 snippet: I built a Factorio belt balancer solver. From tiny 2x2 grids to a massive 16x16 monster, every step revealed new solver tricks, numeric hiccups, and devious debugging puzzles.
 cover: /uploads/factorio-tools/cover.webp
-date: 2024-12-23T15:00:00.000Z
+date: 2024-12-27T15:00:00.000Z
 ---
 I find declarative programming fascinating: we just model the problem, describe the result we want and an “oracle” conjures a solution for us. A lot of smart people spent decades building these oracles or solvers for different problem classes and I wanted an excuse to go and play with some of these solvers to learn optimization tricks along the way.
 
@@ -182,12 +182,8 @@ I found out that these abstract flow networks with two inputs and two outputs ar
 
 They are very easy to build by hand since they follow a regular structure, so we can skip designing a greedy algorithm to build them for now and simply hard-code them as input.
 
-This technique, combined with placing mixers on first and last rows and symmetry breaking, allows us to find the solution of the 16x16 balancer in 1:30h.
-
-![16 x 16 belt balancer](</uploads/factorio-tools/16_16.webp>)
-
 # Reduce the number of binary variables
-One last optimization we can make is lowering the number of binary decision variables to reduce the solution search space. We can consolidate the `direction` of components: rather than having one more dimension in every component type array, we can have a separate array with the four dimensions. This reduces. the component decision variables by roughly 50%.
+One last optimization we can make is lowering the number of binary decision variables to reduce the solution search space. We can consolidate the `direction` of components: rather than having one more dimension in every component type array, we can have a separate array with the four dimensions.
 
 ```python
 # Belt
@@ -228,52 +224,63 @@ for i in range(W):
 				).only_enforce_if([b[i][j], dc[i][j][d]])
 ```
 
+The optimization reduces component decision variables by roughly 50%, drastically cutting the amount of memory needed. Here you can see the number of variables before the optimization.
+```bash
+❯ time python ft.py --solve_balancer=16x16_n
+
+Initial satisfaction model '': (model_fingerprint: 0x71bae86a7b86068a)
+#Variables: 60'032
+  - 31'360 Booleans in [0,1]
+  - 28'672 in [-1,1]
+#kAtMostOne: 224 (#literals: 56'192)
+#kLinear1: 3'643'136 (#enforced: 3'639'296 #multi: 14'336)
+#kLinear2: 143'328 (#enforced: 116'576 #multi: 14'336)
+#kLinearN: 98'336 (#enforced: 96'512) (#terms: 2'912'256)
+```
+
+And here is the number of variables after the optimization. Note that we traded having less variables (less memory) for more constraints (more CPU time spent verifying every candidate solution).
+```bash
+❯ time python ft.py --solve_balancer=16x16_n
+
+Initial optimization model '': (model_fingerprint: 0xb681e6a3ac9e02fb)
+#Variables: 45'056 (#bools: 1'024 in objective)
+  - 12'288 Booleans in [0,1]
+  - 32'768 in [-1,1]
+#kAtMostOne: 256 (#literals: 1'984)
+#kBoolOr: 64 (#enforced: 64 #multi: 64) (#literals: 0)
+#kExactlyOne: 256 (#literals: 1'024)
+#kIntProd: 2'048
+#kLinear1: 4'180'286 (#enforced: 4'178'048 #multi: 4'177'984)
+#kLinear2: 164'416 (#enforced: 133'696 #multi: 133'696)
+#kLinear3: 64 (#enforced: 64 #multi: 64)
+#kLinearN: 114'464 (#enforced: 112'384 #multi: 112'384) (#terms: 3'356'480)
+```
+
+This technique, combined with placing mixers on first and last rows and symmetry breaking, allows us to find the solution of the 16x16 balancer in about 55min.
+
+![16 x 16 belt balancer](</uploads/factorio-tools/16_16.webp>)
+
 I'm pretty satisfied about the result and I decided to stop here since finding a 32x32 is exponentially harder and will require many additional architecture innovations and model optimizations.
 # A curious bug
 
 While testing a balancer in game, I realized it was producing less than the maximum theoretical throughput on some outputs. That was due to a belt not curving as a consequence of an adjacent straight belt. This condition happens only if we're merging flows from two belts without using a mixer, a condition that should never happen in practice.
 
-// TODO: picture of straight belt half flow
+![16 x 16 belt balancer](</uploads/factorio-tools/16_16_bug.webp>)
 
 After some debugging, I realized that it's due to the solver stopping when it finds the first feasible solution, without trying to remove unnecessary components and leaving extra belts around where it should leave empty spaces. The solution is simple: add an objective function that penalizes solutions using more components. Finding a slightly more optimal solution than the first feasible one is trivial and doesn't take the solver much time. Counterintuitively, adding an objective function brought down the time for solving a 16x16 to 30min, likely because having an objective skews the solver towards a feasible solution faster than random search.
 # Conclusions
 
 We started this journey building a linear model with continuous variables and having SCIP finding very simple solutions, but could not even crack a 4x4 balancer that is easy to build by hand. Migrating to CP-SAT and applying various optimizations allowed us to obtain a 8x8 balancer that is definitely very hard to build by hand. Splitting the problems in two sub-problems: pre-computing mixer wiring with Banes Networks and placement with CP-SAT allowed us to scale and find the exponentially harder 16x16 balancer that I can confidently say it's impossible to find by hand.
 
-Here's the table of CPU time needed to find a solution on my 12 cores Macbook Pro M4:
+Here's the table of CPU time needed (measured with the `time` command) to find a solution on my 12 cores Macbook Pro M4:
 
-| Balancer | MIP SCIP | CP-SAT   | CP-SAT Banes Networks | CP-SAT Banes Networks optimized                                   |
-| -------- | -------- | -------- | --------------------- | ----------------------------------------------------------------- |
-| 2x2      | 0.06s    | 4.94s    | 0.17s                 | 0.19s                                                             |
-| 3x3      | --       | 22.34s   | 22s                   | 23s                                                               |
-| 4x4      | --       | 25.50s   | 22s                   | 19s                                                               |
-| 6x6      | --       | --       | 2583s                 | 2399s                                                             |
-| 8x8      | --       | 5669.16s | 543s ??               | 2168s                                                             |
-| 16x16    | --       | --       | --                    | 19173s (heuristic initial mixers placement and symmetry breaking) |
+| Balancer | MIP SCIP                               | CP-SAT                        | CP-SAT Banes Networks         | CP-SAT Banes Networks optimized                                   |
+| -------- | -------------------------------------- | ----------------------------- | ----------------------------- | ----------------------------------------------------------------- |
+| 2x2      | 0.06s                                  | 4.94s                         | 0.17s                         | 0.19s                                                             |
+| 3x3      | -- (Never terminating after few hours) | 22.34s                        | 22s                           | 23s                                                               |
+| 4x4      | --                                     | 25.50s                        | 22s                           | 19s                                                               |
+| 6x6      | --                                     | --                            | 2583s                         | 2399s                                                             |
+| 8x8      | --                                     | 5669.16s                      | 1365s                         | 2168s                                                             |
+| 16x16    | --                                     | -- (Requires too much memory) | -- (Requires too much memory) | 19173s (heuristic initial mixers placement and symmetry breaking) |
 
-It's been an interesting journey. We learned how to model for SCIP and CP-SAT solvers, using different type of linear and non-linear constraints, how small changes to the model wildly change the solving time and the role of the objective function in finding a solution that works well in practice.
-
-CP-SAT - 82d9734faa62195a59941d9318516266bbca50ba
-CP-SAT Banes Networks - 8637ff8d38e5acb2f1e62b2c5040aa65bd44b946
-CP-SAT Banes Networks, direction optimized - 81cd1a99820d1af18321359722dd461f16437d98 main
-
-
-
-3x3
-0eJydltmOgyAUhl+l4dpOZOnmZV9jMploe9KQUCSAE5vGdx/UprNAA3hlkHO+s/Gjd9SIDpTm0qLqjriFK6p+vSuQqBsQ7t0RhF01tajlCfTKbfBTKw2q3u/I8Iusxehvbwqc7YQpkKyv48rqWhrVart2JIsG5yrP0KMKDx8FAmm55TCTpsXtU3bXBrQzeDKgVxqMWXfOU190654zrUCqNQ7QyjF+P/ncUFW6KI9k2s6qbjQ8cw2n2dJte8GIF8wowa11e14Q8rZ5holgqYf91w8PXk5o/BdNAmiWjcap6E02moTQoYZsFwyVPuGZQ90t7D6J17FffDjJTx1cJpVxWDgOEp80LrPZNJntCzjGZiE2C7F9vaaNlsZHi33Rvr4L8OMuSOH6ik09+zT7zOB8DbNQIcHm+yJOaz5LaFK+ZnEy2xdt/JJP4eYLlIXYoV4TX6Cvcy4fOW/iOZN8cZJkdr44aTI7/4vKQuzt+PfxBdrM19ces92B7LaUMUrKYfgGVN8VJw==
-
-4x4
-0eJydltFugyAUhl+l4douAmpbL/cay7Joe9KQUCSAS5vGd9+xNqYrNgVuNAp8n3j40StpZQ/aCOVIfSXCwYnUD/cyIpsWJN77BOlWbSMbtQezwgax75Ql9deVWHFUjRzHu4sG7HvDZEQ1p/HKmUZZ3Rm3RpIjAw5VBziTmg7fGQHlhBMwkW4Xlx/Vn1ow2GFmwFkbsHbd40hzNB2eJ1pGdGcR0KnRj9A8Ixc8ouX+MF3vdD92PAgD+6knNnsy5smslsI5bPMk9KOcNW+wPGEOPHUORYKM3mQ0XlYmyFiqrEp+jQ8yoYJcm+Rlx6JdW8/1FJcX9WL/Vx5bQO+i0SwUTfNoNl9iL70R6qf+dRDzexB5ANcPeGhZi/j1Sv3chxW2CJiJH/Owyj6xqyW2n+qwyoawU0I8VaCMDhZNSTFNlfkxDt0LE2Txweaz6t1H0A/2+/BVAdyYULNXXPxd+AVjp21pS4vNjm0qXhSc5cPwB6A++ck=
-
-6x6
-0eJydmNtuozAQQH+l8jNdgW9cHvsbq6oiqVUhEYPArBpF+fc6IULbeBLP+CkiwLFn7OOxObFdv5hx6qxjzYl1zhxY899/Gevbnen9f2+mdy+7tm/t3kwv/ka3H+zMmr8nNndftu0v77vjaPyzV0zGbHu4XLmptfM4TO7Vkxw7+1ftp/lmTXF+z5ixrnOdWUnXi+OHXQ47M/kHNob5Hiczz6/z2HfO+XsZG4fZvzjYS7sexv+ojB1Zk3v+ZzeZ/XrPXwZYTsBKPFYQsBqPlQH2LqEBvLiii99oDqAVGc0hNNRrTUiGuCUDgS3JPUajqwC9+Gk6fU2D/30A1xv8NvOHxY3L5cFIY3VCY2VqY0WeOIV4PGtF6Gg8Er7Rn0SiodZCdWORCHQkob/xSCQmErA1utYKHQndaw2xwREIxY6xSzQ7tDs+AtX9CHQWN5VC32OB1OhAQr1xC6uIr9mcLrOA2GBhDGXGDS6GTVe3gthQvnmoLm4sMf2mi5pf2fI3W0LsUNT4hC82OnHx5KG62KU60hqYtxSZ5X1rSJk5XWYFDRLITq/VzwMB95B0uysoEJBNt7tGs+l2r5aouCWCbneBZtPt5hAbmjiCXoYFxIaqgEhxWW70x5MSbCx1160QEyd9262eL0pgJPTCXGIjkanqYtip6mLYlONwfjuq6bhaknIe5jAX7G/qzhnDDpV93OeK0Gf6rnldHktEnul2FhAb8kXS6yqH2GBO6C4KLFvRXVRodsqJV2902n5A0etqiR1cRa+rFTpJdElrNJteV1eZKkROUupqsdFpdVWlbJE5ojEwa3SVBZQ1kJ2yRZaJgejQ7cdrtLqt0YggdOrhF8MONcZ+2ajouxydehzGRBKKHa/qNYJLqbySwKV8iNaPuO8Z+2emec14Vciy5qUWUgqen88/jQ+Q6Q==
-
-8x8
-0eJydmNtu4jAQhl+l8nW6IrZjA5f7GqtqFahVWQpO5DirIsS7ryEVexgLz8xVFJJ8P3P4fbqIw7C4KfqQxP4ifHInsf/rt0YM/cEN+bfvbkgvh37ow9HFl/zAH8cwi/2Pi5j9R+iH2/fpPLn87h3TiNCfbncp9mGexpheMymJa/40vLtPsW+vb41wIfnk3Uq635x/huV0cDG/8GC4zym6eX6dp8GnlJ81Yhrn/OEYbroZtvnWNeKcr5n/7qM7rs/yLcBKAlbisYqA1XisJmANHtsB7JKrEj/imK9rpWCO7/A2w78KPS5pWm4vVsQMQ6zlilmGmOSKbYHYf+0OpNRDqoLeMeLQ3DjaDUOtY6tBZ9fVDFsNGr5WJIstUgtdX2OvjS3/ZcsSG1of28nyT5Z8AEkqisEBAdfJEpEk6P8aW5fYpsSGdq+xOzQbuhvbpvJ5mxYrAA2Pa1NEBSTH3utwr562UlEMuhvnCYUIhO5lWWKXyi2hl7EjLiNJ0Ny4vsUkie5lg04S3csWzaZ7ee1RjcgJx8vtg/7Ey8VI6F6W2EgU9DJupNb1KUfRravR/xtaF7vE0E/tVSqAos/LphRIkU23rkUnCVq3vjnpEFxo2/o2AsPlWtYgmpG+uG7RbK5BTT0nmjPZqgeduLrVXMsisqTps22HZnMdiqkAZ+Vs2RXg76UtQ42/mbbkVYrmb6YZYpwpWrPzyNlfd8zQOs6QYLhinN312o9buhjlNK39mli2iPMpzmJccYPgjBeaK0aZ4jtCxjgDg+UGAQeG+tnsDhEEHAPq6x8MF7q9fjqL4Bpo7Pq6CnDfGvHLxXmdK7ettjtpjdJayc31+hsxzQHI
-
-16x16
-0eJylnN1u2zgQhV+l0LUbaEjqL5d9jUWxcFKhMODIhiwvGgR591Vix901p9Y5J1eBE+ebkDOHHFLHeSketsd+P26Gqbh/KTZT/1Tc/+d7q2K7fui38/e+9dvpy8N6ux4e+/HL/IPN4244FPd/vRSHzc9hvX37/el538/vfcesimH99PZqGtfDYb8bp68zaSpe518dfvS/int7/b4q+mHaTJv+RHp/8fz3cHx66Mf5DRdG/2s/9ofD18N+u5mm+WerYr87zL+4G97izrDyrloVz/PXmf9jM/aPp5/NLzNsILABx0YCm3BsIrA1jq0IbItjawJrRM4ahkskrWW4RNa6jHslg7yA39G2jLaSZhvMziW3xA4wO9fdEjvC7Fx8S+wEs3MFLrErmJ3LcIldw+xci0vsBmbnelxitzA71+QSu4PZvC4NFmbIhXmcd7rx57ibv/4J/1ub591zd5z2x7d3LoXLtQqEC3I4Xr4G6zfw+jVYwIEXsMEKDrmCl7NwKqkgJCHXNJBzOVqu8uVoQY7G7MXxvBUHIEO85mF2VCRfqzMUFcU3crRc8MvRWjlavgIsR+vkaMKSUMJFwW/qZh689uD8rm4BhlNtNqHBmGsbWLcqOb1q+x3/P5TgncfU9hthKwIPF/rH8XvIJskNpug7XgdDU5IUfSc5mtqzx+VaTmrPHpcFmNSeHWGrPTvCVnt2hC337AC8+kTPvlCXnuYq/nxtAS3MSu7QEbjcoSNwuUNHUszr9VQ+CfjD9X483Vyw3WB6Oy4E4xVdebPmqiBXNNo13x6IF6xWFN6Ks1YrG3inBhP0Dld2Leg9oAVQC3qP8F+unMjPa1Xil/RaaMhdpbhjYRryj+v0CuDy6g4wm9+vo8f21vJGEXO60G+k1o2mqLlCormPOJR+vL6OBq4dDS/vxkuSp4iGV3eLFlfDPLfqcEE08rEagSsbt0UgtW7V8tq2BAtQ2bot0wRYpS1/1j5tcDXw5E+6Pr/QSXG3/F4dvJF4emuVo3W8HgnYTrXK82gkHcqu3cnpEOSOV5Ykd6i03IwIendryx1LrnfgATkA7lRpNwBbl3bDdwmdsm8HJJo7NkXstRyN38obOEuK4tvrkYCbYscLvvMG4rL5izXDa1lQt8F/uXC1FlC4lcJNecTpksiTqgQrhdN2hWbZSr4fPyWiXe4PrMxVjDYILd0gWKnour6Ohu5+VqpX5i2SFl7aHQ4XpF3iSZc6dVOz7rjS4DPOQtp9o9on5K+UmeBeO8sfKQXBv3aSf4fA1YdhHVBmjoMNVXsnVJly394A0fyJUxr59joaXmLqQzSoCKTloEQG45s9P/FgTUjVZ8xwSjil5z8bCUshnLo8GGBVNscfh7YH0mCUFSPp4fj+oCLmjm8QGoIuW2FLoIMWjHFW4njHG3fj6sDuiFl3jHCoF7UE9jTH+Ya6USG88GjNn5zk4vnt/pxVyGgvPV37zScvV8zxuy1/WgcbCfNsLVFkxe3WZHMEXm2Y43a78VmecyHdAZf95njd0EtZKdmO/w34+BCUE8ftBnyCCEMrV3IfC4aQb8HcZv5wfLzql7EALH6Cw80IOr8dB5fuJ5rfjiNB57fjhNMdoxvYBkF0fkOuXbpbkYKxrSHo/Hbc4hUpWNs6gi5YzX2x+mkVxOqr1ccLF+eEXAULmxF6dVxsaJeIlKXjW0NXeQjPK/ZcOICf0xxrGtwl3nay++GUHTjo4XhNR2LueE0ngq7coFX6VClXaLUejpd8Q8wdr/gWp0vetk6eKsncZqUeTzhUGzF7sl8Vwyt3ZBb12fqEiVWKJ7tYsenjd/pzpQEmWXMcbzfOdh9HO4iselkhumBvSwSdOUxXzKwIZraGoMv9OERn/GsdNSvyxz4xvOxQxfDSRz8xtNCHM3jm+utyZwTYds3xqAF3jxCZ0WaiyMw9V02RmX9w1FJkRpPGpZDxixuXQ+p/Hf05id9XxT/9eDgd8ltLTReaOqYUQ/n6+i8RQH96
-
-
-
-ffmpeg -i 3_3.mov -t 1 -vf "fps=40,scale=640:-1:flags=lanczos" -c:v libwebp -compression_level 6 -q:v 20 -loop 0 3_3-2.webp
+It's been an interesting journey. We learned how to model for SCIP and CP-SAT solvers. We used both linear and non-linear constraints. We observed how small changes to the model wildly change the solving time. We made a memory/CPU tradeoff to find the 16x16 balancer. And lastly we've seen the role of the objective function in finding a valid solution that works well in practice without having to add additional explicit constraints.
