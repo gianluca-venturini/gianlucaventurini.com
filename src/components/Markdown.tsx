@@ -29,6 +29,30 @@ const components: Components<CustomComponents> = {
             <div />
         ),
     img: (props) => (props ? <Image {...props} /> : <div />),
+    table: (props) =>
+        props ? (
+            <p>
+                <table className="border-collapse border border-neutral-400">
+                    {props.tableRows.map((row, rowIndex) => (
+                        <tr
+                            key={rowIndex}
+                            className="border border-neutral-400"
+                        >
+                            {row.tableCells.map((cell, cellIndex) => (
+                                <td
+                                    key={cellIndex}
+                                    className="border border-neutral-400 p-2"
+                                >
+                                    <TinaMarkdown content={cell.value} />
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </table>
+            </p>
+        ) : (
+            <div />
+        ),
     // Custom components
     Visualization: (props) => <h1>{props?.title}</h1>,
     Image: (props) => (props ? <Image {...props} /> : <div />),

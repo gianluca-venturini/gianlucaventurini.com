@@ -14,11 +14,11 @@ Let's define the problem next.
 
 A core dynamic in Factorio is transporting items between different production buildings using conveyor belts, e.g., transporting raw stone from a mining drill to a Stone Furnace to be transformed into a brick. Since the throughput of a belt lane is limited, it's necessary to have multiple parallel lanes. To help prevent bottlenecks in the factory, parallel lanes needs to be balanced, for examples preventing a slow furnace from slowing down mining.
 
-// TODO: illustrate with components that produce different throughput
+![The last Furnace is sometime idle waiting for new resources. We don't want that.](</uploads/factorio-tools/no_balancer.webp>)
 
 To perfectly balance two belt lanes, we can use Mixer component: that's a 2x2 Belt Balancer. The issue arises when you have more than two lanes. We want two properties: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is easier to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead ensures that every input flow is evenly distributed across all the outputs.
 
-![4 x 4 Throughput-Limited belt balancer](</uploads/factorio-tools/4_4_limited.webp>)
+![4 x 4 naïve Throughput-Limited belt balancer](</uploads/factorio-tools/4_4_limited.webp>)
 
 Finding a feasible solution is NP-hard, because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution (i.e., minimum number of components) is NP-complete, because will require enumerating all the possible solutions in order to find the best one. For this project, I focused on finding the a reasonably small balancer, since the player cares about 2D area occupied, not number of components.
 
@@ -174,13 +174,15 @@ After spending few hours changing the problem formulation, objective function, u
 
 Trying to model some balancer by hand, I noticed a common layer structure. In the first layer two sources are mixed together, in the second two mixed flows from the first layer are mixed with other two etc. This suggests that I can abstract how flows are mixed and provide it to the solver as an additional constraint. Then the solver only needs to decide where to place a pre-computed number of mixers and how to connect them using belts. We can also lower the cardinality of the flows since we don't have to guarantee maximum throughput explicitly.
 
-In order to force the output of a mixer to go as input of the next one I made them different flows reducing to a [graph coloring problem](https://en.wikipedia.org/wiki/Graph_coloring). Empirically I observed that the number of flows remains the same, although I haven't studied the properties, so it may be wrong at dimensions higher than 16x16.
+In order to force the output of a mixer to go as input of the next one I made them different flows reducing to a [graph coloring problem](https://en.wikipedia.org/wiki/Graph_coloring). Empirically I observed that the number of different flows (edge colors in the graph) grows linearly with the number of inputs and outputs.
 
-// TODO: representation of the network as suggestion
+![Banes network for a 8x8 balancer](</uploads/factorio-tools/network.png>)
 
 I found out that these abstract flow networks with two inputs and two outputs are called Banes networks, they are a special case of [Clos Networks](https://en.wikipedia.org/wiki/Clos_network).
 
 They are very easy to build by hand since they follow a regular structure, so we can skip designing a greedy algorithm to build them for now and simply hard-code them as input.
+
+This change alone wasn't able to produce a solution for a 16x16 balancer because the program kept getting killed due to high memory consumption. Let's see next how to trade a lower memory footprint for a higher running time.
 
 # Reduce the number of binary variables
 One last optimization we can make is lowering the number of binary decision variables to reduce the solution search space. We can consolidate the `direction` of components: rather than having one more dimension in every component type array, we can have a separate array with the four dimensions.
@@ -265,7 +267,7 @@ I'm pretty satisfied about the result and I decided to stop here since finding a
 
 While testing a balancer in game, I realized it was producing less than the maximum theoretical throughput on some outputs. That was due to a belt not curving as a consequence of an adjacent straight belt. This condition happens only if we're merging flows from two belts without using a mixer, a condition that should never happen in practice.
 
-![16 x 16 belt balancer](</uploads/factorio-tools/16_16_bug.webp>)
+![16 x 16 belt balancer with an bottleneck due to an implicit constraint.](</uploads/factorio-tools/16_16_bug.webp>)
 
 After some debugging, I realized that it's due to the solver stopping when it finds the first feasible solution, without trying to remove unnecessary components and leaving extra belts around where it should leave empty spaces. The solution is simple: add an objective function that penalizes solutions using more components. Finding a slightly more optimal solution than the first feasible one is trivial and doesn't take the solver much time. Counterintuitively, adding an objective function brought down the time for solving a 16x16 to 30min, likely because having an objective skews the solver towards a feasible solution faster than random search.
 # Conclusions
@@ -274,7 +276,7 @@ We started this journey building a linear model with continuous variables and ha
 
 Here's the table of CPU time needed (measured with the `time` command) to find a solution on my 12 cores Macbook Pro M4:
 
-| Balancer | MIP SCIP                               | CP-SAT                        | CP-SAT Banes Networks         | CP-SAT Banes Networks optimized                                   |
+| Balancer | MIP SCIP                               | CP-SAT                        | CP-SAT Banes Networks         | CP-SAT Banes Networks memory optimized                            |
 | -------- | -------------------------------------- | ----------------------------- | ----------------------------- | ----------------------------------------------------------------- |
 | 2x2      | 0.06s                                  | 4.94s                         | 0.17s                         | 0.19s                                                             |
 | 3x3      | -- (Never terminating after few hours) | 22.34s                        | 22s                           | 23s                                                               |
