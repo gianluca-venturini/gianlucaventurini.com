@@ -2,7 +2,7 @@
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
-import { Image, ImageProps} from './Image';
+import { Image, type ImageProps } from './Image';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     return (
@@ -28,10 +28,10 @@ const components: Components<CustomComponents> = {
         ) : (
             <div />
         ),
-    img: (props) => (!!props ? <Image {...props} /> : <div />),
+    img: (props) => (props ? <Image {...props} /> : <div />),
     // Custom components
     Visualization: (props) => <h1>{props?.title}</h1>,
-    Image: (props) => (!!props ? <Image {...props} /> : <div />),
+    Image: (props) => (props ? <Image {...props} /> : <div />),
     Video: (props) =>
         props?.src ? (
             <video loop autoPlay playsInline muted>
