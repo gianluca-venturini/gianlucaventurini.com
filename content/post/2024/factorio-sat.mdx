@@ -169,7 +169,25 @@ solve_factorio_belt_balancer(
 )
 ```
 
-As a rule of thumb: the lower the number of free binary variables the solver needs to find, the faster it will find a feasible solution. We can move the `direction` dimension from every component vector and create a separate variable, reducing the size of every vector by 75%. We can add multiple independent variables in constraints.
+After spending few hours changing the problem formulation, objective function, using hints, and solver strategies, I eventually hit a wall trying to and was never able to find a 16x16 balancer. To confirm that the problem wasn't the limited amount of memory of my laptop, I executed on a 48-core, 384 GB ram machine, that didn't find any feasible solution for few hours. Next trick in the book is decomposing in sub-problems that could be solved independently.
+# Pre-computing flow between mixers with Banes Networks
+
+Trying to model some balancer by hand, I noticed a common layer structure. In the first layer two sources are mixed together, in the second two mixed flows from the first layer are mixed with other two etc. This suggests that I can abstract how flows are mixed and provide it to the solver as an additional constraint. Then the solver only needs to decide where to place a pre-computed number of mixers and how to connect them using belts. We can also lower the cardinality of the flows since we don't have to guarantee maximum throughput explicitly.
+
+In order to force the output of a mixer to go as input of the next one I made them different flows reducing to a [graph coloring problem](https://en.wikipedia.org/wiki/Graph_coloring). Empirically I observed that the number of flows remains the same, although I haven't studied the properties, so it may be wrong at dimensions higher than 16x16.
+
+// TODO: representation of the network as suggestion
+
+I found out that these abstract flow networks with two inputs and two outputs are called Banes networks, they are a special case of [Clos Networks](https://en.wikipedia.org/wiki/Clos_network).
+
+They are very easy to build by hand since they follow a regular structure, so we can skip designing a greedy algorithm to build them for now and simply hard-code them as input.
+
+This technique, combined with placing mixers on first and last rows and symmetry breaking, allows us to find the solution of the 16x16 balancer in 1:30h.
+
+![16 x 16 belt balancer](</uploads/factorio-tools/16_16.webp>)
+
+# Reduce the number of binary variables
+One last optimization we can make is lowering the number of binary decision variables to reduce the solution search space. We can consolidate the `direction` of components: rather than having one more dimension in every component type array, we can have a separate array with the four dimensions. This reduces. the component decision variables by roughly 50%.
 
 ```python
 # Belt
@@ -210,24 +228,6 @@ for i in range(W):
 				).only_enforce_if([b[i][j], dc[i][j][d]])
 ```
 
-
-After spending few hours changing the problem formulation, objective function, using hints, and solver strategies, I eventually hit a wall trying to and was never able to find a 16x16 balancer. To confirm that the problem wasn't the limited amount of memory of my laptop, I executed on a 48-core, 384 GB ram machine, that didn't find any feasible solution for few hours. Next trick in the book is decomposing in sub-problems that could be solved independently.
-# Pre-computing flow between mixers with Banes Networks
-
-Trying to model some balancer by hand, I noticed a common layer structure. In the first layer two sources are mixed together, in the second two mixed flows from the first layer are mixed with other two etc. This suggests that I can abstract how flows are mixed and provide it to the solver as an additional constraint. Then the solver only needs to decide where to place a pre-computed number of mixers and how to connect them using belts. We can also lower the cardinality of the flows since we don't have to guarantee maximum throughput explicitly.
-
-In order to force the output of a mixer to go as input of the next one I made them different flows reducing to a [graph coloring problem](https://en.wikipedia.org/wiki/Graph_coloring). Empirically I observed that the number of flows remains the same, although I haven't studied the properties, so it may be wrong at dimensions higher than 16x16.
-
-// TODO: representation of the network as suggestion
-
-I found out that these abstract flow networks with two inputs and two outputs are called Banes networks, they are a special case of [Clos Networks](https://en.wikipedia.org/wiki/Clos_network).
-
-They are very easy to build by hand since they follow a regular structure, so we can skip designing a greedy algorithm to build them for now and simply hard-code them as input.
-
-This technique, combined with placing mixers on first and last rows and symmetry breaking, allows us to find the solution of the 16x16 balancer in 1:30h.
-
-![16 x 16 belt balancer](</uploads/factorio-tools/16_16.webp>)
-
 I'm pretty satisfied about the result and I decided to stop here since finding a 32x32 is exponentially harder and will require many additional architecture innovations and model optimizations.
 # A curious bug
 
@@ -242,7 +242,7 @@ We started this journey building a linear model with continuous variables and ha
 
 Here's the table of CPU time needed to find a solution on my 12 cores Macbook Pro M4:
 
-| Balancer | MIP SCIP | CP-SAT   | CP-SAT Banes Networks | CP-SAT Banes Networks fully optimized                             |
+| Balancer | MIP SCIP | CP-SAT   | CP-SAT Banes Networks | CP-SAT Banes Networks optimized                                   |
 | -------- | -------- | -------- | --------------------- | ----------------------------------------------------------------- |
 | 2x2      | 0.06s    | 4.94s    | 0.17s                 | 0.19s                                                             |
 | 3x3      | --       | 22.34s   | 22s                   | 23s                                                               |
