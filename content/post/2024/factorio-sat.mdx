@@ -270,6 +270,17 @@ While testing a balancer in-game, I realized it was producing less than the maxi
 ![16 x 16 belt balancer with a bottleneck due to an implicit constraint.](</uploads/factorio-tools/16_16_bug.webp>)
 
 After some debugging, I realized that it's due to the solver stopping when it finds the first feasible solution, without trying to remove unnecessary components and leaving extra belts around where it should leave empty spaces. The solution is simple: add an objective function that penalizes solutions using more components. Finding a slightly more optimal solution than the first feasible one is trivial and doesn't take the solver much time. Counterintuitively, adding an objective function brought down the time for solving a 16x16 to 30min, likely because having an objective skews the solver towards a feasible solution faster than random search.
+
+```python
+objective = sum(
+	[b[i][j] for i in range(W) for j in range(H)] +
+	[5 * m[i][j] for i in range(W) for j in range(H)] +
+	[2 * ua[i][j] for i in range(W) for j in range(H)] +
+	[2 * ub[i][j] for i in range(W) for j in range(H)]
+)
+
+solver.Minimize(objective)
+```
 # Conclusions
 
 We started this journey building a linear model with continuous variables and having SCIP finding very simple solutions, but could not even crack a 4x4 balancer that is easy to build by hand. Migrating to CP-SAT and applying various optimizations allowed us to obtain an 8x8 balancer that is definitely very hard to build by hand. Splitting the problems in two sub-problems: pre-computing mixer wiring with Banes Networks and placement with CP-SAT allowed us to scale and find the exponentially harder 16x16 balancer that I can confidently say it's impossible to find by hand.
