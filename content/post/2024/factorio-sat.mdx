@@ -14,15 +14,15 @@ Let's define the problem next.
 
 A core dynamic in Factorio is transporting items between different production buildings using conveyor belts, e.g., transporting raw stone from a mining drill to a Stone Furnace to be transformed into a brick. Since the throughput of a belt lane is limited, it's necessary to have multiple parallel lanes. To help prevent bottlenecks in the factory, parallel lanes needs to be balanced, for examples preventing a slow furnace from slowing down mining.
 
-![The last Furnace is sometime idle waiting for new resources. We don't want that.](</uploads/factorio-tools/no_balancer.webp>)
+<Image alt="The last Furnace is sometime idle waiting for new resources. We don't want that." url="/uploads/factorio-tools/no_balancer.webp" maxWidth="400px" />
 
-To perfectly balance two belt lanes, we can use Mixer component: that's a 2x2 Belt Balancer. The issue arises when you have more than two lanes. We want two properties: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is easier to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead ensures that every input flow is evenly distributed across all the outputs.
+To perfectly balance two belt lanes, we can use a Mixer component: that's a 2x2 Belt Balancer. There's an issue that arises with more than two lanes: the output flow may be lower than the input, slowing down all the lanes. We want two properties: all the inputs need to be connected to all the outputs and the total maximum flow in input needs to be maintained in output. If only the former problem is solved we have a Throughput-Limited balancer, that is easier to build, takes up less space, but unfortunately slows down all the lanes. The Throughput-Unlimited Belt Balancer instead ensures that every input flow is evenly distributed across all the outputs.
 
-![4 x 4 naïve Throughput-Limited belt balancer](</uploads/factorio-tools/4_4_limited.webp>)
+<Image alt="Example of 4 x 4 naïve Throughput-Limited belt balancer. This is not what we want." url="/uploads/factorio-tools/4_4_limited.webp" maxWidth="400px" />
 
 Finding a feasible solution is NP-hard, because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution (i.e., minimum number of components) is NP-complete, because will require enumerating all the possible solutions in order to find the best one. For this project, I focused on finding the a reasonably small balancer, since the player cares about 2D area occupied, not number of components.
 
-![4 x 4 Throughput-Unlimited belt balancer](</uploads/factorio-tools/4_4.webp>)
+<Image alt="4 x 4 Throughput-Unlimited belt balancer. This is what we want." url="/uploads/factorio-tools/4_4.webp" maxWidth="400px" />
 
 As a first implementation, we model the problem as Mixed Integer Programming (MIP).
 # Continuous flows: Mixer Integer Programming
@@ -97,13 +97,13 @@ With all these new fancy tools, we can simplify the model migrating to CP-SAT.
 
 CP-SAT is a Satisfiability solver built at Google. It can't deal with floating variables, so we have to discretize the flows. It solves the numeric instability problem, but it raises a new issue: needing to know in advance how many times the input flows will be split before reaching the output. Usually, it's necessary to set the input flow to at least a multiple of 2^number_of_splits to ensure the split can always be represented by an integer.
 
-![3 x 3 belt balancer](</uploads/factorio-tools/3_3.webp>)
+<Image alt="3 x 3 belt balancer" url="/uploads/factorio-tools/3_3.webp" maxWidth="400px" />
 
 Besides changing the flow variables type, nothing else in the model needs to be changed and yields solutions up to 6x6 balancer in very little time. We find a 8x8 after 30min of computation, suggesting an excessive number of free binary variables in the model and a very large search space.
 
-![6 x 6 belt balancer](</uploads/factorio-tools/6_6.webp>)
+<Image alt="6 x 6 belt balancer" url="/uploads/factorio-tools/6_6.webp" maxWidth="400px" />
 
-![8 x 8 belt balancer](</uploads/factorio-tools/8_8.webp>)
+<Image alt="8 x 8 belt balancer" url="/uploads/factorio-tools/8_8.webp" maxWidth="400px" />
 
 Next, we can represent underground belts as two independent components, rather than an extra dimension in the belt array. We can model the underground flow with a second flow grid, that interacts with the rest of the flow through underground belt components.
 
@@ -176,7 +176,7 @@ Trying to model some balancer by hand, I noticed a common layer structure. In th
 
 In order to force the output of a mixer to go as input of the next one I made them different flows reducing to a [graph coloring problem](https://en.wikipedia.org/wiki/Graph_coloring). Empirically I observed that the number of different flows (edge colors in the graph) grows linearly with the number of inputs and outputs.
 
-![Banes network for a 8x8 balancer](</uploads/factorio-tools/network.png>)
+<Image alt="Banes network for a 8x8 balancer" url="/uploads/factorio-tools/network.png" maxWidth="400px" />
 
 I found out that these abstract flow networks with two inputs and two outputs are called Banes networks, they are a special case of [Clos Networks](https://en.wikipedia.org/wiki/Clos_network).
 
