@@ -16,7 +16,7 @@ export const Image = ({ url, alt, maxWidth }: ImageProps) => {
                     alt={alt}
                     style={{
                         maxHeight: '50vh',
-                        width: maxWidth || 'auto',
+                        width: maxWidth ?? 'auto',
                         objectFit: 'contain',
                     }}
                 />
