@@ -10,12 +10,13 @@ export const Image = ({ url, alt, maxWidth }: ImageProps) => {
     return (
         <span className="flex flex-col items-center">
             {url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                     src={url}
                     alt={alt}
                     style={{
                         maxHeight: '50vh',
-                        width: !!maxWidth ? maxWidth : 'auto',
+                        width: maxWidth || 'auto',
                         objectFit: 'contain',
                     }}
                 />
