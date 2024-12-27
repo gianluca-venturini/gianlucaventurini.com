@@ -2,6 +2,7 @@
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
+import { Image, ImageProps} from './Image';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     return (
@@ -13,6 +14,7 @@ export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
 
 interface CustomComponents {
     Visualization: { title?: string };
+    Image: ImageProps;
     Video: { src?: string };
     VideoYoutube: { id?: string };
     Comment: { comment?: string };
@@ -26,24 +28,10 @@ const components: Components<CustomComponents> = {
         ) : (
             <div />
         ),
-    img: (props) => (
-        <span className="flex flex-col items-center">
-            {props?.url ? (
-                <img
-                    src={props.url}
-                    alt={props?.alt}
-                    style={{
-                        maxHeight: '50vh',
-                        width: 'auto',
-                        objectFit: 'contain',
-                    }}
-                />
-            ) : null}
-            <span className="text-sm text-neutral-400">{props?.caption}</span>
-        </span>
-    ),
+    img: (props) => (!!props ? <Image {...props} /> : <div />),
     // Custom components
     Visualization: (props) => <h1>{props?.title}</h1>,
+    Image: (props) => (!!props ? <Image {...props} /> : <div />),
     Video: (props) =>
         props?.src ? (
             <video loop autoPlay playsInline muted>

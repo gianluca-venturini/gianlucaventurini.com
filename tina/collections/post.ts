@@ -47,6 +47,27 @@ export default {
                     ],
                 },
                 {
+                    name: 'Image',
+                    label: 'Image',
+                    fields: [
+                        {
+                            name: 'url',
+                            label: 'Source',
+                            type: 'string',
+                        },
+                        {
+                            name: 'alt',
+                            label: 'Image description',
+                            type: 'string',
+                        },
+                        {
+                            name: 'maxWidth',
+                            label: 'Max width',
+                            type: 'string',
+                        },
+                    ],
+                },
+                {
                     name: 'Video',
                     label: 'Video',
                     fields: [
