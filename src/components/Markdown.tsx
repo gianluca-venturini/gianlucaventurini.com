@@ -31,7 +31,7 @@ const components: Components<CustomComponents> = {
     img: (props) => (props ? <Image {...props} /> : <div />),
     table: (props) =>
         props ? (
-            <p>
+            <p style={{ overflowX: 'auto' }}>
                 <table className="border-collapse border border-neutral-400">
                     {props.tableRows.map((row, rowIndex) => (
                         <tr
