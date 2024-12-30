@@ -154,5 +154,7 @@ book:
     author: Walter Isaacson
   - title: Permutation City
     author: Greg Egan
+  - title: Designing Data-Intensive Applications
+    author: Martin Kleppmann
 ---
 
