@@ -6,7 +6,7 @@ date: 2024-12-27T15:00:00.000Z
 ---
 I find declarative programming fascinating: we just model the problem, describe the result we want, and an “oracle” (a.k.a. solver) conjures a solution for us. A lot of smart people spent decades building solvers for different problem classes, and I wanted an excuse to go and play with some of these solvers to learn optimization tricks along the way.
 
-In this post, I describe what I learned solving a toy flow optimization problem with MIP and SAT solvers. I picked belt balancing from the [Factorio](https://factorio.com/) video game. It looks innocuous at first, but it's in reality NP-hard complexity. It's possible to solve by hand small versions, allowing us to check correctness, but it quickly becomes impossible to humanly solve even for medium size balancers that are very useful in the game. What the majority of players do is use pre-built online solutions. The game incentivizes sharing designs, called blueprints, as a string, and there's a thriving community that comes up with clever solutions.
+In this post, I describe what I learned solving a toy flow optimization problem with MIP and SAT solvers. I picked belt balancing from the [Factorio](https://factorio.com/) video game. It looks innocuous at first, but it's in reality NP complexity. It's possible to solve by hand small versions, allowing us to check correctness, but it quickly becomes impossible to humanly solve even for medium size balancers that are very useful in the game. What the majority of players do is use pre-built online solutions. The game incentivizes sharing designs, called blueprints, as a string, and there's a thriving community that comes up with clever solutions.
 
 Let's define the problem next.
 
@@ -20,7 +20,7 @@ To perfectly balance two belt lanes, we can use a Mixer component: that's a 2x2 
 
 <Image alt="Example of 4 x 4 naïve Throughput-Limited belt balancer. This is not what we want." url="/uploads/factorio-tools/4_4_limited.webp" maxWidth="400px" />
 
-Finding a feasible solution is NP-hard because we can't do any better than start placing the components on a 2D grid and check if the properties are respected. Furthermore, finding the optimal solution (i.e., minimum number of components) is NP-complete because it will require enumerating all the possible solutions in order to find the best one. For this project, I focused on finding a reasonably small balancer since the player cares about the 2D area occupied, not the number of components.
+Given the exponential complexity, we cannot expect to find arbitrarily large solutions, but my approach works well in practice since rarely players use larger than 16x16 balancers. For this project, I focused on finding a reasonably small feasible balancers, prioritizing small 2D area occupied, without necessarily finding the optimal number of components.
 
 <Image alt="4 x 4 Throughput-Unlimited belt balancer. This is what we want." url="/uploads/factorio-tools/4_4.webp" maxWidth="400px" />
 
