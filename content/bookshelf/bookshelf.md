@@ -156,5 +156,7 @@ book:
     author: Greg Egan
   - title: Designing Data-Intensive Applications
     author: Martin Kleppmann
+  - title: The End of History and the Last Man
+    author: Francis Fukuyama
 ---
 
