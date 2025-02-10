@@ -87,6 +87,11 @@ export default {
                             label: 'Youtube id',
                             type: 'string',
                         },
+                        {
+                            name: 'time',
+                            label: 'Time',
+                            type: 'number',
+                        },
                     ],
                 },
                 {
