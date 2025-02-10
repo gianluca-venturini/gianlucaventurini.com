@@ -21,7 +21,10 @@ ${posts
     ?.map(
         (p) => `    <item>
         <title>${p?.title}</title>
-        <link>${BASE_URL}/posts/${p?._sys.filename}</link>
+        <link>${BASE_URL}/posts${
+            p?.date ? `/${new Date(p.date).getFullYear()}` : ''
+        }/${p?._sys.filename}</link>
+            ?._sys.filename}</link>
         <description>${p?.snippet}</description>
         <author>Gianluca Venturini</author>
         <pubDate>${new Date(p?.date ?? '').toUTCString()}</pubDate>
