@@ -16,7 +16,7 @@ interface CustomComponents {
     Visualization: { title?: string };
     Image: ImageProps;
     Video: { src?: string };
-    VideoYoutube: { id?: string };
+    VideoYoutube: { id?: string; time?: number };
     Comment: { comment?: string };
 }
 
@@ -69,7 +69,7 @@ const components: Components<CustomComponents> = {
             <p style={{ aspectRatio: '16 / 9' }}>
                 <iframe
                     allowFullScreen
-                    src={`https://www.youtube.com/embed/${props.id}`}
+                    src={`https://www.youtube.com/embed/${props.id}?start=${props.time}`}
                     title="YouTube video player"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     style={{

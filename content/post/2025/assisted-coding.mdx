@@ -1,31 +1,34 @@
 ---
-title: TODO
+title: Assisted code writing
 snippet: TODO
 cover: /uploads/blog-subscribe/blog-subscribe-cover.webp
-date: 2025-02-02T15:00:00.000Z
+date: 2025-02-10T15:00:00.000Z
 ---
-<intro>
+In this blog post I'm explaining how I write code assisted by LLMs. I start with describing use-cases where I see them performing really well and others where they don't, or they are counter-productive. In the second part I talk about the editor tools that I'm using.
 
 # Developing complex systems with LLM Copilots
+
 In the past year I've spent some time integrating LLMs in coding tasks and I wanted to share few thoughts.
 
-Initially, about one year ago, my main use-case was speeding up typing speed of very easy code I knew exactly how to write myself. Let the model write something acceptable really fast, refine it manually and adding few tests. I haven't noticed significant practical difference between different models like Claude Sonnet 3.5 and GPT4o for this use-case.
+About one year ago, my main use-case was [speeding up typing speed](/posts/2023/1000-word-keyboard) of very easy code I knew exactly how to write myself. Let the model write something acceptable, refine it manually and adding few tests. I'm currently mostly using Claude Sonnet 3.5, but I haven't noticed a significant practical difference with GPT4o.
 
-When web pages lookup was added I started using much more the chat function to discuss various ideas and let the model synthesize documentation making simple code snippet examples. I find very valuable to provide my code as extra context, so I like to use editor tools that can already aggregate the file I'm looking at and related modules. Reasoning models like o1 or o3 help me understand the tradeoff between different approaches and often point out something I could learn. In the next section I'll talk about how to effectively learn.
+When web pages lookup was added I started using much more the chat function to discuss various ideas and let the model synthesize online documentation making simple code snippet examples. I like the editor to provide the selected code in the chat context rather than copy-pasting it manually. Reasoning models like o1 or o3 help me understand the tradeoff between different approaches and often point out something I don't know. In the next section I'll talk about how to effectively learn.
 
 ## Great for learning
-When learning a new language or framework it's very useful to ask a lot of questions. I frequently ask for patterns to solve a familiar problem. For example, I recently wrote a Raft implementation in Rust, and I was able to learn asynchronous patterns, concurrency primitives and futures in few hours. I just wrote the code and let the model refine it until it compiles and passes the tests, asking a lot of questions along the way.
 
-Learning by doing assisted by an infinitely patient LLM-teacher works really well for me. I remember much better a new pattern learned while solving a problem compared to reading a blog, documentation or watching a video. I typically write half-baked code and have the model correct me until it looks like an average developer familiar with the language or framework would write it. I'm using the inline code completion in the initial pass, then refactoring the way I think the code looks best and ask the model to come up with ways to simplify and look for bugs.
+When learning a new language or framework it's very useful to ask a lot of questions. I frequently ask for patterns to solve a familiar problem. For example, I recently wrote a [Raft implementation in Rust](https://github.com/gianluca-venturini/raft), and I was able to learn asynchronous patterns, concurrency primitives and futures in few hours. While learning, I find valuable to write simple snippets and let the model refine them until it compiles and passes the tests, asking a lot of questions along the way.
+
+Learning by doing assisted by an infinitely patient LLM-teacher is more effective for me than reading a blog, documentation or watching a video. It keeps me very engaged and it's intellectually stimulating. I'm mostly using the inline code completion in the initial pass, then assisted refactoring. For this use case, it's crucial that the editor responds promptly to not lose focus.
 
 ## Bad when I need strongly opinionated feedback
-I find LLM pretty bad at providing strong opinions and pushing back on incomplete questions. When I'm exploring new problems or libraries I need to learn the terminology in order to ask detailed questions. Models are often overfitting and answering to the specific question, sometimes even hallucinating a reasonable API that doesn't exists. I would rather prefer the model to behave more like a teacher and correct some of the wrong assumptions I've made while asking the question and teach me something every time. Maybe with a little more patience I could write better prompt to obtain a more opinionated teacher.
 
-<example generic question with too specific answer>
+I find LLM pretty bad at providing strong opinions and pushing back on incomplete or vague questions. When I'm exploring new problems or libraries I need to learn the terminology in order to ask sharp questions. Models are often overfitting and responding to specific questions, sometimes even hallucinating a reasonable API that doesn't exist. Takes a little more patience to write a better prompt and let it behave less condescendingly and more as teacher.
 
 LLM are particularly bad at designing new architectures. For example while researching and prototyping modern solutions for frontend state management it's easy to have the model list all the libraries and write simple examples. It is much harder to discuss tradeoffs about integrating them in a simple module with a custom architecture that is far from what you can find online. It seems to be lacking intuition about what a senior developer would do in that task, no matter how in details I explain it.
 
+
 ## Bad for intellectual stimulation
+
 This is the main drawback to using LLMs for coding I've found so far. I think they lower the intellectual stimulation of solving a problem.
 
 I'm sometimes finding myself unnecessarily delegating tasks that are mildly uncomfortable, where I would otherwise need to think or sometimes sketch on paper, like writing a complex boolean condition or calculating the index of the element of a multidimensional array. This happens because many of the tools I'm using are auto-completing code for me by default.
@@ -36,15 +39,19 @@ Having complex parts of the code written by the model and only half-checked is i
 
 Let's now talk about a couple of tools I'm using: Github CoPilot and Cursor. Note that these tools are improving really fast and likely the next section will be outdated soon.
 
+
 # Github CoPilot
+
 It is a VSCode extension. I find it a little clunky to use: it's pretty slow in generating code, especially if the module is large. It requires adding all the files we want to edit manually and doesn't have good discovering capabilities. The model selection is also a little limited, but as mentioned before I don't notice a huge performance difference between them, so not a deal breaker.
 
 I think it's a good initial step into LLM-assisted coding because it has the basic features like chat and composing code.
 
 # Cursor Editor
+
 The Cursor team decided to fork VSCode and build features that are not possible with an extension. It's basically a lot of nice UX on top of a model.
 
 ## What I like
+
 I really like the UX quality of life improvements like looking up the interface of a function that I'm invoking and doing light data massaging on the inputs. I use a lot the CMD+K and TAB-to-complete. It also keeps in memory the last few lines of code I wrote, so while I'm jumping around files the completions are relevant with the task I'm executing on e.g. it suggests to call the function that I just wrote in another module.
 
 I like the auto-discovering of relevant files through RAG. It accelerates chatting significantly, not requiring a lot of code copy-paste. It also automatically selects the files to involve in the change, even though in large code-bases I still find it not very precise.
@@ -52,6 +59,7 @@ I like the auto-discovering of relevant files through RAG. It accelerates chatti
 Lastly I appreciate the ability of looking up documentation online and provide public API suggestions with references, I want to learn how to leverage this even more.
 
 ## What I don't like
+
 I don't like the idea of using a payed editor that could one day diverge significantly from VSCode. Philosophically the editor is such a fundamental part of my dev workflow: I spend a lot of time customizing settings and building muscle memory around keyboard shortcuts. The reason I even considered switching to Cursor is that is fully compatible with VSCode, all my extension just work perfectly.
 
 I noticed few UI small annoyances: there was a bug with the autocompletion window being stuck on the top and not being able to move it. Since it's only sporadically rebased on top of VSCode, means it doesn't contain the latest features. Maybe not a big practical issue, but it may prevent to use the latest version of certain extensions.
@@ -59,8 +67,10 @@ I noticed few UI small annoyances: there was a bug with the autocompletion windo
 Lastly I tried the agent mode on a toy task: I wanted to remove the unnecessary function exports in a Typescript project using `ts-prune` and having the agent edit few files at a time. I wasn't able to keep it focused on the task, it only waits ~10s of command running before killing the terminal and when it makes edits it renames modules and functions instead of just removing the `export` word. I find it quite unreliable for now, but I'm sure it's going to improve fast.
 
 # Opportunities: what I think will improve soon
-There's a lot of research on the "personality" of models, I'm sure will be possible to have much more strongly opinionated models that are specialized for coding. For example I find that reasoning models like o1 and o3 gets nuances of the questions and push back much more than say GPT4o that always try to give an answer to the exact question asked.
-<video for sister Anthropic CEO>
+
+There's a lot of research on how to change the “personality” of models in post training, I'm sure will be possible to have much more strongly opinionated models that are specialized for coding. I find that reasoning models like o1 and o3 gets more nuances of the questions reasoning a little about it before trying to answer compared to say GPT4o that tries to give a zero-shot answer to the exact question asked.
+
+<VideoYoutube id="ugvHCXCOmm4" time={11655} />
 
 Code generation speed is currently not great. It often takes a good amount of time to generate code and I just decide to write it myself. I imagine this will keep increasing really fast.
 
@@ -70,9 +80,10 @@ The developer tool ecosystem will also learn how to better integrate with LLMs, 
 
 ![Typescript errors are truncated and don't contain suggestions](</uploads/2025/assisted-coding/typescript_error.png>)
 
-The code editor could become a commodity once the developer community converges on a set of features. Currently, nothing in Cursor seems crazy difficult to build directly inside VSCode, but they have the first mover advantage and it is quite popular, so I'm curious to see if that's enough.
+The code editor could become a commodity once the developer community converges on a set of necessary features. Currently, nothing in Cursor seems crazy difficult to build directly inside VSCode, but they have the first mover advantage and it is quite popular, so I'm curious to see if that's enough.
 
 # Conclusions
+
 In this post I shared few thoughts on assisted-coding. I'm pretty bullish on the technology improving very fast in the near future and I recommend experimenting with different tools to understand the tradeoffs, Copilot and Cursor are a good starting point.
 
 Consider how low intellectual stimulation and black-box coding could affect the quality of your work and figure out how to mitigate them. Take advantage of LLM assistance and infinite patience for learning concepts while coding, rather than reading blog posts or documentation.
