@@ -6,7 +6,7 @@ export default function RedirectPage() {
     return null; // This page should never be rendered due to redirects
 }
 
-const YEARS_BEFORE_MIGRATION = ['2024', '2023', '2022'];
+const YEARS_BEFORE_MIGRATION = ['2025', '2024', '2023', '2022'];
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.year as string;
