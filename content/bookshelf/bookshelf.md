@@ -158,5 +158,7 @@ book:
     author: Martin Kleppmann
   - title: The End of History and the Last Man
     author: Francis Fukuyama
+  - title: The Almanack of Naval Ravikant
+    author: Eric Jorgenson
 ---
 
