@@ -62,7 +62,7 @@ export default function Home(
                     {formatDate(data.post.date)}
                 </h3>
             )}
-            <h1 className="text-5xl font-bold mb-4">{data.post.title}</h1>
+            <h1 className="text-5xl font-bold mb-4 dark:text-gray-50">{data.post.title}</h1>
             {data.post.cover && (
                 <Image
                     src={data.post.cover}
