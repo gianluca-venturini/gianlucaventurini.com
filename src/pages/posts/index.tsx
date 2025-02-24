@@ -21,7 +21,7 @@ export default function PostList(
     }
     return (
         <>
-            <h1 className="text-5xl font-bold mb-8">Posts</h1>
+            <h1 className="text-5xl font-bold mb-8 dark:text-gray-50">Posts</h1>
             <SubscribeForm />
             <div className="flex flex-col divide-y dark:divide-gray-700 text-md">
                 {postsList
