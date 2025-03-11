@@ -1,5 +1,7 @@
 ---
 book:
+  - title: Thinking in bets
+    author: Annie Duke
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
