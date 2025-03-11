@@ -1,7 +1,5 @@
 ---
 book:
-  - title: Thinking in bets
-    author: Annie Duke
   - title: Sapiens
     author: Yuval Noah Harari
   - title: How to Win Friends & Influence People
@@ -162,5 +160,7 @@ book:
     author: Francis Fukuyama
   - title: The Almanack of Naval Ravikant
     author: Eric Jorgenson
+  - title: Thinking in bets
+    author: Annie Duke
 ---
 
