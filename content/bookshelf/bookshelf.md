@@ -162,5 +162,7 @@ book:
     author: Eric Jorgenson
   - title: Thinking in bets
     author: Annie Duke
+  - title: The Messy Middle
+    author: Scott Belsky
 ---
 
