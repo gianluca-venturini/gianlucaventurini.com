@@ -1,0 +1,55 @@
+---
+title: Entropy maker, entropy taker
+snippet: 
+cover: TODO
+date: 2025-02-10T15:00:00.000Z
+---
+Let's talk about writing code in a startup engineering organization. 
+
+The codebase of every engineering organization tend to become more chaotic and less organized overtime.
+
+People can behave in two ways: making the codebase better, entropy takers and making the codebase worse, entropy takers. Entropy increases when we are moving fast, not thinking holistically nor using the right abstractions. We are introducing technical debt with the objective of shipping fast. Decreasing entropy requires spending effort to refactor, build abstractions and frameworks and making the architecture more scalable.
+
+We can leverage the two modes for obtaining different results.
+
+## Entropy maker
+An entropy maker is prioritizing short term velocity introducing tech debt in the codebase and making it worse for other people to work in.
+
+It's very useful when building prototypes or when trying out new approaches. If multiple people are operating in this mode on the same part of the codebase, they must coordinate very closely to avoid stepping on each other feet.
+
+Can be detrimental when sustained for more than few days or if operating in a high tech debt codebase.
+
+It is very useful to add the final touches to a finished product with well-structured codebase.
+
+Having a generally low tech debt codebase makes us take advantage of entropy maker mode when we need a burst of velocity for quickly adding a feature and winning an important deal or test an hypothesis with an MVP.
+
+## Entropy taker
+An entropy taker is improving the codebase structure, cleaning up technical debt, simplifying the architecture, designing good abstractions and behaving in ways that will future developers' will want to thank them.
+
+In well-balanced organizations, engineers will raise their hands and point out areas that could use some love and if given time will refactor them, increasing future adaptability of that code.
+
+Sometimes is easier to create abstractions around the existing poorly written code rather than creating them from scratch
+
+Taking away entropy is much slower than making it. Usually to take away entropy we should put processes in place and have a set of best practices that engineers agree to respect.
+
+
+## Be creative, make entropy, then take it away
+When writing a complex feature I usually don't land on the right architecture right away. I experiment with different solutions first in my head and then implement a few proof of concepts. I often start as creative entropy maker, for later transitioning to more rigorous entropy taker, cleaning up the implementation before submitting the push request.
+
+On a larger scale we can think of entire engineering teams working fast producing some technical debts at the beginning of a project when producing an MVP, when uncertainty is high, direction not clear. Investing in abstractions and frameworks will likely be premature because a pivot is likely to make them useless. It's very important than when the direction starts being clear the team is taking away the entropy, to keep the velocity high in future iterations. It's much easier to refactor code that has just been written and is fresh in the collective memory compared to legacy code that other people have written years ago.
+
+## What tools can we use?
+An indicator of high entropy is when we need to repeatedly fix similar bugs in the same code. Another is asking what modules engineers are scared of touching. Once identified, we need to find small steps to make it better. Large refactoring projects often fail because it's hard to demonstrate ROI to management, the best way forward is often having baby steps that anyone can take to take away entropy.
+
+If we want people to be extremely creative and generate new ideas for the business we can take away performance and adaptability requirements and send all the engineers in maximum entropy making mode for let's say a week: we just created Hack Week!
+
+If we want people to point out where the entropy is and kick off some of the projects that in the long run 
+
+Notes
+
+- entropy makers ship fast broken things with techs debt. Explore solution space. Iterate fast. Advance the company fast. Willing to rewrite the same thing multiple times. Increase the entropy of the system. Deploy where you need velocity and low adaptability (don’t need it, throw away)
+- Entropy takers create nice and clean architecture that supports what we have and what we’re building next. Make sure the company can advance fast overtime. Deploy where you need performance and adaptability and lower velocity.
+
+- Team with both for optimal performance
+- Hack week: everyone is a maker
+- Foundation week: everyone is a taker
