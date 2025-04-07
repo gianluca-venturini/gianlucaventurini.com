@@ -2,15 +2,15 @@
 title: Entropy maker, entropy taker
 snippet: 
 cover: TODO
-date: 2025-02-10T15:00:00.000Z
+date: 2025-04-10T15:00:00.000Z
 ---
-Let's talk about writing code in a startup engineering organization. 
+Let's talk about writing code in a small and medium engineering organization, like a 20 to 100 people startup. Typically, the codebase of such organizations tend to become more chaotic and less organized overtime since it's nobody's full-time job to keep it organized. It's up to the individual engineers to somehow self organize.
 
-The codebase of every engineering organization tend to become more chaotic and less organized overtime.
+People can behave in two ways: making the codebase more organized, entropy takers and making the codebase chaotic, entropy takers. Entropy increases when we are moving fast, not thinking holistically, not using the right abstractions not creatig a consistent naming schema for our module. We are introducing technical debt with the objective of shipping fast. Decreasing entropy requires spending effort to refactor, build abstractions and frameworks and making the architecture more scalable.
 
-People can behave in two ways: making the codebase better, entropy takers and making the codebase worse, entropy takers. Entropy increases when we are moving fast, not thinking holistically nor using the right abstractions. We are introducing technical debt with the objective of shipping fast. Decreasing entropy requires spending effort to refactor, build abstractions and frameworks and making the architecture more scalable.
+Think of these two modes as tools to employ to obtain different results. Usually engineers can naturally operate in between these two modes. I always found that the best teams pair fast entropy makers with methodic and disciplined entropy takers in order to balance out the team.
 
-We can leverage the two modes for obtaining different results.
+<image of team with different people operate in different ways>
 
 ## Entropy maker
 An entropy maker is prioritizing short term velocity introducing tech debt in the codebase and making it worse for other people to work in.
@@ -41,15 +41,6 @@ On a larger scale we can think of entire engineering teams working fast producin
 ## What tools can we use?
 An indicator of high entropy is when we need to repeatedly fix similar bugs in the same code. Another is asking what modules engineers are scared of touching. Once identified, we need to find small steps to make it better. Large refactoring projects often fail because it's hard to demonstrate ROI to management, the best way forward is often having baby steps that anyone can take to take away entropy.
 
-If we want people to be extremely creative and generate new ideas for the business we can take away performance and adaptability requirements and send all the engineers in maximum entropy making mode for let's say a week: we just created Hack Week!
+We can create space for a Hack Week when most of the company becomes an entropy makers. This could be a safe space to experiment with wildly creative ideas without the downside of having to live with the consequences of making the codebase worse. 
 
-If we want people to point out where the entropy is and kick off some of the projects that in the long run 
-
-Notes
-
-- entropy makers ship fast broken things with techs debt. Explore solution space. Iterate fast. Advance the company fast. Willing to rewrite the same thing multiple times. Increase the entropy of the system. Deploy where you need velocity and low adaptability (don’t need it, throw away)
-- Entropy takers create nice and clean architecture that supports what we have and what we’re building next. Make sure the company can advance fast overtime. Deploy where you need performance and adaptability and lower velocity.
-
-- Team with both for optimal performance
-- Hack week: everyone is a maker
-- Foundation week: everyone is a taker
+On the contrary, if we want people to point out where there's too much entropy and decay in the systems we can create a Foundation Week. Engineers can take advantage of this opportunity for kicking off projects and create processes that will lower entropy over time.
