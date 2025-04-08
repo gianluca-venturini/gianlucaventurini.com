@@ -164,5 +164,7 @@ book:
     author: Annie Duke
   - title: The Messy Middle
     author: Scott Belsky
+  - title: The Hard Thing About Hard Things
+    author: Ben Horowitz
 ---
 
