@@ -168,5 +168,7 @@ book:
     author: Ben Horowitz
   - title: Tiny Habits
     author: BJ Fogg
+  - title: The Guns of August
+    author: Barbara W. Tuchman
 ---
 
