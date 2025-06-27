@@ -20,7 +20,7 @@
         "tinacms": "^1.5.28"
     },
     "devDependencies": {
-        "@tinacms/cli": "^1.5.39",
+        "@tinacms/cli": "^1.6.2",
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
