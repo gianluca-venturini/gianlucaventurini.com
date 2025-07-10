@@ -170,5 +170,7 @@ book:
     author: BJ Fogg
   - title: The Guns of August
     author: Barbara W. Tuchman
+  - title: Kingdom of Characters
+    author: Jing Tsu
 ---
 
