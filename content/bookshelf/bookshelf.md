@@ -172,5 +172,7 @@ book:
     author: Barbara W. Tuchman
   - title: Kingdom of Characters
     author: Jing Tsu
+  - title: Neuromancer
+    author: William Gibson
 ---
 
