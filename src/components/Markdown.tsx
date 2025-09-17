@@ -20,43 +20,48 @@ interface CustomComponents {
     Comment: { comment?: string };
 }
 
-const components: Components<CustomComponents> = {
+const components: Components<CustomComponents> & any = {
     // Override default markdown components
-    code_block: (props) =>
+    code_block: (props: any) =>
         props?.lang && props.value ? (
             <Code language={props.lang}>{props.value}</Code>
         ) : (
             <div />
         ),
-    img: (props) => (props ? <Image {...props} /> : <div />),
-    table: (props) =>
+    img: (props: any) => (props ? <Image {...props} /> : <div />),
+    table: (props: any) =>
         props ? (
-            <p style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto' }} className="mb-6">
                 <table className="border-collapse border border-neutral-400">
-                    {props.tableRows.map((row, rowIndex) => (
-                        <tr
-                            key={rowIndex}
-                            className="border border-neutral-400"
-                        >
-                            {row.tableCells.map((cell, cellIndex) => (
-                                <td
-                                    key={cellIndex}
-                                    className="border border-neutral-400 p-2"
-                                >
-                                    <TinaMarkdown content={cell.value} />
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
+                    {props.children ||
+                        props.tableRows?.map((row: any, rowIndex: number) => (
+                            <tr
+                                key={rowIndex}
+                                className="border border-neutral-400"
+                            >
+                                {row.tableCells?.map(
+                                    (cell: any, cellIndex: number) => (
+                                        <td
+                                            key={cellIndex}
+                                            className="border border-neutral-400 p-2"
+                                        >
+                                            <TinaMarkdown
+                                                content={cell.value}
+                                            />
+                                        </td>
+                                    )
+                                ) || null}
+                            </tr>
+                        ))}
                 </table>
-            </p>
+            </div>
         ) : (
             <div />
         ),
     // Custom components
-    Visualization: (props) => <h1>{props?.title}</h1>,
-    Image: (props) => (props ? <Image {...props} /> : <div />),
-    Video: (props) =>
+    Visualization: (props: any) => <h1>{props?.title}</h1>,
+    Image: (props: any) => (props ? <Image {...props} /> : <div />),
+    Video: (props: any) =>
         props?.src ? (
             <video loop autoPlay playsInline muted>
                 <source src={props?.src} />
@@ -64,7 +69,7 @@ const components: Components<CustomComponents> = {
         ) : (
             <div />
         ),
-    VideoYoutube: (props) =>
+    VideoYoutube: (props: any) =>
         props?.id ? (
             <p style={{ aspectRatio: '16 / 9' }}>
                 <iframe
