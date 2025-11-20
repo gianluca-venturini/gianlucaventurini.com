@@ -174,5 +174,7 @@ book:
     author: Jing Tsu
   - title: Neuromancer
     author: William Gibson
+  - title: The Making of a Manager
+    author: Julie Zhuo
 ---
 
