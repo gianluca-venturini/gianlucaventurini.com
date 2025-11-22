@@ -176,5 +176,7 @@ book:
     author: William Gibson
   - title: The Making of a Manager
     author: Julie Zhuo
+  - title: '7 Powers: The Foundations of Business Strategy'
+    author: Hamilton Helmer
 ---
 
