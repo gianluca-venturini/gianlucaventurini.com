@@ -182,5 +182,7 @@ book:
     author: Dan Wang
   - title: Countdown to War
     author: Richard Overy
+  - title: Abundance
+    author: 'Ezra Klein, Derek Thompson'
 ---
 
