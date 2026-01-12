@@ -180,5 +180,7 @@ book:
     author: Hamilton Helmer
   - title: Breakneck
     author: Dan Wang
+  - title: Countdown to War
+    author: Richard Overy
 ---
 
