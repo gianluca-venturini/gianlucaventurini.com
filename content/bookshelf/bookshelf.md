@@ -178,5 +178,7 @@ book:
     author: Julie Zhuo
   - title: '7 Powers: The Foundations of Business Strategy'
     author: Hamilton Helmer
+  - title: Breakneck
+    author: Dan Wang
 ---
 
