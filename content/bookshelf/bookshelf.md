@@ -104,6 +104,8 @@ book:
     author: Tanya Reilly
   - title: 'Staff Engineer: Leadership beyond the Management Track'
     author: Will Larson
+  - title: 'An Elegant Puzzle: Systems of Engineering Management'
+    author: Will Larson
   - title: Chip War
     author: Chris Miller
   - title: Fundamentals of Software Architecture
