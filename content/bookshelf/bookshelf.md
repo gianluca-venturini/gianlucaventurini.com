@@ -152,6 +152,8 @@ book:
     author: George Orwell
   - title: Zero Zero Zero
     author: Roberto Saviano
+  - title: 'How to American: An Immigrant\'s Guide to Disappointing Your Parents'
+    author: Jimmy O. Yang
   - title: The Code Breaker
     author: Walter Isaacson
   - title: Permutation City
