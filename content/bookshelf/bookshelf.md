@@ -24,6 +24,8 @@ book:
     author: Shoshana Zuboff
   - title: Dune
     author: Frank Herbert
+  - title: Dune Messiah
+    author: Frank Herbert
   - title: An Intuitive Guide to Maxwell's Equations
     author: 'Nikola Miljkovic, Alex Dowad'
   - title: The Algorithm Design Manual
