@@ -190,5 +190,7 @@ book:
     author: Richard Overy
   - title: Abundance
     author: 'Ezra Klein, Derek Thompson'
+  - title: The Anxious Generation
+    author: Jonathan Haidt
 ---
 
