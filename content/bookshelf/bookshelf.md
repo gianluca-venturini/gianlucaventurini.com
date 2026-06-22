@@ -192,5 +192,7 @@ book:
     author: 'Ezra Klein, Derek Thompson'
   - title: The Anxious Generation
     author: Jonathan Haidt
+  - title: Shoe Dog
+    author: Phil Knight
 ---
 
