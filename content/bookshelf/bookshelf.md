@@ -194,5 +194,7 @@ book:
     author: Jonathan Haidt
   - title: Shoe Dog
     author: Phil Knight
+  - title: Frontiera
+    author: Francesco Costa
 ---
 
