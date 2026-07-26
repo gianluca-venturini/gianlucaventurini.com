@@ -196,5 +196,7 @@ book:
     author: Phil Knight
   - title: Frontiera
     author: Francesco Costa
+  - title: China's Economy
+    author: Arthur R. Kroeber
 ---
 
