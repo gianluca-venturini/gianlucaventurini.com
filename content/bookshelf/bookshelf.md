@@ -198,5 +198,7 @@ book:
     author: Francesco Costa
   - title: China's Economy
     author: Arthur R. Kroeber
+  - title: Hackers & Painters
+    author: Paul Graham
 ---
 
