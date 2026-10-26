@@ -1,14 +1,37 @@
 /* eslint-disable react/prop-types */
+import { useMemo } from 'react';
+
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
+import {
+    extractFootnotes,
+    FootnoteBackLink,
+    FootnoteList,
+    FootnoteReference,
+} from './Footnotes';
 import { Image, type ImageProps } from './Image';
 import { PreviewLink } from './LinkPreview';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
+    const { body, footnotes } = useMemo(
+        () => extractFootnotes(props.content),
+        [props.content]
+    );
     return (
         <span className="markdown">
-            <TinaMarkdown {...props} components={components} />
+            <TinaMarkdown content={body} components={components} />
+            {footnotes.length > 0 && (
+                <FootnoteList
+                    footnotes={footnotes}
+                    renderNote={(content) => (
+                        <TinaMarkdown
+                            content={content as any}
+                            components={components}
+                        />
+                    )}
+                />
+            )}
         </span>
     );
 };
@@ -19,6 +42,8 @@ interface CustomComponents {
     Video: { src?: string };
     VideoYoutube: { id?: string; time?: number };
     Comment: { comment?: string };
+    FootnoteReference: { label: string; number: number; first: boolean };
+    FootnoteBackLink: { label: string };
 }
 
 const components: Components<CustomComponents> & any = {
@@ -91,4 +116,6 @@ const components: Components<CustomComponents> & any = {
             <div />
         ),
     Comment: () => <></>,
+    FootnoteReference: (props: any) => <FootnoteReference {...props} />,
+    FootnoteBackLink: (props: any) => <FootnoteBackLink {...props} />,
 };
