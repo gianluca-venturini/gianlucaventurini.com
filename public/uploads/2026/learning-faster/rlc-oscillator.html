@@ -1,0 +1,881 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>RLC Oscillator Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, svg: { fontCache: 'local' } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+/* Layout: lab-bench workspace. Sticky instrument panel (parameters) on the left, analysis column on the right; on phones the panel docks to the bottom. */
+:root {
+  --bg: #EDF0EC; --surface: #FAFBF9; --ink: #172126; --muted: #56656A; --line: #CDD5D0; --grid: #E2E7E3;
+  --accent: #2343B0; --accent-soft: #E3E8F8; --scope: #F6F8F5;
+  --ok: #15803D; --warn: #B45309; --bad: #B91C1C;
+  --ok-soft: #DCF2E3; --warn-soft: #F8EAD6; --bad-soft: #F8DEDE;
+  --tr-y: #A87F00; --tr-u: #0E7490; --tr-e: #A21CAF; --tr-vl: #C2570C; --tr-vc: #2563EB; --tr-i: #047857;
+  --f-display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0F1416; --surface: #161D20; --ink: #E3EAE7; --muted: #93A3A6; --line: #2B373B; --grid: #1E282B;
+  --accent: #8EA6FF; --accent-soft: #1F2A4A; --scope: #0B1012;
+  --ok: #4ADE80; --warn: #FBBF24; --bad: #F87171;
+  --ok-soft: #12301F; --warn-soft: #33270E; --bad-soft: #3A1717;
+  --tr-y: #F2C230; --tr-u: #22D3EE; --tr-e: #E879F9; --tr-vl: #FB923C; --tr-vc: #60A5FA; --tr-i: #34D399;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0F1416; --surface: #161D20; --ink: #E3EAE7; --muted: #93A3A6; --line: #2B373B; --grid: #1E282B;
+  --accent: #8EA6FF; --accent-soft: #1F2A4A; --scope: #0B1012;
+  --ok: #4ADE80; --warn: #FBBF24; --bad: #F87171;
+  --ok-soft: #12301F; --warn-soft: #33270E; --bad-soft: #3A1717;
+  --tr-y: #F2C230; --tr-u: #22D3EE; --tr-e: #E879F9; --tr-vl: #FB923C; --tr-vc: #60A5FA; --tr-i: #34D399;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 40px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: 2.4rem; font-weight: 700; line-height: 1.05; }
+h2 { font-size: 1.6rem; font-weight: 600; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+.wrap { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+header.top { display: flex; flex-direction: column; gap: 8px; }
+header.top p { color: var(--muted); }
+
+.app { display: grid; grid-template-columns: minmax(270px, 310px) minmax(0, 1fr); gap: 24px; align-items: start; }
+main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+section.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sec-head { display: flex; flex-direction: column; gap: 4px; }
+.sec-head .eyebrow { color: var(--accent); }
+
+/* Controls panel */
+aside.panel { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-toggle { display: none; }
+.param { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; }
+.param label { font: 600 0.95rem var(--f-display); letter-spacing: 0.02em; }
+.param label small { font: 400 0.75rem var(--f-body); color: var(--muted); margin-left: 4px; }
+.param input[type=text] { width: 92px; font: 500 0.9rem var(--f-mono); text-align: right; padding: 4px 6px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.param input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 0; }
+input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.derived { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 0.85rem; padding-top: 10px; border-top: 1px solid var(--line); }
+.derived dt { color: var(--muted); }
+.derived dd { margin: 0; text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button, select { font: 500 0.85rem var(--f-body); border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 6px 10px; cursor: pointer; }
+button.primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+button:hover { border-color: var(--accent); }
+.check { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 600 0.8rem var(--f-body); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.stable { color: var(--ok); background: var(--ok-soft); }
+.pill.marginal { color: var(--warn); background: var(--warn-soft); }
+.pill.osc { color: var(--bad); background: var(--bad-soft); }
+
+/* Diagrams */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fig { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fig .svgbox { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--scope); }
+.fig .svgbox > svg { display: block; width: 100%; min-width: 440px; height: auto; }
+mjx-container svg { display: inline; min-width: 0; }
+.fig figcaption, .caption { font-size: 0.85rem; color: var(--muted); }
+svg .w { stroke: var(--ink); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+svg .wf { stroke: var(--accent); stroke-width: 2; fill: none; stroke-dasharray: 6 4; }
+svg .flow { stroke: var(--tr-y); stroke-width: 3.5; fill: none; stroke-dasharray: 2 16; stroke-linecap: round; opacity: 0.9; }
+svg .blk { fill: var(--surface); stroke: var(--ink); stroke-width: 1.6; }
+svg .t { fill: var(--ink); font: 500 13px var(--f-body); }
+svg .tm { fill: var(--muted); font: 400 11.5px var(--f-mono); }
+svg .tv { fill: var(--accent); font: 500 12px var(--f-mono); }
+svg .th { fill: var(--ink); font: 600 15px var(--f-display); }
+svg .dot { fill: var(--ink); }
+svg .arrowhead { fill: var(--ink); }
+svg .arrowhead-a { fill: var(--accent); }
+
+/* Math */
+.math { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.eq { min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-left: 2px solid var(--line); }
+.eq h3 { font-size: 1rem; }
+.eq p { font-size: 0.9rem; color: var(--muted); }
+.eq .tex { overflow-x: auto; overflow-y: hidden; }
+mjx-container { color: var(--ink); }
+
+/* Plots */
+.plots { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+canvas { display: block; width: 100%; border-radius: 8px; background: var(--scope); border: 1px solid var(--line); }
+.verdict { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; }
+.verdict-text { display: flex; flex-direction: column; gap: 10px; }
+.verdict-text ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; max-width: 72ch; }
+.verdict-text b { font-weight: 600; }
+
+/* Tuning */
+.steps { display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+.step { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; }
+.step::before { counter-increment: s; content: counter(s); font: 700 1.3rem/1 var(--f-display); color: var(--accent);
+  width: 30px; height: 30px; border: 1.5px solid var(--accent); border-radius: 50%; display: grid; place-items: center; }
+.step > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tuner { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 14px; border-radius: 8px; background: var(--accent-soft); }
+.tuner .f { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; color: var(--muted); }
+.tuner input, .tuner select { font: 500 0.9rem var(--f-mono); padding: 5px 7px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); width: 100%; }
+.tune-out { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 0.88rem; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+table.df { border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+table.df td, table.df th { padding: 4px 12px 4px 0; text-align: left; border-bottom: 1px solid var(--line); }
+table.df th { font-weight: 500; color: var(--muted); }
+.tablebox { overflow-x: auto; }
+
+/* Scope */
+.scope-bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font: 500 0.78rem var(--f-mono); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--ink); }
+.chip i { width: 14px; height: 3px; border-radius: 2px; background: currentColor; display: inline-block; }
+.chip[aria-pressed="false"] { opacity: 0.4; }
+.scopes { display: flex; flex-direction: column; gap: 10px; }
+.scope-row { display: flex; flex-direction: column; gap: 6px; }
+.scope-row .hd { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.meas { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.meas div { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); }
+.meas span { font-size: 0.75rem; color: var(--muted); }
+.meas strong { font: 500 1.05rem var(--f-mono); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 1180px) { .plots, .verdict { grid-template-columns: minmax(0, 1fr); } .verdict canvas { max-width: 320px; } }
+@media (max-width: 1000px) { .two, .math { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  body { padding-bottom: 96px; }
+  aside.panel { position: fixed; top: auto; bottom: 0; left: 0; right: 0; max-height: 62vh; border-radius: 14px 14px 0 0; z-index: 20;
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.15); }
+  .panel-toggle { display: inline-block; }
+  aside.panel.collapsed > :not(.panel-head) { display: none; }
+  h1 { font-size: 1.9rem; }
+}
+@media (prefers-reduced-motion: reduce) { svg .flow { display: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Electronics · Control theory</span>
+    <h1>RLC Oscillator Lab</h1>
+    <p>The simplest self-sustaining oscillator: a series RLC tank driven by a saturating amplifier, with the voltage across R fed straight back to the amplifier input. Change any component on the left and every diagram, plot and the live simulation follow.</p>
+  </header>
+
+  <div class="app">
+    <aside class="panel" id="panel">
+      <div class="panel-head">
+        <span id="pill" class="pill osc">Oscillating</span>
+        <button class="panel-toggle" id="panelToggle" aria-expanded="false">Parameters</button>
+      </div>
+      <span class="eyebrow">Circuit parameters</span>
+      <div id="params" style="display:flex;flex-direction:column;gap:12px"></div>
+      <dl class="derived">
+        <dt>Natural freq. f₀</dt><dd id="d-f0"></dd>
+        <dt>Quality factor Q</dt><dd id="d-q"></dd>
+        <dt>Damping ζ</dt><dd id="d-z"></dd>
+        <dt>Gain margin</dt><dd id="d-gm"></dd>
+        <dt>Closed-loop poles</dt><dd id="d-p"></dd>
+        <dt>Envelope τ</dt><dd id="d-tau"></dd>
+        <dt>Predicted ampl.</dt><dd id="d-a"></dd>
+      </dl>
+      <span class="eyebrow">Simulation</span>
+      <div class="btns">
+        <button class="primary" id="runBtn">Pause</button>
+        <button id="kickBtn">Kick</button>
+        <button id="restartBtn">Restart from rest</button>
+      </div>
+      <div class="btns" style="align-items:center">
+        <label class="check"><input type="checkbox" id="noise" checked> Thermal noise</label>
+        <select id="speed" aria-label="Simulation speed">
+          <option value="0.5">0.5 cycles/s</option>
+          <option value="2" selected>2 cycles/s</option>
+          <option value="8">8 cycles/s</option>
+          <option value="30">30 cycles/s</option>
+        </select>
+      </div>
+    </aside>
+
+    <main>
+      <!-- 1. Model -->
+      <section class="card">
+        <div class="sec-head"><span class="eyebrow">01 · Model</span><h2>Circuit and control loop</h2></div>
+        <div class="two">
+          <figure class="fig" style="margin:0">
+            <div class="svgbox">
+            <svg viewBox="0 0 640 300" role="img" aria-label="Circuit schematic">
+              <defs>
+                <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" class="arrowhead"/></marker>
+                <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" class="arrowhead-a"/></marker>
+              </defs>
+              <!-- amplifier -->
+              <polygon points="80,85 80,195 190,140" class="blk"/>
+              <text x="104" y="146" class="th">K</text>
+              <text x="86" y="135" class="tm">+</text>
+              <path d="M135 112 V78" class="w"/><text x="141" y="84" class="tm">+Vs</text>
+              <path d="M135 168 V202" class="w"/><text x="141" y="204" class="tm">−Vs</text>
+              <text x="88" y="232" class="tv" id="c-vs">±5 V</text>
+              <!-- main mesh -->
+              <path d="M190 140 H220 V60 H260 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 H395" class="w"/>
+              <path d="M395 40 V80 M407 40 V80" class="w" style="stroke-width:3"/>
+              <path d="M407 60 H540 V110 V125 L552 130 L528 140 L552 150 L528 160 L552 170 L528 180 L552 190 L540 195 V210" class="w"/>
+              <path d="M520 210 H560 M527 217 H553 M534 224 H546" class="w"/>
+              <!-- current flow overlay -->
+              <path id="flow" d="M190 140 H220 V60 H260 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 a12.5 12.5 0 0 1 25 0 H395 M407 60 H540 V110 V125 L552 130 L528 140 L552 150 L528 160 L552 170 L528 180 L552 190 L540 195 V210" class="flow"/>
+              <!-- feedback -->
+              <path d="M540 110 H600 V265 H40 V140 H78" class="wf" marker-end="url(#aha)"/>
+              <circle cx="540" cy="110" r="4" class="dot"/>
+              <text x="230" y="285" class="tm">feedback: amplifier input e = v_R (+ noise)</text>
+              <!-- labels -->
+              <text x="296" y="30" class="t">L</text><text x="310" y="30" class="tv" id="c-l">10 mH</text>
+              <text x="396" y="30" class="t">C</text><text x="410" y="30" class="tv" id="c-c">100 nF</text>
+              <text x="562" y="150" class="t">R</text><text x="562" y="166" class="tv" id="c-r">100 Ω</text>
+              <text x="470" y="48" class="t">i →</text>
+              <text x="440" y="96" class="tm">y = v_R</text>
+              <text x="200" y="128" class="tm">u</text>
+              <text x="440" y="82" class="tv" id="c-i"></text>
+            </svg>
+            </div>
+            <figcaption>Schematic. The amplifier (small-signal gain K, rails ±Vs) drives the series L–C–R loop. The voltage across R is the output and is fed back to the amplifier input. Moving dots show the live current from the simulation.</figcaption>
+          </figure>
+
+          <figure class="fig" style="margin:0">
+            <div class="svgbox">
+            <svg viewBox="0 0 680 300" role="img" aria-label="Control loop block diagram">
+              <text x="14" y="70" class="tm">d(t)</text>
+              <text x="14" y="84" class="tm">kick + noise</text>
+              <path d="M14 110 H72" class="w" marker-end="url(#ah)"/>
+              <circle cx="90" cy="110" r="17" class="blk"/>
+              <text x="83" y="115" class="th">Σ</text>
+              <text x="62" y="104" class="tm">+</text>
+              <text x="96" y="140" class="tm">+</text>
+              <path d="M107 110 H168" class="w" marker-end="url(#ah)"/>
+              <text x="132" y="102" class="t">e</text>
+              <rect x="170" y="70" width="150" height="80" rx="4" class="blk"/>
+              <text x="182" y="94" class="th">Amplifier</text>
+              <text x="182" y="116" class="tm">u = Vs·tanh(K e/Vs)</text>
+              <text x="182" y="136" class="tm">small signal: u ≈ K e</text>
+              <path d="M320 110 H378" class="w" marker-end="url(#ah)"/>
+              <text x="344" y="102" class="t">u</text>
+              <rect x="380" y="62" width="200" height="96" rx="4" class="blk"/>
+              <text x="392" y="86" class="th">Series RLC  H(s)</text>
+              <text x="392" y="110" class="tm">        (R/L) s</text>
+              <path d="M392 118 H566" class="w" style="stroke-width:1"/>
+              <text x="392" y="136" class="tm">s² + (R/L) s + 1/(LC)</text>
+              <path d="M580 110 H664" class="w" marker-end="url(#ah)"/>
+              <text x="604" y="102" class="t">y = v_R</text>
+              <circle cx="625" cy="110" r="4" class="dot"/>
+              <path d="M625 110 V220 H90 V129" class="wf" marker-end="url(#aha)"/>
+              <text x="250" y="240" class="tm">unity positive feedback (e = y + d)</text>
+              <text x="392" y="182" class="tv" id="b-h">H(jω₀) = 1 at f₀ = 5.03 kHz</text>
+              <text x="182" y="182" class="tv" id="b-k">K = 1.20</text>
+              <text x="14" y="282" class="tm" id="b-l">Loop gain L(s) = −K·H(s) in the negative-feedback convention</text>
+            </svg>
+            </div>
+            <figcaption>Block diagram (automation view). Plant = RLC network from amplifier output u to resistor voltage y. Controller = amplifier. Disturbance d(t) represents the noise or kick that starts the oscillation.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- 2. Formalism -->
+      <section class="card">
+        <div class="sec-head"><span class="eyebrow">02 · Formalism</span><h2>From Kirchhoff to the characteristic equation</h2></div>
+        <div class="math">
+          <div class="eq"><h3>Kirchhoff voltage law</h3>
+            <div class="tex">\[ u(t) = L\frac{di}{dt} + R\,i + \frac{1}{C}\int i\,dt, \qquad y = v_R = R\,i \]</div>
+            <p>State variables: inductor current \(i\) and capacitor voltage \(v_C\): \(\;L\,\dot i = u - v_C - R i,\;\; C\,\dot v_C = i\).</p></div>
+          <div class="eq"><h3>Plant transfer function</h3>
+            <div class="tex">\[ H(s) = \frac{Y(s)}{U(s)} = \frac{\frac{R}{L}\,s}{s^2 + \frac{R}{L}s + \frac{1}{LC}} = \frac{2\zeta\omega_0 s}{s^2 + 2\zeta\omega_0 s + \omega_0^2} \]</div>
+            <p>A second-order band-pass with \(\omega_0 = 1/\sqrt{LC}\), \(\zeta = \tfrac{R}{2}\sqrt{C/L}\), \(Q = \tfrac{1}{2\zeta} = \tfrac{1}{R}\sqrt{L/C}\).</p></div>
+          <div class="eq"><h3>Frequency response</h3>
+            <div class="tex">\[ H(j\omega) = \frac{1}{1 + jQ\left(\frac{\omega}{\omega_0} - \frac{\omega_0}{\omega}\right)}, \qquad H(j\omega_0) = 1 \]</div>
+            <p>Unity gain and zero phase only at \(\omega_0\). As \(\omega\) sweeps, \(H\) traces a circle of radius ½ centred at ½ on the real axis.</p></div>
+          <div class="eq"><h3>Closing the loop</h3>
+            <div class="tex">\[ e = y + d \;\Rightarrow\; T(s) = \frac{Y}{D} = \frac{K H(s)}{1 - K H(s)} \]</div>
+            <p>Positive feedback. Rewritten as a standard negative-feedback loop with \(L(s) = -K H(s)\), the closed-loop poles solve \(1 + L(s) = 0\).</p></div>
+          <div class="eq"><h3>Characteristic equation and poles</h3>
+            <div class="tex">\[ s^2 + \frac{R}{L}(1-K)\,s + \frac{1}{LC} = 0 \]
+            \[ s_{1,2} = -\frac{R(1-K)}{2L} \pm j\sqrt{\omega_0^2 - \left(\frac{R(1-K)}{2L}\right)^2} \]</div>
+            <p>The amplifier acts as a negative resistance \(-KR\): the effective series resistance is \(R(1-K)\). \(K&lt;1\): poles in the left half-plane. \(K=1\): on the \(j\omega\) axis. \(K&gt;1\): right half-plane.</p></div>
+          <div class="eq"><h3>Barkhausen criterion</h3>
+            <div class="tex">\[ K\,H(j\omega_0) = 1 \iff |L(j\omega_0)| = 1,\;\; \angle L(j\omega_0) = -180^\circ \]</div>
+            <p>Sustained oscillation needs loop gain exactly 1 with zero net phase (positive feedback) at one frequency. Here that frequency is \(\omega_0\) for any \(R\).</p></div>
+          <div class="eq"><h3>Nyquist criterion</h3>
+            <div class="tex">\[ Z = N + P \]</div>
+            <p>\(P\): open-loop RHP poles (0, since the passive RLC with \(R&gt;0\) is stable). \(N\): clockwise encirclements of \(-1\) by \(L(j\omega)\), \(\omega\in(-\infty,\infty)\). \(Z\): closed-loop RHP poles. Here \(L(j\omega)\) is a circle through 0 and \(-K\), traced twice, so \(N = 2\) when \(K&gt;1\).</p></div>
+          <div class="eq"><h3>Amplitude: describing function</h3>
+            <div class="tex">\[ N(A) = \frac{1}{\pi A}\int_0^{2\pi} V_s \tanh\!\left(\frac{K A\sin\theta}{V_s}\right)\sin\theta\,d\theta, \qquad N(A)\,H(j\omega_0) = 1 \]</div>
+            <p>Linear theory says the amplitude grows forever when \(K&gt;1\). Saturation lowers the effective gain \(N(A)\) as \(A\) grows; the limit cycle settles where \(N(A) = 1\). \(A/V_s\) depends only on \(K\).</p></div>
+        </div>
+      </section>
+
+      <!-- 3. Stability -->
+      <section class="card">
+        <div class="sec-head"><span class="eyebrow">03 · Frequency domain</span><h2>Bode, Nyquist and stability</h2></div>
+        <div class="plots">
+          <div class="fig"><canvas id="bode" aria-label="Bode diagram of loop gain L(jω)"></canvas>
+            <span class="caption">Bode diagram of the open-loop gain \(L(j\omega) = -K H(j\omega)\). Hover to read values. The dashed vertical line is \(f_0\).</span></div>
+          <div class="fig"><canvas id="nyq" aria-label="Nyquist diagram"></canvas>
+            <span class="caption">Nyquist plot of \(L(j\omega)\). Solid: \(\omega&gt;0\). Dashed: \(\omega&lt;0\). Red cross: critical point \(-1\).</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-text" id="verdict"></div>
+          <div class="fig"><canvas id="poles" aria-label="Pole map"></canvas>
+            <span class="caption">s-plane, axes in units of ω₀. Grey trail: root locus for K from 0 to 4. ○ zero, × closed-loop poles.</span></div>
+        </div>
+      </section>
+
+      <!-- 4. Tuning -->
+      <section class="card">
+        <div class="sec-head"><span class="eyebrow">04 · Design</span><h2>How to tune it</h2></div>
+        <div class="tuner">
+          <label class="f">Target frequency (Hz)<input id="t-f" type="text" value="1k"></label>
+          <label class="f">Solve for<select id="t-solve"><option value="C">C (keep L)</option><option value="L">L (keep C)</option></select></label>
+          <label class="f">Quality factor Q<input id="t-q" type="text" value="5"></label>
+          <label class="f">Start-up margin δ (K = 1+δ)<input id="t-d" type="text" value="0.15"></label>
+          <label class="f">Output amplitude (V peak)<input id="t-a" type="text" value="2"></label>
+        </div>
+        <div class="tune-out" id="tuneOut"></div>
+        <div class="presets"><span class="muted" style="font-size:0.85rem">Presets:</span>
+          <button data-preset="440">440 Hz (A4)</button>
+          <button data-preset="1000">1 kHz</button>
+          <button data-preset="10000">10 kHz</button>
+          <button data-preset="455000">455 kHz IF</button>
+          <button data-preset="10000000">10 MHz</button>
+        </div>
+        <div class="steps">
+          <div class="step"><div><h3>Set the frequency with L and C</h3>
+            <p>\(f_0 = \dfrac{1}{2\pi\sqrt{LC}}\). Pick a practical inductor first (they come in fewer values and carry more parasitics), then solve \(C = \dfrac{1}{(2\pi f_0)^2 L}\). Frequency scales as the inverse square root: doubling \(C\) lowers \(f_0\) by \(\sqrt 2\). Component tolerance shifts it by \(\Delta f/f \approx -\tfrac12(\Delta L/L + \Delta C/C)\).</p></div></div>
+          <div class="step"><div><h3>Set the selectivity with R</h3>
+            <p>\(R = \dfrac{1}{Q}\sqrt{L/C}\). The ratio \(\sqrt{L/C}\) is the tank's characteristic impedance. A high \(Q\) (small \(R\)) gives a narrow band-pass that filters the amplifier's clipping harmonics, so the output is a cleaner sine. The cost is a slower start-up. Changing \(R\) does not move \(f_0\).</p></div></div>
+          <div class="step"><div><h3>Set the loop gain K a little above 1</h3>
+            <p>With \(K = 1+\delta\), the envelope grows as \(e^{t/\tau}\) with \(\tau = \dfrac{2L}{R\,\delta} = \dfrac{2Q}{\omega_0\,\delta}\). Use \(\delta\approx 0.05\text{–}0.5\). Exactly \(K=1\) is not robust: any drift below 1 and the oscillation dies. Too large (\(K &gt; 1 + 2Q\)) makes the poles real, and the circuit behaves like a relaxation oscillator instead of a sine source.</p></div></div>
+          <div class="step"><div><h3>Set the amplitude with the supply Vs</h3>
+            <p>The describing-function solution gives \(A = a(K)\,V_s\), with \(a(K)\) from the table. For \(K\) close to 1, \(a(K) \approx 2\sqrt{(K-1)/K^3}\). For large \(K\), the amplifier output becomes a square wave and \(a \to 4/\pi\).</p>
+            <div class="tablebox"><table class="df" id="dfTable"></table></div></div></div>
+          <div class="step"><div><h3>Verify on the plots</h3>
+            <p>Bode: the magnitude peak \(20\log_{10}K\) must sit above 0 dB exactly where the phase crosses −180° (at \(f_0\)); the gain margin is negative. Nyquist: the circle reaches \(-K\) and must enclose \(-1\). Then run the simulation and compare the measured frequency and amplitude with the predictions.</p></div></div>
+        </div>
+      </section>
+
+      <!-- 5. Simulation -->
+      <section class="card">
+        <div class="sec-head"><span class="eyebrow">05 · Time domain</span><h2>Live simulation</h2>
+          <p class="muted">Nonlinear model integrated with RK4 (200 steps per period). The window always shows the last 10 periods of f₀. Edit parameters while it runs.</p></div>
+        <div class="meas">
+          <div><span>Measured frequency</span><strong id="m-f">–</strong></div>
+          <div><span>Measured amplitude v_R</span><strong id="m-a">–</strong></div>
+          <div><span>Predicted amplitude</span><strong id="m-ap">–</strong></div>
+          <div><span>Simulated time</span><strong id="m-t">–</strong></div>
+        </div>
+        <div class="scopes">
+          <div class="scope-row"><div class="hd"><h3>Control loop signals</h3><div class="legend" id="lg0"></div></div><canvas id="sc0"></canvas></div>
+          <div class="scope-row"><div class="hd"><h3>Component voltages (KVL: u = v_L + v_C + v_R)</h3><div class="legend" id="lg1"></div></div><canvas id="sc1"></canvas></div>
+          <div class="scope-row"><div class="hd"><h3>Loop current</h3><div class="legend" id="lg2"></div></div><canvas id="sc2"></canvas></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const TAU = 2 * Math.PI;
+
+// ---------- engineering number helpers ----------
+const PREF = [[1e9,'G'],[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'µ'],[1e-9,'n'],[1e-12,'p'],[1e-15,'f']];
+function eng(v, unit = '', digits = 3) {
+  if (!isFinite(v)) return v > 0 ? '∞' : (v < 0 ? '−∞' : '–');
+  if (v === 0) return '0 ' + unit;
+  const a = Math.abs(v);
+  for (const [m, p] of PREF) if (a >= m * 0.9995) return (v / m).toPrecision(digits).replace(/\.?0+$/, '').replace('-', '−') + ' ' + p + unit;
+  return v.toExponential(2) + ' ' + unit;
+}
+const MULT = { G:1e9, M:1e6, k:1e3, K:1e3, m:1e-3, u:1e-6, 'µ':1e-6, n:1e-9, p:1e-12, f:1e-15 };
+function parseEng(str) {
+  const m = String(str).trim().replace(',', '.').match(/^([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*([GMkKmuµnpf]?)/);
+  if (!m) return NaN;
+  return parseFloat(m[1]) * (m[2] ? MULT[m[2]] : 1);
+}
+const fmtNum = (v, d = 3) => isFinite(v) ? v.toPrecision(d).replace('-', '−') : '∞';
+
+// ---------- parameters ----------
+const P = {
+  R:  { label: 'R', sub: 'resistance', min: 1, max: 1e4, log: true, unit: 'Ω', val: 100 },
+  L:  { label: 'L', sub: 'inductance', min: 1e-6, max: 10, log: true, unit: 'H', val: 10e-3 },
+  C:  { label: 'C', sub: 'capacitance', min: 1e-12, max: 1e-4, log: true, unit: 'F', val: 100e-9 },
+  K:  { label: 'K', sub: 'amplifier gain', min: 0, max: 4, log: false, unit: '', val: 1.2 },
+  Vs: { label: 'Vs', sub: 'supply / generator', min: 0.5, max: 24, log: false, unit: 'V', val: 5 },
+};
+const toSlider = (p, v) => p.log ? 1000 * Math.log(v / p.min) / Math.log(p.max / p.min) : 1000 * (v - p.min) / (p.max - p.min);
+const fromSlider = (p, s) => p.log ? p.min * Math.pow(p.max / p.min, s / 1000) : p.min + (p.max - p.min) * s / 1000;
+const fmtParam = (k) => k === 'K' ? P.K.val.toFixed(3).replace(/0+$/, '').replace(/\.$/, '') : eng(P[k].val, P[k].unit).replace(/\s+$/, '');
+
+const paramsEl = $('#params');
+for (const k of Object.keys(P)) {
+  const p = P[k];
+  const row = document.createElement('div');
+  row.className = 'param';
+  row.innerHTML = `<label for="in-${k}">${p.label}<small>${p.sub}</small></label>
+    <input type="text" id="in-${k}" inputmode="decimal" spellcheck="false">
+    <input type="range" id="sl-${k}" min="0" max="1000" step="1" aria-label="${p.label} slider">`;
+  paramsEl.appendChild(row);
+  const tx = row.querySelector('input[type=text]'), sl = row.querySelector('input[type=range]');
+  p.tx = tx; p.sl = sl;
+  sl.addEventListener('input', () => { p.val = +fromSlider(p, +sl.value).toPrecision(k === 'K' ? 4 : 3); tx.value = fmtParam(k); onChange(k); });
+  tx.addEventListener('change', () => {
+    let v = parseEng(tx.value);
+    if (!isFinite(v)) { tx.value = fmtParam(k); return; }
+    v = Math.min(p.max, Math.max(p.min, v));
+    p.val = v; sl.value = toSlider(p, v); tx.value = fmtParam(k); onChange(k);
+  });
+}
+function syncInputs() { for (const k in P) { P[k].sl.value = toSlider(P[k], P[k].val); P[k].tx.value = fmtParam(k); } }
+
+// ---------- describing function ----------
+function dfGain(x, K) {
+  const n = 128; let s = 0;
+  for (let j = 0; j < n; j++) { const sn = Math.sin(TAU * j / n); s += Math.tanh(K * x * sn) * sn; }
+  return (TAU / n) * s / (Math.PI * x);
+}
+function dfRoot(K) {
+  if (K <= 1) return 0;
+  let lo = 1e-7, hi = 10;
+  for (let it = 0; it < 60; it++) { const mid = (lo + hi) / 2; if (dfGain(mid, K) > 1) lo = mid; else hi = mid; }
+  return (lo + hi) / 2;
+}
+
+// ---------- analysis ----------
+function derive() {
+  const R = P.R.val, L = P.L.val, C = P.C.val, K = P.K.val, Vs = P.Vs.val;
+  const w0 = 1 / Math.sqrt(L * C), f0 = w0 / TAU, zeta = R / 2 * Math.sqrt(C / L), Q = 1 / (2 * zeta);
+  const sigma = -(R / (2 * L)) * (1 - K);
+  const disc = w0 * w0 - sigma * sigma;
+  const poles = disc >= 0 ? [{ re: sigma, im: Math.sqrt(disc) }, { re: sigma, im: -Math.sqrt(disc) }]
+                          : [{ re: sigma + Math.sqrt(-disc), im: 0 }, { re: sigma - Math.sqrt(-disc), im: 0 }];
+  const eps = 0.002;
+  const state = K < 1 - eps ? 'stable' : (Math.abs(K - 1) <= eps ? 'marginal' : 'osc');
+  const gmDb = K > 0 ? -20 * Math.log10(K) : Infinity;
+  const tau = sigma !== 0 ? 1 / Math.abs(sigma) : Infinity;
+  const aRatio = dfRoot(K);
+  return { R, L, C, K, Vs, w0, f0, zeta, Q, sigma, disc, poles, state, gmDb, tau, amp: aRatio * Vs, aRatio, realPoles: disc < 0 };
+}
+function Hjw(d, w) { // H(jw) = (jw R/L) / (w0^2 - w^2 + jw R/L)
+  const a = d.R / d.L, nr = 0, ni = w * a, dr = d.w0 * d.w0 - w * w, di = w * a;
+  const den = dr * dr + di * di;
+  return { re: (nr * dr + ni * di) / den, im: (ni * dr - nr * di) / den };
+}
+
+// ---------- canvas helpers ----------
+const css = () => { const s = getComputedStyle(document.documentElement); return n => s.getPropertyValue('--' + n).trim(); };
+function fit(cv, h) {
+  const w = cv.clientWidth || 300, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.height = h + 'px'; }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+  return { ctx, w, h };
+}
+const FONT = '11px "IBM Plex Mono", ui-monospace, monospace';
+function arrow(ctx, x1, y1, x2, y2, size = 7) {
+  const a = Math.atan2(y2 - y1, x2 - x1);
+  ctx.beginPath(); ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - size * Math.cos(a - 0.4), y2 - size * Math.sin(a - 0.4));
+  ctx.lineTo(x2 - size * Math.cos(a + 0.4), y2 - size * Math.sin(a + 0.4));
+  ctx.closePath(); ctx.fill();
+}
+
+// ---------- Bode ----------
+const bodeCv = $('#bode'); let bodeHover = null;
+function drawBode(d) {
+  const c = css();
+  const { ctx, w, h } = fit(bodeCv, 420);
+  const ml = 54, mr = 14, mt = 16, gap = 34, mb = 30;
+  const ph = (h - mt - mb - gap) / 2;
+  const fmin = d.f0 / 100, fmax = d.f0 * 100;
+  const X = f => ml + (w - ml - mr) * Math.log(f / fmin) / Math.log(fmax / fmin);
+  const Kc = Math.max(d.K, 1e-3);
+  const top = Math.ceil((20 * Math.log10(Kc) + 10) / 20) * 20, bot = top - 100;
+  const Ym = db => mt + ph * (top - Math.max(bot, Math.min(top, db))) / (top - bot);
+  const Yp = deg => mt + ph + gap + ph * (-90 - deg) / 180;
+  ctx.font = FONT; ctx.lineWidth = 1;
+  // grids
+  for (const pane of [0, 1]) {
+    const y0 = pane ? mt + ph + gap : mt;
+    ctx.strokeStyle = c('grid');
+    for (let dec = Math.ceil(Math.log10(fmin)); dec <= Math.floor(Math.log10(fmax)); dec++) {
+      for (let m = 1; m < 10; m++) { const f = m * 10 ** dec; if (f < fmin || f > fmax) continue; ctx.beginPath(); ctx.moveTo(X(f), y0); ctx.lineTo(X(f), y0 + ph); ctx.stroke(); }
+    }
+    ctx.strokeStyle = c('line'); ctx.strokeRect(ml, y0, w - ml - mr, ph);
+  }
+  ctx.fillStyle = c('muted'); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let db = bot; db <= top; db += 20) { const y = Ym(db); ctx.strokeStyle = c('grid'); ctx.beginPath(); ctx.moveTo(ml, y); ctx.lineTo(w - mr, y); ctx.stroke(); ctx.fillText(db + ' dB', ml - 6, y); }
+  for (let deg = -270; deg <= -90; deg += 45) { const y = Yp(deg); ctx.strokeStyle = c('grid'); ctx.beginPath(); ctx.moveTo(ml, y); ctx.lineTo(w - mr, y); ctx.stroke(); ctx.fillText(deg + '°', ml - 6, y); }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let dec = Math.ceil(Math.log10(fmin)); dec <= Math.floor(Math.log10(fmax)); dec++) { const f = 10 ** dec; ctx.fillText(eng(f, 'Hz', 2), X(f), h - mb + 8); }
+  // reference lines: 0 dB and -180°
+  ctx.strokeStyle = c('accent'); ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(ml, Ym(0)); ctx.lineTo(w - mr, Ym(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ml, Yp(-180)); ctx.lineTo(w - mr, Yp(-180)); ctx.stroke();
+  ctx.strokeStyle = c('muted');
+  ctx.beginPath(); ctx.moveTo(X(d.f0), mt); ctx.lineTo(X(d.f0), mt + ph); ctx.moveTo(X(d.f0), mt + ph + gap); ctx.lineTo(X(d.f0), mt + ph * 2 + gap); ctx.stroke();
+  ctx.setLineDash([]);
+  // curves
+  const N = 500, magPts = [], phPts = [];
+  for (let k = 0; k <= N; k++) {
+    const f = fmin * Math.pow(fmax / fmin, k / N), H = Hjw(d, TAU * f);
+    magPts.push([X(f), Ym(20 * Math.log10(Kc * Math.hypot(H.re, H.im)))]);
+    phPts.push([X(f), Yp(Math.atan2(H.im, H.re) * 180 / Math.PI - 180)]);
+  }
+  const col = d.state === 'stable' ? c('ok') : d.state === 'marginal' ? c('warn') : c('bad');
+  ctx.lineWidth = 2.2; ctx.strokeStyle = c('tr-vc');
+  for (const pts of [magPts, phPts]) { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); }
+  // gain margin marker
+  const x0 = X(d.f0), yPk = Ym(20 * Math.log10(Kc)), yZ = Ym(0);
+  ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 2;
+  if (Math.abs(yPk - yZ) > 8) { ctx.beginPath(); ctx.moveTo(x0 + 10, yZ); ctx.lineTo(x0 + 10, yPk); ctx.stroke(); arrow(ctx, x0 + 10, yZ, x0 + 10, yPk); }
+  ctx.beginPath(); ctx.arc(x0, yPk, 4, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(x0, Yp(-180), 4, 0, TAU); ctx.fill();
+  ctx.font = '600 12px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText('GM = ' + (isFinite(d.gmDb) ? fmtNum(d.gmDb, 3) + ' dB' : '∞'), x0 + 18, (yPk + yZ) / 2);
+  ctx.fillStyle = c('ink'); ctx.font = '600 12px "IBM Plex Sans", system-ui, sans-serif';
+  ctx.fillText('|L(jω)|', ml + 8, mt + 12); ctx.fillText('∠L(jω)', ml + 8, mt + ph + gap + 12);
+  ctx.fillStyle = c('muted'); ctx.font = FONT; ctx.fillText('f₀ = ' + eng(d.f0, 'Hz'), x0 + 6, mt + ph + gap / 2);
+  // hover
+  if (bodeHover != null && bodeHover >= ml && bodeHover <= w - mr) {
+    const f = fmin * Math.pow(fmax / fmin, (bodeHover - ml) / (w - ml - mr)), H = Hjw(d, TAU * f);
+    const db = 20 * Math.log10(Kc * Math.hypot(H.re, H.im)), deg = Math.atan2(H.im, H.re) * 180 / Math.PI - 180;
+    ctx.strokeStyle = c('ink'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(bodeHover, mt); ctx.lineTo(bodeHover, h - mb); ctx.stroke();
+    const lines = [eng(f, 'Hz'), fmtNum(db, 3) + ' dB', fmtNum(deg, 4) + '°'];
+    const bx = bodeHover + 140 > w ? bodeHover - 128 : bodeHover + 8;
+    ctx.fillStyle = c('surface'); ctx.strokeStyle = c('line'); ctx.fillRect(bx, mt + 26, 120, 50); ctx.strokeRect(bx, mt + 26, 120, 50);
+    ctx.fillStyle = c('ink'); ctx.textBaseline = 'top'; lines.forEach((t, i) => ctx.fillText(t, bx + 8, mt + 32 + i * 14));
+  }
+}
+bodeCv.addEventListener('mousemove', e => { bodeHover = e.offsetX; drawBode(D); });
+bodeCv.addEventListener('mouseleave', () => { bodeHover = null; drawBode(D); });
+
+// ---------- Nyquist ----------
+const nyqCv = $('#nyq');
+function drawNyquist(d) {
+  const c = css();
+  const { ctx, w, h } = fit(nyqCv, 420);
+  const K = d.K, R = Math.max(K, 1);
+  const xmin = -R * 1.18 - 0.15, xmax = R * 0.35 + 0.25, ymax = R * 0.62 + 0.15;
+  const s = Math.min((w - 30) / (xmax - xmin), (h - 40) / (2 * ymax));
+  const cx = w / 2 - s * (xmin + xmax) / 2, cy = h / 2;
+  const X = x => cx + s * x, Y = y => cy - s * y;
+  ctx.font = FONT; ctx.lineWidth = 1;
+  // grid
+  const step = R > 2.5 ? 1 : 0.5;
+  ctx.strokeStyle = c('grid'); ctx.fillStyle = c('muted');
+  for (let x = Math.ceil(xmin / step) * step; x <= xmax; x += step) { ctx.beginPath(); ctx.moveTo(X(x), 0); ctx.lineTo(X(x), h); ctx.stroke(); }
+  for (let y = Math.ceil(-ymax / step) * step; y <= ymax + 1e-9; y += step) { ctx.beginPath(); ctx.moveTo(0, Y(y)); ctx.lineTo(w, Y(y)); ctx.stroke(); }
+  ctx.strokeStyle = c('muted'); ctx.beginPath(); ctx.moveTo(0, Y(0)); ctx.lineTo(w, Y(0)); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), h); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let x = Math.ceil(xmin / step) * step; x <= xmax; x += step) if (Math.abs(x) > 1e-9) ctx.fillText(fmtNum(x, 2), X(x), Y(0) + 4);
+  ctx.textAlign = 'left'; ctx.fillText('Re', w - 24, Y(0) + 4); ctx.fillText('Im', X(0) + 4, 6);
+  // unit circle
+  ctx.setLineDash([2, 4]); ctx.strokeStyle = c('line'); ctx.beginPath(); ctx.arc(X(0), Y(0), s, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  // curves
+  const col = d.state === 'stable' ? c('ok') : d.state === 'marginal' ? c('warn') : c('bad');
+  const pt = w0 => { const H = Hjw(d, w0); return [X(-K * H.re), Y(-K * H.im)]; };
+  const N = 600, wr = Math.log(1e4);
+  ctx.lineWidth = 2.2; ctx.strokeStyle = c('tr-vc');
+  for (const sign of [1, -1]) {
+    ctx.setLineDash(sign > 0 ? [] : [6, 4]);
+    ctx.beginPath();
+    for (let k = 0; k <= N; k++) {
+      const wv = sign * d.w0 * Math.exp(-wr + 2 * wr * k / N);
+      const [x, y] = pt(wv); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  // direction arrows (positive omega)
+  ctx.fillStyle = c('tr-vc');
+  for (const m of [0.55, 1.8]) { const a = pt(d.w0 * m), b = pt(d.w0 * m * 1.03); if (Math.hypot(b[0] - a[0], b[1] - a[1]) > 0.3) arrow(ctx, a[0], a[1], b[0], b[1], 9); }
+  // omega0 point
+  const p0 = pt(d.w0); ctx.fillStyle = c('tr-vc'); ctx.beginPath(); ctx.arc(p0[0], p0[1], 4, 0, TAU); ctx.fill();
+  ctx.fillStyle = c('ink'); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('ω₀ → −K = ' + fmtNum(-K, 3), p0[0], p0[1] - 8);
+  // critical point
+  ctx.strokeStyle = c('bad'); ctx.lineWidth = 2.5; const xc = X(-1), yc = Y(0);
+  ctx.beginPath(); ctx.moveTo(xc - 7, yc - 7); ctx.lineTo(xc + 7, yc + 7); ctx.moveTo(xc + 7, yc - 7); ctx.lineTo(xc - 7, yc + 7); ctx.stroke();
+  ctx.fillStyle = c('bad'); ctx.textBaseline = 'top'; ctx.fillText('−1', xc, yc + 10);
+  // summary
+  const Nenc = K > 1 + 0.002 ? 2 : 0;
+  ctx.font = '600 12px "IBM Plex Sans", system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.fillStyle = col; ctx.textBaseline = 'top';
+  ctx.fillText(`N = ${Nenc} (clockwise), P = 0 → Z = ${Nenc}`, 10, 10);
+}
+
+// ---------- pole map ----------
+const poleCv = $('#poles');
+function drawPoles(d) {
+  const c = css();
+  const { ctx, w, h } = fit(poleCv, 260);
+  const z = d.zeta;
+  let span = 1.6;
+  for (const p of d.poles) span = Math.max(span, Math.abs(p.re / d.w0) * 1.15, Math.abs(p.im / d.w0) * 1.15);
+  span = Math.min(span, 12);
+  const s = Math.min(w, h) / (2 * span) * 0.92, cx = w / 2, cy = h / 2;
+  const X = x => cx + s * x, Y = y => cy - s * y;
+  ctx.fillStyle = c('bad-soft'); ctx.fillRect(cx, 0, w - cx, h);
+  ctx.strokeStyle = c('muted'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+  ctx.font = FONT; ctx.fillStyle = c('muted'); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('jω', cx + 4, 4); ctx.fillText('σ', w - 12, cy + 4); ctx.fillText('RHP', w - 34, 6);
+  ctx.setLineDash([2, 4]); ctx.strokeStyle = c('line'); ctx.beginPath(); ctx.arc(cx, cy, s, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  // root locus for K in [0,4]
+  ctx.fillStyle = c('muted');
+  for (let k = 0; k <= 4; k += 0.02) {
+    const sg = -z * (1 - k), ds = 1 - sg * sg;
+    const pts = ds >= 0 ? [[sg, Math.sqrt(ds)], [sg, -Math.sqrt(ds)]] : [[sg + Math.sqrt(-ds), 0], [sg - Math.sqrt(-ds), 0]];
+    for (const [a, b] of pts) { const x = X(a), y = Y(b); if (x > -2 && x < w + 2) ctx.fillRect(x - 0.8, y - 0.8, 1.6, 1.6); }
+  }
+  // zero
+  ctx.strokeStyle = c('ink'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, TAU); ctx.stroke();
+  // poles
+  const col = d.state === 'stable' ? c('ok') : d.state === 'marginal' ? c('warn') : c('bad');
+  ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+  for (const p of d.poles) { const x = X(p.re / d.w0), y = Y(p.im / d.w0); ctx.beginPath(); ctx.moveTo(x - 6, y - 6); ctx.lineTo(x + 6, y + 6); ctx.moveTo(x + 6, y - 6); ctx.lineTo(x - 6, y + 6); ctx.stroke(); }
+}
+
+// ---------- verdict text ----------
+function renderVerdict(d) {
+  const pill = $('#pill');
+  const names = { stable: 'Stable · no oscillation', marginal: 'Marginal · Barkhausen', osc: 'Unstable loop · oscillates' };
+  pill.className = 'pill ' + d.state; pill.textContent = names[d.state];
+  const pStr = d.realPoles ? `${eng(d.poles[0].re, 's⁻¹')} and ${eng(d.poles[1].re, 's⁻¹')}` : `${eng(d.sigma, '')} ± j${eng(Math.abs(d.poles[0].im), 'rad/s')}`;
+  let html = `<span class="pill ${d.state}" style="align-self:flex-start">${names[d.state]}</span>`;
+  if (d.state === 'stable') {
+    html += `<h3>The closed loop is stable, so it cannot sustain an oscillation.</h3><ul>
+      <li><b>Poles:</b> s = ${pStr}. Both have negative real part because the effective resistance R(1−K) = ${eng(d.R * (1 - d.K), 'Ω')} is still positive.</li>
+      <li><b>Nyquist:</b> the circle only reaches −K = ${fmtNum(-d.K, 3)}, so −1 is not encircled. N = 0, P = 0 ⇒ Z = 0.</li>
+      <li><b>Bode:</b> |L| peaks at ${fmtNum(20 * Math.log10(Math.max(d.K, 1e-3)), 3)} dB, below 0 dB where the phase is −180°. Gain margin +${fmtNum(d.gmDb, 3)} dB.</li>
+      <li><b>Time domain:</b> a kick rings at about f₀ and decays with τ = ${eng(d.tau, 's')}. Raise K above 1 to make it oscillate.</li></ul>`;
+  } else if (d.state === 'marginal') {
+    html += `<h3>Exactly on the stability boundary.</h3><ul>
+      <li><b>Poles:</b> on the jω axis at ±j${eng(d.w0, 'rad/s')}. The amplifier cancels R exactly.</li>
+      <li><b>Nyquist:</b> the curve passes through −1. <b>Bode:</b> 0 dB and −180° at the same frequency, GM = 0 dB.</li>
+      <li><b>Time domain:</b> any amplitude persists unchanged, but a tiny drift in K kills or grows it. Real designs use K slightly above 1 and rely on saturation.</li></ul>`;
+  } else {
+    html += `<h3>The linear loop is unstable, which is exactly what an oscillator needs.</h3><ul>
+      <li><b>Poles:</b> s = ${pStr}. Effective resistance R(1−K) = ${eng(d.R * (1 - d.K), 'Ω')} is negative, so energy is injected every cycle.</li>
+      <li><b>Nyquist:</b> the circle reaches −K = ${fmtNum(-d.K, 3)} and encloses −1 twice clockwise. N = 2, P = 0 ⇒ Z = 2 right-half-plane poles.</li>
+      <li><b>Bode:</b> at f₀ the phase is −180° while |L| = ${fmtNum(20 * Math.log10(d.K), 3)} dB &gt; 0 dB. Gain margin ${fmtNum(d.gmDb, 3)} dB (negative). Phase margin is not a useful measure here: |L| crosses 0 dB twice.</li>
+      <li><b>Why it does not blow up:</b> the envelope grows with τ = ${eng(d.tau, 's')} until the amplifier saturates at ±${eng(d.Vs, 'V')}. Saturation lowers the effective gain N(A) until N(A)·H(jω₀) = 1, a stable limit cycle at A ≈ ${eng(d.amp, 'V')} peak.</li>
+      ${d.realPoles ? `<li><b>Warning:</b> K &gt; 1 + 2Q = ${fmtNum(1 + 2 * d.Q, 3)}, so the poles are real. The circuit snaps between rails like a relaxation oscillator; the output is far from sinusoidal.</li>` : ''}</ul>`;
+  }
+  $('#verdict').innerHTML = html;
+}
+
+// ---------- panel readouts / diagram labels ----------
+function renderReadouts(d) {
+  $('#d-f0').textContent = eng(d.f0, 'Hz');
+  $('#d-q').textContent = fmtNum(d.Q, 3);
+  $('#d-z').textContent = fmtNum(d.zeta, 3);
+  $('#d-gm').textContent = isFinite(d.gmDb) ? fmtNum(d.gmDb, 3) + ' dB' : '∞';
+  $('#d-p').textContent = d.realPoles ? 'real' : (d.sigma >= 0 ? '+' : '−') + eng(Math.abs(d.sigma), '') + '± j' + eng(Math.abs(d.poles[0].im), '');
+  $('#d-tau').textContent = d.state === 'marginal' ? '∞' : eng(d.tau, 's') + (d.sigma > 0 ? ' ↑' : ' ↓');
+  $('#d-a').textContent = d.state === 'osc' ? eng(d.amp, 'V') : '0 V (decays)';
+  $('#c-r').textContent = eng(d.R, 'Ω'); $('#c-l').textContent = eng(d.L, 'H'); $('#c-c').textContent = eng(d.C, 'F'); $('#c-vs').textContent = '±' + eng(d.Vs, 'V');
+  $('#b-k').textContent = 'K = ' + fmtParam('K');
+  $('#b-h').textContent = 'H(jω₀) = 1 at f₀ = ' + eng(d.f0, 'Hz');
+  $('#m-ap').textContent = d.state === 'osc' ? eng(d.amp, 'V') : '0 V';
+}
+
+// ---------- tuning ----------
+function dfTable() {
+  const Ks = [1.02, 1.05, 1.1, 1.2, 1.5, 2, 3, 5];
+  $('#dfTable').innerHTML = '<tr><th>K</th>' + Ks.map(k => `<td class="mono">${k}</td>`).join('') + '</tr>'
+    + '<tr><th>a(K) = A/Vs</th>' + Ks.map(k => `<td class="mono">${dfRoot(k).toFixed(3)}</td>`).join('') + '</tr>';
+}
+let tuned = null;
+function computeTune() {
+  const f = parseEng($('#t-f').value), Q = parseEng($('#t-q').value), dl = parseEng($('#t-d').value), A = parseEng($('#t-a').value);
+  const out = $('#tuneOut');
+  if (![f, Q, dl, A].every(v => isFinite(v) && v > 0)) { out.innerHTML = '<span style="color:var(--bad)">Enter positive numbers in every field (suffixes like k, m, µ, n work).</span>'; tuned = null; return; }
+  const w = TAU * f; let L = P.L.val, C = P.C.val;
+  if ($('#t-solve').value === 'C') C = 1 / (w * w * L); else L = 1 / (w * w * C);
+  const R = Math.sqrt(L / C) / Q, K = 1 + dl, Vs = A / dfRoot(K);
+  tuned = { L, C, R, K, Vs };
+  const warn = [];
+  if (R < P.R.min || R > P.R.max) warn.push('R outside slider range');
+  if (C < P.C.min || C > P.C.max) warn.push('C outside slider range');
+  if (L < P.L.min || L > P.L.max) warn.push('L outside slider range');
+  if (Vs > P.Vs.max) warn.push('Vs above 24 V; raise δ or lower the amplitude');
+  if (K > 1 + 2 * Q) warn.push('δ > 2Q gives real poles');
+  out.innerHTML = `<span class="mono">L = ${eng(L, 'H')}</span><span class="mono">C = ${eng(C, 'F')}</span><span class="mono">R = ${eng(R, 'Ω')}</span>
+    <span class="mono">K = ${K.toFixed(3)}</span><span class="mono">Vs = ${eng(Vs, 'V')}</span>
+    <span class="mono muted">start-up τ = ${eng(2 * Q / (w * dl), 's')}</span>
+    <button class="primary" id="applyTune">Apply to circuit</button>
+    ${warn.length ? `<span style="color:var(--warn)">${warn.join(' · ')} (values will be clamped)</span>` : ''}`;
+  $('#applyTune').addEventListener('click', () => {
+    for (const k of ['L', 'C', 'R', 'K', 'Vs']) P[k].val = Math.min(P[k].max, Math.max(P[k].min, tuned[k]));
+    syncInputs(); onChange('L'); restart();
+  });
+}
+for (const id of ['#t-f', '#t-q', '#t-d', '#t-a', '#t-solve']) $(id).addEventListener('input', computeTune);
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => { $('#t-f').value = eng(+b.dataset.preset, '').trim(); computeTune(); }));
+
+// ---------- simulation ----------
+const SPP = 200, PERIODS = 10, NBUF = SPP * PERIODS;
+const KEYS = ['e', 'u', 'y', 'vL', 'vC', 'i'];
+const buf = {}; for (const k of KEYS) buf[k] = new Float32Array(NBUF).fill(NaN);
+let head = 0, simT = 0, st = { i: 0, vC: 0 }, kickLeft = 0, running = true, speed = 2, acc = 0;
+let D = derive();
+
+function simStep() {
+  const { R, L, C, K, Vs, w0 } = D;
+  const h = TAU / w0 / SPP;
+  const nsub = Math.min(400, Math.max(1, Math.ceil(h * (R * (1 + K)) / L / 0.4)));
+  const hs = h / nsub;
+  let dist = $noise ? (Math.random() * 2 - 1) * 1e-4 * Vs : 0;
+  if (kickLeft > 0) { dist += 0.3 * Vs; kickLeft--; }
+  const f = (i, vC) => { const e = R * i + dist; const u = Vs * Math.tanh(K * e / Vs); return [(u - vC - R * i) / L, i / C]; };
+  let { i, vC } = st;
+  for (let n = 0; n < nsub; n++) {
+    const [a1, b1] = f(i, vC), [a2, b2] = f(i + hs / 2 * a1, vC + hs / 2 * b1), [a3, b3] = f(i + hs / 2 * a2, vC + hs / 2 * b2), [a4, b4] = f(i + hs * a3, vC + hs * b3);
+    i += hs / 6 * (a1 + 2 * a2 + 2 * a3 + a4); vC += hs / 6 * (b1 + 2 * b2 + 2 * b3 + b4);
+  }
+  if (!isFinite(i) || !isFinite(vC)) { i = 0; vC = 0; }
+  st = { i, vC }; simT += h;
+  const e = R * i + dist, u = Vs * Math.tanh(K * e / Vs);
+  buf.e[head] = e; buf.u[head] = u; buf.y[head] = R * i; buf.vC[head] = vC; buf.vL[head] = u - vC - R * i; buf.i[head] = i;
+  head = (head + 1) % NBUF;
+}
+let $noise = true;
+$('#noise').addEventListener('change', e => { $noise = e.target.checked; });
+function clearBuf() { for (const k of KEYS) buf[k].fill(NaN); head = 0; }
+function restart() { st = { i: 0, vC: 0 }; simT = 0; clearBuf(); kickLeft = 0; st.i = 0.002 * D.Vs / D.R; }
+$('#restartBtn').addEventListener('click', restart);
+$('#kickBtn').addEventListener('click', () => { kickLeft = SPP / 2; });
+const runBtn = $('#runBtn');
+runBtn.addEventListener('click', () => { running = !running; runBtn.textContent = running ? 'Pause' : 'Run'; });
+$('#speed').addEventListener('change', e => { speed = +e.target.value; });
+
+// scope rendering
+const SCOPES = [
+  { cv: $('#sc0'), lg: $('#lg0'), unit: 'V', tr: [['e', 'e  amp input', 'tr-e'], ['u', 'u  amp output', 'tr-u'], ['y', 'y = v_R  output', 'tr-y']] },
+  { cv: $('#sc1'), lg: $('#lg1'), unit: 'V', tr: [['vL', 'v_L', 'tr-vl'], ['vC', 'v_C', 'tr-vc'], ['y', 'v_R', 'tr-y']] },
+  { cv: $('#sc2'), lg: $('#lg2'), unit: 'A', tr: [['i', 'i  loop current', 'tr-i']] },
+];
+const hidden = new Set();
+SCOPES.forEach((sc, si) => {
+  sc.smax = 0;
+  for (const [k, label, col] of sc.tr) {
+    const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', 'true');
+    b.style.color = `var(--${col})`; b.innerHTML = `<i></i><span style="color:var(--ink)">${label}</span>`;
+    b.addEventListener('click', () => { const id = si + k; hidden.has(id) ? hidden.delete(id) : hidden.add(id); b.setAttribute('aria-pressed', String(!hidden.has(id))); });
+    sc.lg.appendChild(b);
+  }
+});
+function nice(x) { const p = 10 ** Math.floor(Math.log10(x)), m = x / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+function drawScopes() {
+  const c = css();
+  const T0 = TAU / D.w0;
+  SCOPES.forEach((sc, si) => {
+    const { ctx, w, h } = fit(sc.cv, si === 2 ? 130 : 160);
+    const ml = 8, mr = 8, mt = 8, mb = 8, pw = w - ml - mr, ph = h - mt - mb;
+    let m = 0;
+    for (const [k] of sc.tr) { if (hidden.has(si + k)) continue; const a = buf[k]; for (let j = 0; j < NBUF; j++) { const v = Math.abs(a[j]); if (v > m) m = v; } }
+    const floor = sc.unit === 'A' ? 0.01 * D.Vs / D.R : 0.01 * D.Vs;
+    m = Math.max(m, floor); sc.smax = Math.max(m, sc.smax * 0.985);
+    if (sc.smax > m * 6) sc.smax = m * 6;
+    const div = nice(sc.smax / 4), full = div * 4;
+    ctx.strokeStyle = c('grid'); ctx.lineWidth = 1;
+    for (let k = 0; k <= 10; k++) { const x = ml + pw * k / 10; ctx.beginPath(); ctx.moveTo(x, mt); ctx.lineTo(x, mt + ph); ctx.stroke(); }
+    for (let k = 0; k <= 8; k++) { const y = mt + ph * k / 8; ctx.beginPath(); ctx.moveTo(ml, y); ctx.lineTo(ml + pw, y); ctx.stroke(); }
+    ctx.strokeStyle = c('line'); ctx.beginPath(); ctx.moveTo(ml, mt + ph / 2); ctx.lineTo(ml + pw, mt + ph / 2); ctx.stroke();
+    for (const [k, , col] of sc.tr) {
+      if (hidden.has(si + k)) continue;
+      const a = buf[k]; ctx.strokeStyle = c(col); ctx.lineWidth = 1.8; ctx.beginPath(); let pen = false;
+      for (let j = 0; j < NBUF; j++) {
+        const v = a[(head + j) % NBUF]; if (isNaN(v)) { pen = false; continue; }
+        const x = ml + pw * j / (NBUF - 1), y = mt + ph / 2 - (ph / 2) * Math.max(-1.05, Math.min(1.05, v / full));
+        pen ? ctx.lineTo(x, y) : ctx.moveTo(x, y); pen = true;
+      }
+      ctx.stroke();
+    }
+    ctx.font = FONT; ctx.fillStyle = c('muted'); ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+    ctx.fillText(eng(div, sc.unit + '/div'), ml + 6, mt + 4);
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillText(eng(T0, 's/div'), ml + pw - 6, mt + ph - 4);
+  });
+}
+function measure() {
+  const y = buf.y, T = TAU / D.w0 / SPP, last = (head - 1 + NBUF) % NBUF;
+  let amp = 0; for (let j = 0; j < SPP * 2; j++) { const v = Math.abs(y[(last - j + NBUF) % NBUF]); if (v > amp) amp = v; }
+  const cross = [], thr = amp * 0.05;
+  if (amp > 2e-3 * D.Vs) {
+    let prev = y[head % NBUF];
+    for (let j = 1; j < NBUF; j++) { const v = y[(head + j) % NBUF]; if (!isNaN(prev) && !isNaN(v) && prev < -thr * 0 && prev <= 0 && v > 0) cross.push(j - 1 + (-prev) / (v - prev)); prev = v; }
+  }
+  $('#m-f').textContent = cross.length >= 3 ? eng(1 / (((cross[cross.length - 1] - cross[0]) / (cross.length - 1)) * T), 'Hz') : '–';
+  $('#m-a').textContent = eng(amp, 'V');
+  $('#m-t').textContent = eng(simT, 's');
+  $('#c-i').textContent = 'i = ' + eng(st.i, 'A');
+}
+
+// circuit current animation
+const flow = $('#flow'); let dashOff = 0;
+function animFlow(dtReal) {
+  const iref = Math.max(D.amp, 0.05 * D.Vs) / D.R;
+  dashOff -= Math.max(-3, Math.min(3, st.i / iref)) * dtReal * 60;
+  flow.style.strokeDashoffset = dashOff.toFixed(1);
+}
+
+// ---------- update cycle ----------
+let lastLC = P.L.val * P.C.val;
+function onChange(k) {
+  D = derive();
+  if (P.L.val * P.C.val !== lastLC) { lastLC = P.L.val * P.C.val; clearBuf(); }
+  renderReadouts(D); renderVerdict(D); drawBode(D); drawNyquist(D); drawPoles(D);
+  if (k !== 'tune') computeTune();
+}
+
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduce) { running = false; runBtn.textContent = 'Run'; }
+
+let last = performance.now(), mAcc = 0;
+function frame(t) {
+  const dt = Math.min(0.05, (t - last) / 1000); last = t;
+  if (running) {
+    acc += dt * speed * SPP; let n = Math.floor(acc); acc -= n; n = Math.min(n, 3000);
+    for (let j = 0; j < n; j++) simStep();
+    animFlow(dt);
+  }
+  drawScopes();
+  mAcc += dt; if (mAcc > 0.2) { mAcc = 0; measure(); }
+  requestAnimationFrame(frame);
+}
+
+// theme / resize redraws
+const redrawStatic = () => { drawBode(D); drawNyquist(D); drawPoles(D); };
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawStatic);
+new MutationObserver(redrawStatic).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+window.addEventListener('resize', redrawStatic);
+document.fonts && document.fonts.ready.then(redrawStatic);
+
+// mobile panel toggle
+const panel = $('#panel'), pt = $('#panelToggle');
+if (window.matchMedia('(max-width: 900px)').matches) panel.classList.add('collapsed');
+pt.addEventListener('click', () => { const c = panel.classList.toggle('collapsed'); pt.setAttribute('aria-expanded', String(!c)); pt.textContent = c ? 'Parameters' : 'Hide'; });
+
+// ---------- boot ----------
+syncInputs(); dfTable();
+D = derive(); renderReadouts(D); renderVerdict(D); computeTune();
+restart();
+for (let j = 0; j < SPP * 60; j++) simStep(); // pre-run so the scope opens in steady state
+redrawStatic(); measure();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

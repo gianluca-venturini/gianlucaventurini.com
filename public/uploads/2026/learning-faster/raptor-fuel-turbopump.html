@@ -1,0 +1,642 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Raptor Fuel Turbopump</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide station-by-station schematic as the hero with a sticky readout, then pressure ladder, turbine and pump close-ups, energy budget */
+:root{
+  --bg:#EEF1F1; --panel:#F8FAFA; --ink:#1B2326; --muted:#5B686C; --line:#C9D2D3;
+  --ch4:#0E8C7A; --ch4warm:#5E9F3A; --lox:#2F6FC9; --gas:#D9822B; --fire:#E2552E; --fireSoft:#F3B07A;
+  --steel:#8A9598; --valve:#D9A520; --sel:#1B2326;
+  --pub:#0E8C7A; --der:#2F6FC9; --est:#B0701E;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101618; --panel:#172024; --ink:#E4EBEC; --muted:#93A1A5; --line:#2C3A3F;
+  --ch4:#3CC7B2; --ch4warm:#9BCB6A; --lox:#6FA2F0; --gas:#EBA05A; --fire:#F2714A; --fireSoft:#8A4A2C;
+  --steel:#6E7A7D; --valve:#E8BE45; --sel:#E4EBEC; --pub:#3CC7B2; --der:#6FA2F0; --est:#E0A050; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101618; --panel:#172024; --ink:#E4EBEC; --muted:#93A1A5; --line:#2C3A3F;
+  --ch4:#3CC7B2; --ch4warm:#9BCB6A; --lox:#6FA2F0; --gas:#EBA05A; --fire:#F2714A; --fireSoft:#8A4A2C;
+  --steel:#6E7A7D; --valve:#E8BE45; --sel:#E4EBEC; --pub:#3CC7B2; --der:#6FA2F0; --est:#E0A050; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:2.1rem;line-height:1.05;margin:0 0 6px;text-wrap:balance}
+h3{font-size:1.02rem;margin:0 0 4px}
+.lede{color:var(--muted);max-width:72ch;margin:8px 0 0}
+.sub{color:var(--muted);max-width:74ch;margin:0 0 14px}
+.spec{font-family:var(--mono);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px}
+.spec b{color:var(--ink);font-weight:500}
+.tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;padding:1px 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.tag.pub{color:var(--pub)} .tag.der{color:var(--der)} .tag.est{color:var(--est)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin-top:12px;align-items:center}
+.fix{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.fix div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.fix b{display:block;margin-bottom:2px}
+.fix p{margin:0;color:var(--muted);font-size:14.5px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px;min-width:0}
+.scroll{overflow-x:auto}
+svg{display:block}
+svg text{font-family:var(--body);fill:var(--ink)}
+.lab{font-size:12px;fill:var(--muted)}
+.lab2{font-size:12.5px;font-weight:700}
+.mono{font-family:var(--mono)!important;font-size:11px;fill:var(--muted)}
+.pipe{fill:none;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){.flowing .pipe.anim{stroke-dasharray:12 9;animation:run 1.1s linear infinite}}
+@keyframes run{to{stroke-dashoffset:-21}}
+.c{cursor:pointer}
+.c .hl{transition:stroke-width .15s}
+.c:hover .hl,.c.sel .hl{stroke:var(--sel)!important;stroke-width:2.6!important}
+.c:focus-visible{outline:none}
+.c:focus-visible .hl{stroke:var(--sel)!important;stroke-width:3!important}
+.st circle{fill:var(--ink)} .st text{fill:var(--panel);font-family:var(--mono);font-size:11px;font-weight:500}
+.st.sel circle{fill:var(--gas)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;align-items:center}
+.btn{font:500 13px var(--body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:4px;padding:5px 10px;cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+aside.read{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;position:sticky;top:max(16px,env(safe-area-inset-top,0px));min-width:0;max-height:calc(100vh - 32px);overflow:auto}
+.read .k{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.read h3{font-family:var(--display);font-weight:600;font-size:1.9rem;line-height:1.05;margin:4px 0 10px}
+.read p{margin:0 0 10px;font-size:15px}
+.kv{display:grid;grid-template-columns:auto 1fr auto;gap:5px 10px;font-size:13px;margin:12px 0;padding-top:12px;border-top:1px solid var(--line);align-items:baseline}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.nav{display:flex;gap:8px;margin-top:6px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:900px){.two{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;min-width:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.fact{border-top:2px solid var(--line);padding-top:6px}
+.fact .v{font-family:var(--mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
+.fact .l{font-size:12.5px;color:var(--muted)}
+.prose{max-width:72ch}
+.prose p{margin:0 0 10px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.axis text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.axis line{stroke:var(--line)}
+.bar{cursor:pointer}
+.bar:hover rect,.bar.sel rect{stroke:var(--sel);stroke-width:2}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:700;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.clickable{cursor:pointer} tr.clickable:hover td{background:var(--bg)} tr.sel td{background:var(--bg);font-weight:700}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Raptor fuel turbopump &amp; preburner</h1>
+    <p class="lede">The methane side of Raptor 3, station by station: how liquid methane at a few bar becomes 950 K gas at 800 bar, spins a 47 MW turbine, and powers the very pump that feeds it. Click any part or numbered station to see its pressure, temperature and flow.</p>
+    <div class="spec"><span>Thrust <b>250 tf</b></span><span>Chamber <b>330 bar</b></span><span>Engine O/F <b>3.6</b></span><span>Methane flow <b>~166 kg/s</b></span><span>Fuel turbine <b>~47 MW</b></span></div>
+    <div class="legend"><span>Every number is tagged:</span><span><span class="tag pub">Published</span> stated by SpaceX or Musk</span><span><span class="tag der">Derived</span> follows from published figures by basic physics</span><span><span class="tag est">Estimate</span> engineering estimate from a closed cycle balance; SpaceX hasn't released it</span></div>
+  </header>
+
+  <section aria-labelledby="hfix">
+    <h2 id="hfix">A few corrections first</h2>
+    <div class="fix">
+      <div><b>No energy flows backward through the pipes.</b><p>All gas moves one way: pump → cooling jacket → preburner → turbine → main chamber. The "loop" is the shaft: the turbine hands its power straight to the pump it shares a shaft with. The other loop is heat, carried from the chamber wall back upstream by the coolant.</p></div>
+      <div><b>The turbine powers only its pump.</b><p>No gearbox, generator or hydraulics hang off this shaft as far as anything published shows. Raptor's steering actuators are electric, powered by the vehicle.</p></div>
+      <div><b>Not all methane goes to the fuel preburner.</b><p>About 94% does. Roughly 10 kg/s is tapped off to heat the oxygen-rich preburner on the other side. And methane doesn't go straight from the pump to the preburner: it cools the chamber first.</p></div>
+      <div><b>The often-quoted 140 kg/s is out of date.</b><p>That figure comes from the early 650 kg/s total. At Raptor 3's 250 tf and ~327 s Isp the engine swallows ~765 kg/s, so methane is ~166 kg/s.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="hsch">
+    <h2 id="hsch">The whole methane path</h2>
+    <p class="sub">Flattened for clarity: the real turbopump is a compact vertical unit with the preburner welded directly onto the turbine inlet. Line colour shows the fluid; line thickness is fixed, not flow.</p>
+    <div class="main">
+      <div class="stage">
+        <div class="tools">
+          <button class="btn" id="anim" aria-pressed="true">Animate flow</button>
+          <button class="btn" id="tour">Step through stations →</button>
+          <span class="note">Colours: <span style="color:var(--ch4)">■</span> cold liquid CH₄ <span style="color:var(--ch4warm)">■</span> warm supercritical CH₄ <span style="color:var(--lox)">■</span> LOX <span style="color:var(--gas)">■</span> fuel-rich hot gas</span>
+        </div>
+        <div class="scroll">
+        <svg id="sch" class="flowing" viewBox="0 0 1000 760" width="1000" style="max-width:100%;height:auto;min-width:760px" role="img" aria-labelledby="schT">
+          <title id="schT">Schematic of Raptor's methane turbopump, preburner, cooling jacket and main injector</title>
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1L8 5L1 9" fill="none" stroke="context-stroke" stroke-width="2"/></marker>
+            <linearGradient id="hot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--fire)"/><stop offset="1" stop-color="var(--fireSoft)"/></linearGradient>
+            <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--steel)" stroke-width="1.2"/></pattern>
+          </defs>
+
+          <!-- ===== pipes (drawn first) ===== -->
+          <!-- tank → inlet -->
+          <path class="pipe anim" stroke="var(--ch4)" stroke-width="10" d="M110 20 L110 120 L150 160"/>
+          <!-- volute discharge → MFV → down to nozzle manifold -->
+          <path class="pipe anim" stroke="var(--ch4)" stroke-width="7" d="M350 262 L350 300"/>
+          <path class="pipe anim" stroke="var(--ch4)" stroke-width="7" d="M350 340 L350 380 L120 380 L120 712 L402 712"/>
+          <!-- regen jacket (both walls) -->
+          <path class="pipe anim" stroke="var(--ch4)" stroke-width="7" d="M420 712 Q470 640 515 560 Q480 530 480 505 L480 452"/>
+          <path class="pipe anim" stroke="var(--ch4warm)" stroke-width="7" d="M700 712 Q650 640 605 560 Q640 530 640 505 L640 452"/>
+          <!-- coolant out → right riser → FPB fuel inlet -->
+          <path class="pipe anim" stroke="var(--ch4warm)" stroke-width="7" d="M480 448 L480 432 L660 432 M640 448 L640 432 L800 432 L800 300 L800 222 L782 222"/>
+          <!-- tap to ox preburner -->
+          <path class="pipe anim" stroke="var(--ch4warm)" stroke-width="4" d="M800 360 L870 360 L870 330 L990 330" marker-end="url(#ar)"/>
+          <!-- LOX in → FPOV → FPB -->
+          <path class="pipe anim" stroke="var(--lox)" stroke-width="5" d="M990 140 L920 140"/>
+          <path class="pipe anim" stroke="var(--lox)" stroke-width="5" d="M880 140 L760 140 L760 158"/>
+          <!-- turbine exhaust → hot gas duct → main injector -->
+          <path class="pipe anim" stroke="var(--gas)" stroke-width="12" d="M560 262 L560 330 L540 360 L540 392"/>
+          <!-- ox-rich gas from other side -->
+          <path class="pipe anim" stroke="var(--fire)" stroke-width="7" opacity=".55" d="M990 400 L700 400 L640 392" marker-end="url(#ar)"/>
+          <!-- purge -->
+          <path class="pipe" stroke="var(--steel)" stroke-width="2" stroke-dasharray="3 3" d="M435 40 L435 125"/>
+
+          <!-- ===== main chamber (context) ===== -->
+          <g class="c" data-id="chamber" tabindex="0" role="button" aria-label="Main combustion chamber">
+            <path d="M486 452 L634 452 L634 505 Q634 528 600 560 Q645 640 693 708 L427 708 Q475 640 520 560 Q486 528 486 505 Z" fill="url(#hot)" opacity=".75"/>
+            <path class="hl" d="M486 452 L634 452 L634 505 Q634 528 600 560 Q645 640 693 708 L427 708 Q475 640 520 560 Q486 528 486 505 Z" fill="none" stroke="var(--line)" stroke-width="1"/>
+          </g>
+          <g class="c" data-id="jacket" tabindex="0" role="button" aria-label="Regenerative cooling jacket">
+            <path class="hl" d="M478 452 L478 505 Q478 530 512 560 Q467 640 418 712 M642 452 L642 505 Q642 530 608 560 Q653 640 702 712" fill="none" stroke="var(--ink)" stroke-width="1.2"/>
+          </g>
+          <g class="c" data-id="manifold" tabindex="0" role="button" aria-label="Nozzle coolant inlet manifold">
+            <rect class="hl" x="400" y="704" width="320" height="16" rx="3" fill="var(--ch4)" stroke="var(--ink)" stroke-width="1"/>
+            <text class="lab" x="560" y="738" text-anchor="middle">Nozzle coolant manifold (ring)</text>
+          </g>
+          <g class="c" data-id="coolout" tabindex="0" role="button" aria-label="Coolant outlet manifold">
+            <rect class="hl" x="470" y="424" width="200" height="16" rx="3" fill="var(--ch4warm)" stroke="var(--ink)" stroke-width="1"/>
+          </g>
+          <g class="c" data-id="mainInj" tabindex="0" role="button" aria-label="Main injector">
+            <rect class="hl" x="490" y="392" width="140" height="28" rx="3" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4"/>
+            <text class="lab2" x="560" y="410" text-anchor="middle">Main injector</text>
+          </g>
+
+          <!-- ===== turbopump housing ===== -->
+          <rect x="140" y="110" width="500" height="170" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 5"/>
+          <text class="lab" x="148" y="104">Methane turbopump (one shaft, one housing)</text>
+          <!-- shaft -->
+          <g class="c" data-id="shaft" tabindex="0" role="button" aria-label="Shaft">
+            <rect class="hl" x="160" y="190" width="460" height="10" rx="3" fill="var(--steel)" stroke="var(--steel)" stroke-width="1"/>
+          </g>
+          <!-- inducer -->
+          <g class="c" data-id="inducer" tabindex="0" role="button" aria-label="Inducer">
+            <path class="hl" d="M165 165 L205 172 L205 218 L165 225 Z" fill="var(--panel)" stroke="var(--ch4)" stroke-width="1.6"/>
+            <path d="M172 170 L198 214 M184 168 L204 204 M168 186 L190 222" stroke="var(--ch4)" stroke-width="1.4" fill="none"/>
+            <text class="lab" x="185" y="246" text-anchor="middle">Inducer</text>
+          </g>
+          <!-- impeller 1 -->
+          <g class="c" data-id="imp1" tabindex="0" role="button" aria-label="First stage impeller">
+            <path class="hl" d="M225 175 L262 140 L262 250 L225 215 Z" fill="var(--panel)" stroke="var(--ch4)" stroke-width="1.6"/>
+            <path d="M232 185 Q245 160 258 148 M232 205 Q245 232 258 242" stroke="var(--ch4)" stroke-width="1.2" fill="none"/>
+            <text class="lab" x="244" y="268" text-anchor="middle">Impeller 1</text>
+          </g>
+          <!-- crossover -->
+          <path d="M262 140 Q280 125 290 150 L290 160 M262 250 Q280 265 290 240 L290 230" stroke="var(--ch4)" stroke-width="3" fill="none" opacity=".7"/>
+          <!-- impeller 2 -->
+          <g class="c" data-id="imp2" tabindex="0" role="button" aria-label="Second stage impeller">
+            <path class="hl" d="M292 175 L330 140 L330 250 L292 215 Z" fill="var(--panel)" stroke="var(--ch4)" stroke-width="1.6"/>
+            <path d="M299 185 Q312 160 326 148 M299 205 Q312 232 326 242" stroke="var(--ch4)" stroke-width="1.2" fill="none"/>
+            <text class="lab" x="311" y="268" text-anchor="middle">Impeller 2</text>
+          </g>
+          <!-- volute -->
+          <g class="c" data-id="volute" tabindex="0" role="button" aria-label="Volute and discharge">
+            <path class="hl" d="M332 130 Q372 130 372 195 Q372 262 340 262 L360 262 L360 250" fill="none" stroke="var(--ch4)" stroke-width="5"/>
+            <text class="lab" x="376" y="150">Volute</text>
+          </g>
+          <!-- bearings -->
+          <g class="c" data-id="bearing" tabindex="0" role="button" aria-label="Bearings">
+            <rect class="hl" x="392" y="178" width="18" height="34" rx="2" fill="url(#hatch)" stroke="var(--steel)" stroke-width="1.2"/>
+            <rect class="hl" x="508" y="178" width="18" height="34" rx="2" fill="url(#hatch)" stroke="var(--steel)" stroke-width="1.2"/>
+            <text class="lab" x="401" y="230" text-anchor="middle">Bearing</text>
+            <text class="lab" x="517" y="230" text-anchor="middle">Bearing</text>
+          </g>
+          <!-- seals -->
+          <g class="c" data-id="seal" tabindex="0" role="button" aria-label="Shaft seals">
+            <rect class="hl" x="425" y="172" width="20" height="46" rx="2" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.2"/>
+            <path d="M429 178 v34 M435 178 v34 M441 178 v34" stroke="var(--muted)" stroke-width="1"/>
+            <text class="lab" x="452" y="248" text-anchor="middle">Seals</text>
+          </g>
+          <!-- turbine: rotor + stator -->
+          <g class="c" data-id="rotor" tabindex="0" role="button" aria-label="Turbine rotor">
+            <rect class="hl" x="548" y="140" width="22" height="110" rx="2" fill="var(--panel)" stroke="var(--gas)" stroke-width="1.6"/>
+            <path d="M552 146 q8 6 0 12 M552 162 q8 6 0 12 M552 178 q8 6 0 12 M552 210 q8 6 0 12 M552 226 q8 6 0 12" stroke="var(--gas)" stroke-width="1.4" fill="none"/>
+            <text class="lab" x="559" y="132" text-anchor="middle">Rotor</text>
+          </g>
+          <g class="c" data-id="stator" tabindex="0" role="button" aria-label="Turbine nozzle guide vanes">
+            <rect class="hl" x="580" y="140" width="18" height="110" rx="2" fill="var(--panel)" stroke="var(--gas)" stroke-width="1.6"/>
+            <path d="M594 146 l-10 8 M594 164 l-10 8 M594 182 l-10 8 M594 214 l-10 8 M594 232 l-10 8" stroke="var(--gas)" stroke-width="1.6"/>
+            <text class="lab" x="604" y="132" text-anchor="start">Nozzle vanes</text>
+          </g>
+          <g class="c" data-id="exhaust" tabindex="0" role="button" aria-label="Turbine exhaust collector">
+            <path class="hl" d="M546 140 L530 140 Q520 140 520 160 L520 250 Q520 262 540 262 L580 262" fill="none" stroke="var(--gas)" stroke-width="3"/>
+          </g>
+          <!-- ===== preburner ===== -->
+          <g class="c" data-id="fpb" tabindex="0" role="button" aria-label="Fuel-rich preburner">
+            <path class="hl" d="M640 158 L770 158 Q786 158 786 174 L786 236 Q786 252 770 252 L640 252 L612 236 L612 174 Z" fill="var(--panel)" stroke="var(--gas)" stroke-width="1.8"/>
+            <path d="M720 205 q-20 -18 -40 0 q-20 18 -40 0" stroke="var(--fire)" stroke-width="2" fill="none"/>
+            <path d="M715 192 q-25 -14 -50 0 M715 218 q-25 14 -50 0" stroke="var(--fire)" stroke-width="1.2" fill="none" opacity=".7"/>
+            <text class="lab2" x="700" y="178" text-anchor="middle">Fuel-rich preburner</text>
+          </g>
+          <g class="c" data-id="pbInj" tabindex="0" role="button" aria-label="Preburner injector">
+            <rect class="hl" x="768" y="164" width="14" height="82" rx="2" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.2"/>
+            <path d="M768 178 l-8 0 M768 192 l-8 0 M768 206 l-8 0 M768 220 l-8 0 M768 234 l-8 0" stroke="var(--muted)" stroke-width="1.2"/>
+          </g>
+          <g class="c" data-id="igniter" tabindex="0" role="button" aria-label="Torch igniter">
+            <path class="hl" d="M730 158 L730 128 L744 128 L744 158" fill="var(--valve)" stroke="var(--ink)" stroke-width="1"/>
+            <path d="M733 122 l4 -6 l4 6" stroke="var(--fire)" stroke-width="1.5" fill="none"/>
+            <text class="lab" x="702" y="120" text-anchor="end">Torch igniter</text>
+          </g>
+
+          <!-- ===== valves ===== -->
+          <g class="c" data-id="prevalve" tabindex="0" role="button" aria-label="Prevalve">
+            <path class="hl" d="M98 50 L122 70 L98 70 L122 50 Z" fill="var(--panel)" stroke="var(--steel)" stroke-width="1.5"/>
+            <text class="lab" x="130" y="64">Prevalve (vehicle side)</text>
+          </g>
+          <g class="c" data-id="mfv" tabindex="0" role="button" aria-label="Main fuel valve">
+            <path class="hl" d="M336 302 L364 338 L336 338 L364 302 Z" fill="var(--valve)" stroke="var(--ink)" stroke-width="1.4"/>
+            <rect x="366" y="314" width="22" height="12" rx="2" fill="var(--steel)"/>
+            <text class="lab2" x="394" y="318">Main fuel valve</text>
+            <text class="lab" x="394" y="333">MFV</text>
+          </g>
+          <g class="c" data-id="fpov" tabindex="0" role="button" aria-label="Fuel preburner oxidizer valve">
+            <path class="hl" d="M882 126 L918 154 L882 154 L918 126 Z" fill="var(--valve)" stroke="var(--ink)" stroke-width="1.4"/>
+            <rect x="894" y="104" width="12" height="20" rx="2" fill="var(--steel)"/>
+            <text class="lab2" x="900" y="96" text-anchor="middle">FPOV</text>
+          </g>
+          <g class="c" data-id="opfv" tabindex="0" role="button" aria-label="Oxidizer preburner fuel valve">
+            <path class="hl" d="M910 318 L934 342 L910 342 L934 318 Z" fill="var(--valve)" stroke="var(--ink)" stroke-width="1.3"/>
+            <text class="lab" x="922" y="310" text-anchor="middle">OPFV</text>
+          </g>
+          <g class="c" data-id="purge" tabindex="0" role="button" aria-label="Purge check valve">
+            <circle class="hl" cx="435" cy="44" r="8" fill="var(--panel)" stroke="var(--steel)" stroke-width="1.3"/>
+            <path d="M431 44 l8 0 M435 40 l4 4 l-4 4" stroke="var(--steel)" stroke-width="1.2" fill="none"/>
+            <text class="lab" x="448" y="48">Purge (inert gas)</text>
+          </g>
+
+          <!-- ===== labels ===== -->
+          <text class="lab" x="118" y="16">From methane tank</text>
+          <text class="lab" x="986" y="132" text-anchor="end">LOX from oxygen pump</text>
+          <text class="lab" x="986" y="350" text-anchor="end">CH₄ to ox-rich preburner</text>
+          <text class="lab" x="986" y="390" text-anchor="end">Ox-rich gas from O₂ turbine</text>
+          <text class="lab" x="132" y="560">Pump discharge</text><text class="lab" x="132" y="575">duct</text>
+          <text class="lab" x="726" y="610">Cooling jacket</text>
+          <text class="lab" x="726" y="625">(hundreds of channels)</text>
+          <text class="lab" x="572" y="352">Hot-gas duct</text>
+          <text class="lab" x="814" y="290">Coolant riser</text>
+          <text class="lab" x="560" y="640" text-anchor="middle" style="fill:var(--ink)">Main chamber</text>
+          <text class="lab" x="560" y="656" text-anchor="middle">330 bar · ~3,600 K</text>
+
+          <!-- ===== numbered stations ===== -->
+          <g id="stations"></g>
+        </svg>
+        </div>
+      </div>
+
+      <aside class="read" aria-live="polite">
+        <div class="k" id="rk">Station</div>
+        <h3 id="rt">—</h3>
+        <dl class="kv" id="rv"></dl>
+        <div id="rb"></div>
+        <div class="nav"><button class="btn" id="prev">← Previous</button><button class="btn" id="next">Next →</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <section aria-labelledby="hlad">
+    <h2 id="hlad">Pressure along the path</h2>
+    <p class="sub">Methane is pushed up to the highest pressure anywhere in the engine, then spends it in stages. Each drop is a deliberate price: cooling, injector stiffness, and above all the turbine. What's left has to stay above 330 bar so the gas can still flow into the chamber.</p>
+    <div class="card scroll"><svg id="ladder" viewBox="0 0 980 380" width="980" style="max-width:100%;height:auto;min-width:720px" role="img" aria-label="Pressure at each station"></svg></div>
+  </section>
+
+  <section aria-labelledby="hpt">
+    <h2 id="hpt">The same journey on a pressure–temperature map</h2>
+    <p class="sub">Each dot is a station; each arrow is one step, coloured and labelled by where the energy for that change comes from. Pressure uses a log scale so the 4 bar inlet and the 950 bar discharge both fit. The main chamber, at ~3,600 K, is off the right edge.</p>
+    <div class="card scroll">
+      <svg id="pt" viewBox="0 0 980 560" width="980" style="max-width:100%;height:auto;min-width:760px" role="img" aria-label="Pressure versus temperature path of the methane through the engine"></svg>
+      <div class="legend" id="ptleg" style="margin-top:4px"></div>
+    </div>
+    <p class="note" style="margin-top:8px">Pressure only ever rises in one place, the pump, and that energy is shaft work from the turbine. Temperature rises in three places: pump losses (small), chamber-wall heat in the cooling jacket, and burning in the preburner. Every other step spends pressure, either to friction or, in the turbine, on purpose.</p>
+  </section>
+
+  <section aria-labelledby="hturb">
+    <h2 id="hturb">Inside the preburner and turbine</h2>
+    <div class="two">
+      <div class="card">
+        <h3>The preburner: a deliberately bad fire</h3>
+        <div class="prose">
+          <p>Warm, supercritical methane (156 kg/s) and liquid oxygen (36 kg/s) meet in a small, thick-walled chamber at about 800 bar. That is an oxygen-to-fuel ratio of only ~0.23, against 3.6 in the main chamber and ~4 for complete burning.</p>
+          <p>The oxygen runs out almost immediately. Only about 6% of the methane actually burns; the remaining 94% is just heated by it. The mixture leaves at roughly 950 K, hot enough to carry a lot of energy and cool enough for turbine blades. The outlet temperature is set almost entirely by how much oxygen the FPOV lets in.</p>
+          <p>A torch igniter (a small spark-lit methane/oxygen flame) lights it at startup. Once running it is self-sustaining. Musk has said the preburners run at <b>700 to 800+ bar</b> <span class="tag pub">Published</span>, which matches what the power balance on this page needs.</p>
+        </div>
+        <svg viewBox="0 0 520 230" width="100%" role="img" aria-label="Preburner mass and energy balance">
+          <rect x="20" y="40" width="130" height="44" rx="4" fill="none" stroke="var(--ch4warm)" stroke-width="2"/>
+          <text class="lab2" x="85" y="58" text-anchor="middle">CH₄ 156 kg/s</text><text class="mono" x="85" y="75" text-anchor="middle">~870 bar · 350 K</text>
+          <rect x="20" y="130" width="130" height="44" rx="4" fill="none" stroke="var(--lox)" stroke-width="2"/>
+          <text class="lab2" x="85" y="148" text-anchor="middle">LOX 36 kg/s</text><text class="mono" x="85" y="165" text-anchor="middle">~870 bar · 100 K</text>
+          <path d="M150 62 L205 100 M150 152 L205 120" stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+          <rect x="210" y="74" width="120" height="72" rx="6" fill="none" stroke="var(--gas)" stroke-width="2"/>
+          <text class="lab2" x="270" y="98" text-anchor="middle">O/F ≈ 0.23</text>
+          <text class="mono" x="270" y="116" text-anchor="middle">~415 MW heat</text>
+          <text class="mono" x="270" y="132" text-anchor="middle">6% of CH₄ burns</text>
+          <path d="M330 110 L385 110" stroke="var(--gas)" stroke-width="3" fill="none" marker-end="url(#ar)"/>
+          <rect x="390" y="80" width="118" height="60" rx="4" fill="none" stroke="var(--gas)" stroke-width="2"/>
+          <text class="lab2" x="449" y="102" text-anchor="middle">192 kg/s gas</text>
+          <text class="mono" x="449" y="119" text-anchor="middle">~800 bar</text>
+          <text class="mono" x="449" y="133" text-anchor="middle">~950 K</text>
+          <text class="lab" x="260" y="200" text-anchor="middle">Mostly CH₄, plus H₂O, CO₂, some CO and H₂</text>
+          <text class="lab" x="260" y="218" text-anchor="middle">Molar mass ≈ 17–18 g/mol · γ ≈ 1.15</text>
+        </svg>
+      </div>
+      <div class="card">
+        <h3>The turbine: one stage, two jobs per blade row</h3>
+        <div class="prose">
+          <p>The most likely layout (not published) is a <b>single-stage axial turbine</b> <span class="tag est">Estimate</span>. Full-flow is the reason one stage is enough: because nearly 200 kg/s goes through it, each kilogram only has to give up ~247 kJ, a pressure ratio of about 2. Gas-generator engines starve their turbines of flow and need high ratios and often two stages.</p>
+          <p><b>Stage 1a, nozzle guide vanes (stator):</b> fixed, curved vanes that act like nozzles. Almost all the pressure drop happens here, 795 → ~390 bar, turning pressure into a jet at roughly 700 m/s aimed sideways at the rotor.</p>
+          <p><b>Stage 1b, rotor blades:</b> curved buckets on a disk welded to the shaft. The jet slams in and is turned back the other way; reversing its direction pushes the blades round. Gas leaves slow, at ~385 bar and ~880 K. Blade count isn't published; turbines of this size typically carry 40–80 blades per row.</p>
+        </div>
+        <svg id="blades" viewBox="0 0 520 260" width="100%" role="img" aria-label="Unrolled turbine stage with stator and rotor blades"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="hpump">
+    <h2 id="hpump">Inside the pump</h2>
+    <div class="two">
+      <div class="card prose">
+        <p>Methane is light: ~440 kg/m³, under half the density of LOX. Pushing it from 4 bar to ~950 bar means a <b>head of about 22 km</b>, as if lifting the liquid 22 kilometres straight up. One impeller can only add so much before its tip speed gets dangerous (~600 m/s), so the job is most likely split across <b>two centrifugal stages</b> <span class="tag est">Estimate</span>.</p>
+        <p><b>Inducer.</b> A screw-like axial rotor at the inlet. It gently raises pressure by a few tens of bar so the impeller's low-pressure zones don't make the methane boil locally (cavitation), which would destroy the pump. Raptor has no separate boost pump; the inducer does that job, helped by subcooled propellant.</p>
+        <p><b>Impellers 1 and 2.</b> Each flings the liquid outward, adding roughly 470 bar. A crossover passage leads from the first to the second.</p>
+        <p><b>Volute.</b> A spiral casing that slows the liquid and converts its speed into pressure before the discharge duct.</p>
+        <p><b>Bearings and seals.</b> Cooled and lubricated by methane itself. A full-flow bonus: the turbine gas is fuel-rich and the pump fluid is fuel, so a leak across the seal is harmless. Single-preburner engines need a helium-purged barrier seal between oxygen and fuel on the same shaft.</p>
+      </div>
+      <div class="card">
+        <div class="facts" id="pumpfacts"></div>
+        <table style="margin-top:14px">
+          <thead><tr><th>Shaft figure</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Pump hydraulic power</td><td class="n">~36 MW</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Pump losses (heat into CH₄)</td><td class="n">~11 MW</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Turbine shaft power</td><td class="n">~47 MW</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Shaft speed</td><td class="n">~30–40k rpm</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Torque at 35k rpm</td><td class="n">~13 kN·m</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Pump efficiency assumed</td><td class="n">77%</td><td><span class="tag est">Estimate</span></td></tr>
+            <tr><td>Turbine efficiency assumed</td><td class="n">80%</td><td><span class="tag est">Estimate</span></td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:8px">For scale: 47 MW is roughly the output of a large ship's main engine, on a shaft you could hold in two hands. SpaceX's 2016 estimate was ~80 MW for both turbopumps of a larger, 300-bar Raptor <span class="tag pub">Published</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="hen">
+    <h2 id="hen">Where the energy goes</h2>
+    <p class="sub">This is the honest version of "energy flowing backward". Two quantities recirculate: shaft power (turbine → pump, mechanically) and heat (chamber wall → incoming methane, through the coolant). Both end up back in the main chamber; nothing is thrown away.</p>
+    <div class="card scroll"><svg id="energy" viewBox="0 0 980 300" width="980" style="max-width:100%;height:auto;min-width:720px" role="img" aria-label="Energy flows on the methane side"></svg></div>
+    <p class="note" style="margin-top:8px">The exhaust jet carries ~3.9 GW. The whole methane turbopump runs on about 1.2% of that, which is why a small preburner can drive it.</p>
+  </section>
+
+  <section aria-labelledby="hall">
+    <h2 id="hall">All stations</h2>
+    <div class="card scroll"><table id="tbl"></table></div>
+    <p class="note" style="margin-top:10px">How the estimates were made: start from the published thrust, chamber pressure, mixture ratio and sea-level Isp; assume typical pump (77%) and turbine (80%) efficiencies, an ~80 bar cooling-jacket drop, an 8% preburner injector drop and a 15% main injector drop; pick a 950 K turbine inlet; then solve for the pump discharge pressure at which turbine power exactly equals pump power. The result, ~800 bar in the preburner, lands inside the 700–800+ bar range Musk has quoted, which is a useful cross-check. Real Raptor values will differ.</p>
+  </section>
+</div>
+
+<script>
+/* ---------- data: cycle balance (see bottom note) ---------- */
+const S=[
+ {n:1,id:'s1',x:110,y:92,name:'Tank outlet',P:'~4 bar',T:'~95 K',m:'166 kg/s CH₄',c:'est',p:4,
+  b:['Subcooled liquid methane, chilled below its boiling point to make it denser and harder to cavitate. Tank ullage pressure plus the liquid column above the engine give a few bar here.','The vehicle\'s prevalve is open; the engine itself starts at the inducer.']},
+ {n:2,id:'s2',x:185,y:150,name:'Inducer outlet',P:'~20–30 bar',T:'~95 K',m:'166 kg/s',c:'est',p:25,
+  b:['The inducer lifts pressure just enough that the main impeller never sees pressures low enough to boil the methane.']},
+ {n:3,id:'s3',x:276,y:120,name:'Impeller 1 outlet',P:'~480 bar',T:'~102 K',m:'166 kg/s',c:'est',p:480,
+  b:['Halfway up the pressure climb. The crossover passage collects the flow and turns it back inward into impeller 2.']},
+ {n:4,id:'s4',x:388,y:262,name:'Pump discharge',P:'~953 bar',T:'~110 K',m:'166 kg/s',c:'est',p:953,
+  b:['The highest pressure in the whole methane system. The temperature rise comes mostly from pump inefficiency: about 11 MW of losses end up as heat in the methane.','Required head is about 22 km of methane column.']},
+ {n:5,id:'s5',x:120,y:700,name:'Cooling jacket inlet',P:'~940 bar',T:'~110 K',m:'166 kg/s',c:'est',p:940,
+  b:['After the main fuel valve and the long discharge duct, methane enters a ring manifold around the nozzle lip and splits into hundreds of channels in the wall.']},
+ {n:6,id:'s6',x:660,y:452,name:'Cooling jacket outlet',P:'~873 bar',T:'~350 K',m:'166 kg/s',c:'est',p:873,
+  b:['About 80 bar was spent forcing methane through the narrow channels. In exchange it absorbed roughly 140 MW from the chamber and nozzle walls.','Methane\'s critical pressure is 46 bar, so at ~900 bar it never boils. It changes smoothly from a dense liquid to a dense gas-like fluid (supercritical) as it warms.']},
+ {n:7,id:'s7',x:870,y:372,name:'Tap to ox preburner',P:'~870 bar',T:'~350 K',m:'~10 kg/s',c:'est',p:870,
+  b:['A small share of warm methane leaves for the oxygen-rich preburner, metered by the OPFV. Just enough to heat ~560 kg/s of oxygen to a turbine-safe temperature on the other side.']},
+ {n:8,id:'s8',x:790,y:250,name:'Preburner injector',P:'~865 bar in',T:'350 K / 100 K',m:'156 CH₄ + 36 LOX',c:'est',p:865,
+  b:['Methane and oxygen enter through an injector plate. About 8% of the pressure is dropped across it on purpose: a "stiff" injector keeps pressure waves in the preburner from feeding back into the supply lines.']},
+ {n:9,id:'s9',x:700,y:236,name:'Preburner chamber',P:'~800 bar',T:'~950 K',m:'192 kg/s gas',c:'est',p:800,
+  b:['Fuel-rich combustion at O/F ≈ 0.23. About 415 MW of chemical heat warms the whole stream by ~600 K. This lands inside the 700–800+ bar range Musk quoted for Raptor\'s preburners.']},
+ {n:10,id:'s10',x:612,y:268,name:'Stator exit / rotor inlet',P:'~390 bar',T:'~885 K',m:'192 kg/s',c:'est',p:390,
+  b:['The nozzle vanes have converted ~400 bar of pressure into a jet at roughly 700 m/s. This is where the energy is in motion, not pressure.']},
+ {n:11,id:'s11',x:540,y:300,name:'Turbine exhaust',P:'~385 bar',T:'~880 K',m:'192 kg/s',c:'est',p:385,
+  b:['The rotor has taken ~247 kJ out of every kilogram: 47 MW in total. The gas is still hot, high-pressure and mostly unburned methane, so it goes on to the main chamber as fuel.']},
+ {n:12,id:'s12',x:470,y:406,name:'Main injector manifold',P:'~380 bar',T:'~880 K',m:'192 kg/s',c:'est',p:380,
+  b:['Fuel-rich gas meets the oxygen-rich gas from the other turbine in coaxial swirl injectors. A ~15% pressure drop keeps the main combustion stable.']},
+ {n:13,id:'s13',x:560,y:560,name:'Main chamber',P:'330 bar',T:'~3,600 K',m:'~765 kg/s total',c:'pub',p:330,
+  b:['Both gas streams finish burning at O/F 3.6. Chamber pressure is published (330 bar operational, 350 bar reached in testing); temperature and total flow follow from that and the thrust.']}
+];
+const C={
+ prevalve:{k:'Valve · vehicle',t:'Prevalve',c:'est',b:['An isolation valve on the vehicle side of the feed line. Closed, it keeps tank propellant out of the engine; opened before start to chill the pump down so it doesn\'t flash methane to vapour on startup.']},
+ inducer:{k:'Pump · stage 0',t:'Inducer',c:'est',st:2,b:['A helical, screw-like rotor at the very front of the shaft. It raises pressure by a few tens of bar with little risk of cavitation, so the main impellers get a solid liquid feed.','Raptor uses no separate low-pressure boost pump; the inducer plus subcooled propellant does that job.']},
+ imp1:{k:'Pump · stage 1',t:'First-stage impeller',c:'est',st:3,b:['A centrifugal impeller: methane enters near the shaft and is flung outward through curved passages, gaining speed and pressure. Adds roughly 470 bar.','Two stages are an estimate based on the ~22 km head and safe impeller tip speeds. SpaceX hasn\'t published the stage count.']},
+ imp2:{k:'Pump · stage 2',t:'Second-stage impeller',c:'est',st:4,b:['Same job again, starting from ~480 bar. Its outlet pressure is the highest anywhere on the methane side.']},
+ volute:{k:'Pump · casing',t:'Volute and discharge',c:'est',st:4,b:['A spiral casing that gathers the fast-moving liquid from the impeller rim and slows it down, converting speed into pressure.']},
+ shaft:{k:'Turbopump',t:'Shaft',c:'pub',b:['One rigid shaft carries the inducer, both impellers and the turbine rotor, so the turbine\'s power goes straight to the pump with no gearbox. Raptor is a twin-shaft engine: the oxygen side has its own separate turbopump.','Estimated speed ~30,000–40,000 rpm, carrying ~47 MW.']},
+ bearing:{k:'Turbopump',t:'Bearings',c:'est',b:['Support the shaft against radial and axial loads. In engines like this they are typically cooled and lubricated by the propellant itself, here methane.']},
+ seal:{k:'Turbopump',t:'Shaft seals',c:'est',b:['Limit leakage along the shaft between the high-pressure pump and the hot turbine side.','Full-flow advantage: both sides are methane-rich, so a leak is not a fire risk and no helium barrier purge is needed between them.']},
+ stator:{k:'Turbine · stage 1 · stator',t:'Nozzle guide vanes',c:'est',st:10,b:['A ring of fixed, curved vanes. Each passage narrows like a nozzle, dropping pressure from ~795 to ~390 bar and accelerating the gas to roughly 700 m/s, aimed at the rotor blades at a steep angle.']},
+ rotor:{k:'Turbine · stage 1 · rotor',t:'Turbine rotor',c:'est',st:11,b:['A disk with curved blades around its rim. The jet from the vanes is turned sharply by each blade; changing the gas\'s direction pushes the blade, and the disk spins.','Extracts ~247 kJ/kg, about 47 MW. Most likely a single, mostly impulse-type stage; blade count isn\'t published (typically 40–80 for this size).']},
+ exhaust:{k:'Turbine',t:'Exhaust collector',c:'est',st:11,b:['Gathers the turbine outflow and turns it into the hot-gas duct that leads to the main injector.']},
+ fpb:{k:'Combustion',t:'Fuel-rich preburner',c:'pub',st:9,b:['The fuel-rich preburner is a published part of Raptor\'s full-flow cycle. It burns all its methane with only a little oxygen, making a huge flow of warm, fuel-rich gas to drive the turbine.','Pressure ~800 bar, temperature ~950 K, O/F ~0.23 (estimates).']},
+ pbInj:{k:'Combustion',t:'Preburner injector',c:'est',st:8,b:['A plate of injection elements that atomises the LOX into the methane stream for fast, even mixing. Its deliberate pressure drop isolates the preburner from feed-line oscillations.']},
+ igniter:{k:'Combustion · startup',t:'Torch igniter',c:'pub',b:['Raptor uses spark-lit torch igniters in its preburners (published). A small methane/oxygen torch fires into the preburner during start, and can relight it for in-flight restarts.']},
+ mfv:{k:'Valve',t:'Main fuel valve (MFV)',c:'est',st:4,b:['Opens and closes the pump discharge. During startup its opening schedule, together with the FPOV, controls how fast the turbopump spins up.','Exact Raptor valve layout isn\'t public; every staged-combustion fuel side needs this function.']},
+ fpov:{k:'Valve · the throttle',t:'Fuel preburner oxidizer valve (FPOV)',c:'est',st:8,b:['Meters LOX into the fuel-rich preburner. More oxygen means hotter gas, more turbine power, a faster pump, more methane flow and more thrust.','It is effectively the methane-side throttle, and also the main protection against overheating the turbine.']},
+ opfv:{k:'Valve',t:'Ox preburner fuel valve (OPFV)',c:'est',st:7,b:['Meters the ~10 kg/s of methane tapped off to the oxygen-rich preburner, controlling the oxygen turbopump\'s power on the other side.']},
+ purge:{k:'Service',t:'Purge check valve',c:'est',b:['Inert-gas purges clear propellant out of cavities before start and after shutdown, and keep moisture out between flights. Shown as representative; exact ports are not public.']},
+ jacket:{k:'Cooling',t:'Regenerative cooling jacket',c:'pub',st:6,b:['Hundreds of milled channels in the copper-alloy chamber and nozzle wall. Methane enters at the nozzle lip and flows toward the injector, absorbing an estimated ~140 MW.','That heat is not lost: it pre-warms the methane before the preburner, so less oxygen is needed there.']},
+ manifold:{k:'Cooling',t:'Nozzle coolant manifold',c:'est',st:5,b:['A ring around the nozzle exit that distributes methane evenly into every cooling channel.']},
+ coolout:{k:'Cooling',t:'Coolant outlet manifold',c:'est',st:6,b:['Collects the now-warm methane at the top of the chamber and sends it up the riser to the preburner.']},
+ mainInj:{k:'Combustion',t:'Main injector',c:'pub',st:12,b:['Where fuel-rich gas from this side meets oxygen-rich gas from the other turbine. Raptor 2 uses coaxial swirl injectors (published). Both streams arrive as gas, which gives fast, stable mixing.']},
+ chamber:{k:'Combustion',t:'Main combustion chamber',c:'pub',st:13,b:['330 bar operational (350 bar reached on test). Both turbine exhausts finish burning here at O/F 3.6.']}
+};
+const TAGN={pub:'Published',der:'Derived',est:'Estimate'};
+
+/* ---------- stations on the schematic ---------- */
+const sch=document.getElementById('sch'),stG=document.getElementById('stations');
+stG.innerHTML=S.map(s=>`<g class="st c" data-st="${s.n}" tabindex="0" role="button" aria-label="Station ${s.n}: ${s.name}"><circle cx="${s.x}" cy="${s.y}" r="10"/><text x="${s.x}" y="${s.y+4}" text-anchor="middle">${s.n}</text></g>`).join('');
+
+let cur=null;
+function readout(kind,obj){
+  const rk=document.getElementById('rk'),rt=document.getElementById('rt'),rv=document.getElementById('rv'),rb=document.getElementById('rb');
+  if(kind==='st'){
+    rk.textContent=`Station ${obj.n} of ${S.length}`;rt.textContent=obj.name;
+    rv.innerHTML=[['Pressure',obj.P],['Temperature',obj.T],['Flow',obj.m]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd><dd><span class="tag ${obj.c}">${TAGN[obj.c]}</span></dd>`).join('');rv.hidden=false;
+  }else{
+    rk.textContent=obj.k;rt.textContent=obj.t;
+    const s=obj.st?S[obj.st-1]:null;
+    rv.innerHTML=(s?[['Pressure',s.P],['Temperature',s.T],['Flow',s.m]].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd><dd><span class="tag ${s.c}">${TAGN[s.c]}</span></dd>`).join(''):'')+`<dt>Existence</dt><dd>${obj.c==='pub'?'confirmed':'representative'}</dd><dd><span class="tag ${obj.c}">${TAGN[obj.c]}</span></dd>`;
+    rv.hidden=false;
+  }
+  rb.innerHTML=obj.b.map(p=>`<p>${p}</p>`).join('');
+}
+function selectSt(n){
+  cur=n;const s=S[n-1];readout('st',s);
+  sch.querySelectorAll('.c').forEach(e=>e.classList.toggle('sel',e.dataset.st==n));
+  document.querySelectorAll('#ladder .bar').forEach(e=>e.classList.toggle('sel',e.dataset.st==n));
+  document.querySelectorAll('#tbl tr[data-st]').forEach(e=>e.classList.toggle('sel',e.dataset.st==n));
+}
+function selectC(id){
+  const o=C[id];if(!o)return;readout('c',o);cur=o.st||cur;
+  sch.querySelectorAll('.c').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));
+}
+sch.querySelectorAll('.c').forEach(e=>{
+  const go=()=>e.dataset.st?selectSt(+e.dataset.st):selectC(e.dataset.id);
+  e.addEventListener('click',go);e.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();go()}});
+});
+document.getElementById('next').addEventListener('click',()=>selectSt(cur?cur%S.length+1:1));
+document.getElementById('prev').addEventListener('click',()=>selectSt(cur?(cur+S.length-2)%S.length+1:S.length));
+document.getElementById('tour').addEventListener('click',()=>selectSt(cur?cur%S.length+1:1));
+const an=document.getElementById('anim');
+an.addEventListener('click',()=>{const on=an.getAttribute('aria-pressed')!=='true';an.setAttribute('aria-pressed',on);sch.classList.toggle('flowing',on)});
+
+/* ---------- pressure ladder ---------- */
+(function(){
+  const svg=document.getElementById('ladder'),X0=60,X1=965,Y0=24,Y1=300,max=1000;
+  const sy=p=>Y1-p/max*(Y1-Y0),bw=(X1-X0)/S.length;
+  const col=n=>n<=5?'var(--ch4)':n<=7?'var(--ch4warm)':n===8?'var(--ch4warm)':n===13?'var(--fire)':'var(--gas)';
+  let s='<g class="axis">';
+  for(let p=0;p<=max;p+=200)s+=`<line x1="${X0}" x2="${X1}" y1="${sy(p)}" y2="${sy(p)}"/><text x="${X0-8}" y="${sy(p)+4}" text-anchor="end">${p}</text>`;
+  s+=`<text x="${X0-8}" y="${Y0-10}" text-anchor="end">bar</text></g>`;
+  s+=`<line x1="${X0}" x2="${X1}" y1="${sy(330)}" y2="${sy(330)}" stroke="var(--fire)" stroke-width="1.2" stroke-dasharray="5 4"/><text x="${X0+4}" y="${sy(330)-6}" font-size="11" fill="var(--fire)">chamber 330 bar</text>`;
+  S.forEach((st,i)=>{const x=X0+i*bw+6,w=bw-12,y=sy(st.p);
+    s+=`<g class="bar" data-st="${st.n}" tabindex="0" role="button" aria-label="Station ${st.n} ${st.name}, ${st.P}"><rect x="${x}" y="${y}" width="${w}" height="${Y1-y}" rx="2" fill="${col(st.n)}" opacity=".85"/>
+      <text x="${x+w/2}" y="${y-6}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink)">${st.p}</text>
+      <text x="${x+w/2}" y="${Y1+16}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--muted)">${st.n}</text>
+      <text x="${x+w/2}" y="${Y1+32}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${st.name.split(' ')[0]}</text></g>`});
+  const ann=[[3,4,'pump +949'],[4,6,'cooling −80'],[8,9,'injector −65'],[9,11,'turbine −415'],[12,13,'injector −50']];
+  ann.forEach(([a,b,t])=>{const xa=X0+(a-1)*bw+bw/2,xb=X0+(b-1)*bw+bw/2;s+=`<text x="${(xa+xb)/2}" y="${Y1+52}" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--est)">${t}</text>`});
+  svg.innerHTML=s;
+  svg.querySelectorAll('.bar').forEach(b=>{const go=()=>{selectSt(+b.dataset.st);document.getElementById('hsch').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};b.addEventListener('click',go);b.addEventListener('keydown',e=>{if(e.key==='Enter'){go()}})});
+})();
+
+/* ---------- pressure–temperature map ---------- */
+(function(){
+  const svg=document.getElementById('pt');
+  const X0=90,X1=890,Y0=60,Y1=500,Tmin=50,Tmax=1000,Pmin=2,Pmax=1500;
+  const sx=T=>X0+(T-Tmin)/(Tmax-Tmin)*(X1-X0);
+  const L=Math.log10,sy=P=>Y1-(L(P)-L(Pmin))/(L(Pmax)-L(Pmin))*(Y1-Y0);
+  const SRC={
+    shaft:{c:'var(--steel)',l:'Shaft work from the turbine'},
+    wall:{c:'var(--ch4warm)',l:'Heat from the chamber wall'},
+    chem:{c:'var(--fire)',l:'Chemical energy (burning)'},
+    conv:{c:'var(--gas)',l:'Pressure and heat turned into speed, then shaft work'},
+    loss:{c:'var(--muted)',l:'Friction loss (pressure spent)'}
+  };
+  /* station points: [n, T, P] */
+  const P={1:[95,4],2:[95,25],3:[102,480],4:[110,953],5:[110,940],6:[350,873],8:[350,865],9:[950,800],10:[885,390],11:[880,385],12:[880,380]};
+  let s='<g class="axis">';
+  [2,5,10,20,50,100,200,500,1000].forEach(p=>s+=`<line x1="${X0}" x2="${X1}" y1="${sy(p)}" y2="${sy(p)}"/><text x="${X0-8}" y="${sy(p)+4}" text-anchor="end">${p}</text>`);
+  [100,200,300,400,500,600,700,800,900,1000].forEach(t=>s+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${Y0}" y2="${Y1}" opacity=".5"/><text x="${sx(t)}" y="${Y1+18}" text-anchor="middle">${t}</text>`);
+  s+=`<text x="${X0-8}" y="${Y0-14}" text-anchor="end">bar</text><text x="${X1}" y="${Y1+36}" text-anchor="end">temperature, K</text></g>`;
+  /* methane saturation curve + critical point */
+  let sat='';for(let T=120;T<=190.6;T+=2){const p=1.013*Math.exp(1030*(1/111.7-1/T));sat+=`${sat?'L':'M'}${sx(T).toFixed(1)} ${sy(p).toFixed(1)}`}
+  s+=`<path d="${sat}" fill="none" stroke="var(--muted)" stroke-width="1.5"/>`;
+  s+=`<circle cx="${sx(190.6)}" cy="${sy(46)}" r="4" fill="var(--muted)"/>`;
+  s+=`<text class="lab" x="${sx(190.6)+10}" y="${sy(46)+4}">CH₄ critical point · 191 K, 46 bar</text>`;
+  s+=`<text class="lab" x="${sx(190.6)+10}" y="${sy(46)+19}">Above 46 bar methane can't boil, so after the pump</text>`;
+  s+=`<text class="lab" x="${sx(190.6)+10}" y="${sy(46)+34}">it warms smoothly from liquid to supercritical fluid.</text>`;
+  s+=`<text class="lab" x="${sx(150)}" y="${sy(3)}">liquid ← boiling line → vapour</text>`;
+  /* arrow helper */
+  const arrow=(a,b,src,w)=>{const[x1,y1]=[sx(a[0]),sy(a[1])],[x2,y2]=[sx(b[0]),sy(b[1])];const dx=x2-x1,dy=y2-y1,d=Math.hypot(dx,dy)||1,k=Math.min(11,d/3);
+    return `<line x1="${x1+dx/d*k}" y1="${y1+dy/d*k}" x2="${x2-dx/d*k}" y2="${y2-dy/d*k}" stroke="${SRC[src].c}" stroke-width="${w||3}" stroke-linecap="round" marker-end="url(#ar)"/>`};
+  const lab=(x,y,lines,src,anchor)=>lines.map((t,i)=>`<text x="${x}" y="${y+i*15}" font-size="12" text-anchor="${anchor||'start'}" fill="${i===0?SRC[src].c:'var(--muted)'}" ${i===0?'font-weight="700"':''}>${t}</text>`).join('');
+  /* steps */
+  s+=arrow(P[1],P[2],'shaft');
+  s+=arrow(P[2],P[3],'shaft');
+  s+=arrow(P[3],P[4],'shaft');
+  s+=arrow(P[5],P[6],'wall',4);
+  s+=arrow(P[8],P[9],'chem',4);
+  s+=arrow(P[9],P[10],'conv',4);
+    /* off-chart to main chamber */
+  const x12=sx(880),y12=sy(380),y13=sy(330);
+  s+=`<line x1="${x12+10}" y1="${y12+2}" x2="${X1+60}" y2="${y13}" stroke="var(--fire)" stroke-width="4" stroke-linecap="round" marker-end="url(#ar)"/>`;
+  s+=`<text x="${X1+74}" y="${y13-10}" font-size="12" font-weight="700" fill="var(--fire)" text-anchor="end">13</text>`;
+  /* shaft loop: turbine rotor back to pump */
+  const lx1=sx(880),ly1=sy(385)+14,lx2=sx(98),ly2=sy(60);
+  s+=`<path d="M${lx1} ${ly1} C ${lx1} ${Y1-5}, ${sx(260)} ${Y1-5}, ${lx2+10} ${ly2}" fill="none" stroke="var(--steel)" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ar)"/>`;
+  s+=lab(sx(515),sy(14),['Shaft loop: the rotor\'s 47 MW goes straight back','to the pump on the same shaft (no fluid flows back)'],'shaft','middle');
+  /* labels for each step */
+  s+=lab(sx(215),sy(6.2),['1→2 Inducer','shaft work, +21 bar'],'shaft');
+  s+=lab(sx(110)+14,sy(160),['2→4 Two impellers','shaft work, +928 bar','losses warm it ~15 K'],'shaft');
+  s+=lab(sx(250),sy(940)-34,['5→6 Cooling jacket: +240 K','chamber-wall heat (~140 MW) · −67 bar friction'],'wall','middle');
+  s+=lab(sx(650),sy(840)-34,['8→9 Preburner: +600 K','burns 6% of the CH₄ with 36 kg/s LOX (~415 MW) · −65 bar'],'chem','middle');
+  s+=lab(sx(860)-14,sy(560),['9→10 Nozzle vanes','−410 bar, −65 K → 700 m/s jet'],'conv','end');
+  s+=lab(sx(870)-26,sy(385)+30,['10→11 Rotor blades','jet\'s speed → 47 MW shaft work','(pressure barely changes)','11→12 duct −5 bar'],'conv','end');
+  s+=lab(X1+60,y13+20,['12→13 Main chamber','burns with ox-rich gas','→ ~3,600 K, 330 bar'],'chem','end');
+  /* small friction notes */
+  s+=`<text class="lab" x="${sx(110)+14}" y="${sy(953)+22}">4→5 valve + duct −13 bar</text>`;
+  s+=`<text class="lab" x="${sx(350)}" y="${sy(860)+26}" text-anchor="middle">6→8 riser −8 bar · 7: 10 kg/s tapped off</text>`;
+  
+  /* points */
+  const name=n=>S[n-1].name;
+  const ptLab={1:'1',2:'2',3:'3',4:'4·5',6:'6·7·8',9:'9',11:'10–12'};
+  const OFF={6:[0,-13,'middle'],9:[12,-8,'start']};
+  Object.entries(ptLab).forEach(([n,t])=>{const[T,p]=P[n];const x=sx(T),y=sy(p);
+    s+=`<g class="bar" data-st="${n}" tabindex="0" role="button" aria-label="Station ${n} ${name(+n)}"><circle cx="${x}" cy="${y}" r="7" fill="var(--panel)" stroke="var(--ink)" stroke-width="2"/><text x="${x+(OFF[n]?OFF[n][0]:-11)}" y="${y+(OFF[n]?OFF[n][1]:4)}" text-anchor="${OFF[n]?OFF[n][2]:'end'}" font-family="var(--mono)" font-size="11.5" font-weight="500" fill="var(--ink)">${t}</text></g>`});
+  s+=`<text class="lab" x="${sx(950)+12}" y="${sy(800)+20}">+ LOX joins</text>`;
+  svg.innerHTML=s;
+  document.getElementById('ptleg').innerHTML=Object.values(SRC).map(v=>`<span><i style="display:inline-block;width:18px;height:4px;border-radius:2px;background:${v.c};vertical-align:middle;margin-right:6px"></i>${v.l}</span>`).join('');
+  svg.querySelectorAll('.bar').forEach(b=>{const go=()=>{selectSt(+b.dataset.st);document.getElementById('hsch').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};b.addEventListener('click',go);b.addEventListener('keydown',e=>{if(e.key==='Enter')go()})});
+})();
+
+/* ---------- unrolled blade rows ---------- */
+(function(){
+  const svg=document.getElementById('blades');let s='';
+  s+=`<text class="lab" x="100" y="20" text-anchor="middle">Nozzle vanes (fixed)</text><text class="lab" x="330" y="20" text-anchor="middle">Rotor blades (moving →)</text>`;
+  for(let i=0;i<5;i++){const y=40+i*40;
+    s+=`<path d="M70 ${y} q34 4 56 30" fill="none" stroke="var(--steel)" stroke-width="6" stroke-linecap="round"/>`;
+    s+=`<path d="M300 ${y+4} q30 14 0 30" fill="none" stroke="var(--gas)" stroke-width="6" stroke-linecap="round"/>`;
+  }
+  s+=`<path d="M20 120 L60 120" stroke="var(--gas)" stroke-width="3" marker-end="url(#ar)" fill="none"/>`;
+  s+=`<path d="M140 108 L270 132" stroke="var(--fire)" stroke-width="3" marker-end="url(#ar)" fill="none"/>`;
+  s+=`<path d="M340 130 L420 112" stroke="var(--gas)" stroke-width="2" marker-end="url(#ar)" fill="none" stroke-dasharray="4 3"/>`;
+  s+=`<path d="M300 236 L370 236" stroke="var(--ink)" stroke-width="2" marker-end="url(#ar)" fill="none"/><text class="lab" x="376" y="240">blade motion, ~350–400 m/s</text>`;
+  s+=`<g font-family="var(--mono)" font-size="11"><text x="20" y="150" fill="var(--muted)">795 bar</text><text x="20" y="164" fill="var(--muted)">950 K</text><text x="20" y="178" fill="var(--muted)">slow</text>`;
+  s+=`<text x="190" y="150" fill="var(--fire)">~390 bar</text><text x="190" y="164" fill="var(--fire)">~885 K</text><text x="190" y="178" fill="var(--fire)">~700 m/s jet</text>`;
+  s+=`<text x="430" y="104" fill="var(--muted)">~385 bar</text><text x="430" y="118" fill="var(--muted)">~880 K</text><text x="430" y="132" fill="var(--muted)">slow again</text></g>`;
+  svg.innerHTML=s;
+})();
+
+/* ---------- pump facts ---------- */
+document.getElementById('pumpfacts').innerHTML=[['22 km','head (pump lift)'],['~953 bar','discharge'],['166 kg/s','methane flow'],['~0.38 m³/s','volume flow'],['~470 bar','rise per impeller'],['2 + inducer','stages (estimate)']].map(([v,l])=>`<div class="fact"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+/* ---------- energy diagram ---------- */
+(function(){
+  const svg=document.getElementById('energy');
+  const box=(x,y,w,h,stroke,t1,t2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="var(--panel)" stroke="${stroke}" stroke-width="1.8"/><text class="lab2" x="${x+w/2}" y="${y+h/2-3}" text-anchor="middle">${t1}</text><text class="mono" x="${x+w/2}" y="${y+h/2+13}" text-anchor="middle">${t2}</text>`;
+  const fl=(d,c,w,lab,lx,ly,anchor)=>`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity=".8" marker-end="url(#ar)"/>`+(lab?`<text class="mono" x="${lx}" y="${ly}" text-anchor="${anchor||'middle'}" style="fill:var(--ink)">${lab}</text>`:'');
+  let s='';
+  s+=box(20,120,150,56,'var(--lox)','Oxygen in preburner','36 kg/s');
+  s+=box(230,120,160,56,'var(--gas)','Preburner gas','+415 MW heat');
+  s+=box(450,120,140,56,'var(--gas)','Turbine','extracts 47 MW');
+  s+=box(450,20,140,50,'var(--steel)','Shaft','~47 MW');
+  s+=box(640,20,200,50,'var(--ch4)','Pump','36 MW pressure + 11 MW heat');
+  s+=box(820,120,140,56,'var(--fire)','Main chamber','jet ~3,900 MW');
+  s+=box(650,224,150,56,'var(--ch4warm)','Cooling jacket','+~140 MW heat');
+  s+=fl('M170 148 L226 148','var(--lox)',4,'chemical',198,140);
+  s+=fl('M390 148 L446 148','var(--gas)',8,'',0,0);
+  s+=fl('M520 120 L520 74','var(--steel)',6,'',0,0);
+  s+=fl('M590 45 L646 45','var(--steel)',6,'',0,0);
+  s+=fl('M590 160 L816 160','var(--gas)',8,'remaining gas energy, forward',700,152);
+  s+=fl('M725 70 Q760 160 725 220','var(--ch4)',5,'pressurised CH₄',770,110,'start');
+  s+=fl('M890 176 Q890 252 804 252','var(--fire)',5,'wall heat',900,226,'start');
+  s+=fl('M650 252 Q300 270 300 180','var(--ch4warm)',5,'warmed CH₄ to preburner',420,282);
+  svg.innerHTML=s;
+})();
+
+/* ---------- table ---------- */
+document.getElementById('tbl').innerHTML='<thead><tr><th>#</th><th>Station</th><th>Pressure</th><th>Temperature</th><th>Flow</th><th>Source</th></tr></thead><tbody>'+
+  S.map(s=>`<tr class="clickable" data-st="${s.n}" tabindex="0"><td class="n">${s.n}</td><td>${s.name}</td><td class="n">${s.P}</td><td class="n">${s.T}</td><td class="n">${s.m}</td><td><span class="tag ${s.c}">${TAGN[s.c]}</span></td></tr>`).join('')+'</tbody>';
+document.querySelectorAll('#tbl tr[data-st]').forEach(r=>{const go=()=>{selectSt(+r.dataset.st);document.getElementById('hsch').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};r.addEventListener('click',go);r.addEventListener('keydown',e=>{if(e.key==='Enter')go()})});
+
+selectSt(1);
+</script>
+
+</body></html>

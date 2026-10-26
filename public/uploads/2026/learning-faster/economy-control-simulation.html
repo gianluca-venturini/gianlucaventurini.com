@@ -1,0 +1,988 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Autopilot Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky controller desk on the left (bottom sheet on phones); block diagram on top of a draggable chart grid */
+:root{
+  --bg:#ECF0EC; --panel:#F8FAF7; --ink:#14231C; --muted:#5A6B61; --rule:#CCD6CE; --grid:#E2E8E3;
+  --accent:#1E6B4C; --accent-soft:rgba(30,107,76,.12); --s2:#B0661A; --s2-soft:rgba(176,102,26,.12); --s3:#5B4FA8; --s3-soft:rgba(91,79,168,.12); --crit:#B33A3A; --warn:#9A6514;
+  --shadow:0 10px 30px rgba(20,35,28,.18);
+  --f-display:"Gloock", Georgia, "Times New Roman", serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1411; --panel:#141F19; --ink:#E2ECE5; --muted:#8FA297; --rule:#27372D; --grid:#1D2A23;
+    --accent:#5CC497; --accent-soft:rgba(92,196,151,.14); --s2:#E5A24C; --s2-soft:rgba(229,162,76,.14); --s3:#A99DEB; --s3-soft:rgba(169,157,235,.15); --crit:#E46E6E; --warn:#E0A64F;
+    --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1411; --panel:#141F19; --ink:#E2ECE5; --muted:#8FA297; --rule:#27372D; --grid:#1D2A23;
+  --accent:#5CC497; --accent-soft:rgba(92,196,151,.14); --s2:#E5A24C; --s2-soft:rgba(229,162,76,.14); --s3:#A99DEB; --s3-soft:rgba(169,157,235,.15); --crit:#E46E6E; --warn:#E0A64F;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start;
+  padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Desk ---------- */
+.desk{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);max-height:calc(100vh - 40px);overflow:auto;
+  background:var(--panel);border:1px solid var(--rule);border-radius:10px;display:flex;flex-direction:column}
+.desk-top{position:sticky;top:0;z-index:2;background:var(--panel);padding:14px 16px 12px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.brand h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;letter-spacing:.01em}
+.clock{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.transport{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--rule);background:var(--bg);border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:600;font-size:13px;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel);min-width:72px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 9px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ro{display:flex;flex-direction:column}
+.ro span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ro b{font-family:var(--f-mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.ro b.hot{color:var(--crit)}
+.desk-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:18px}
+.group-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 6px}
+.preset-hint{font-size:11.5px;color:var(--muted);margin:6px 0 0}
+.loop{border:1px solid var(--rule);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.loop.m{border-color:color-mix(in srgb, var(--accent) 45%, var(--rule))}
+.loop.f{border-color:color-mix(in srgb, var(--s2) 45%, var(--rule))}
+.loop.d{border-color:color-mix(in srgb, var(--s3) 45%, var(--rule))}
+.loop-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.loop-head h3{margin:0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.loop-head h3 i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.loop.m h3 i{background:var(--accent)} .loop.f h3 i{background:var(--s2)} .loop.d h3 i{background:var(--s3)}
+.loop .sub{margin:-6px 0 0;font-size:12px;color:var(--muted)}
+.knobs{display:flex;flex-direction:column;gap:10px}
+.sublabel{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:4px 0 -4px}
+.lever label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600;font-size:12.5px}
+.lever output{font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.loop.m .lever output{color:var(--accent)} .loop.f .lever output{color:var(--s2)} .loop.d .lever output{color:var(--s3)}
+.lever small{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0;height:20px}
+.loop.f input[type=range]{accent-color:var(--s2)}
+.loop.d input[type=range]{accent-color:var(--s3)}
+.treasury{border:1px dashed var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.treasury .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.treasury b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.treasury .warn{color:var(--warn);font-size:12px;font-weight:600}
+.shocks{display:flex;flex-wrap:wrap;gap:6px}
+.shocks .btn{font-weight:500;font-size:12px;background:transparent}
+.notes{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.notes li{font-size:12.5px;padding-left:12px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.notes li.alert::before{background:var(--crit)}
+
+/* ---------- Main ---------- */
+main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.intro h1{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:66ch}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:12.5px;padding:4px 0}
+
+.diagram{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 12px 6px}
+.diagram-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.diagram-head h3{margin:0;font-size:14px;font-weight:700}
+.diagram-head p{margin:0;font-size:12px;color:var(--muted)}
+.diagram-scroll{overflow-x:auto}
+.diagram svg{display:block;width:100%;min-width:680px;height:auto}
+svg text{font-family:var(--f-body);fill:var(--ink)}
+svg .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+svg .small{font-size:11px;fill:var(--muted)}
+svg .ttl{font-size:12.5px;font-weight:700}
+svg .val{font-size:13px;font-weight:600}
+svg .box{fill:var(--panel);stroke:var(--rule);stroke-width:1.2}
+svg .box.m{stroke:var(--accent)} svg .box.f{stroke:var(--s2)} svg .box.d{stroke:var(--s3)}
+svg .box.pid.m{fill:var(--accent-soft)} svg .box.pid.f{fill:var(--s2-soft)} svg .box.pid.d{fill:var(--s3-soft)}
+svg .box.econ{fill:var(--bg);stroke:var(--muted);stroke-dasharray:5 4}
+svg .box.sat{stroke:var(--crit);stroke-width:2}
+svg .box.off{opacity:.45}
+svg .w{fill:none;stroke-width:1.6}
+svg .w.m{stroke:var(--accent)} svg .w.f{stroke:var(--s2)} svg .w.d{stroke:var(--s3)}
+svg .ah.m{fill:var(--accent)} svg .ah.f{fill:var(--s2)} svg .ah.d{fill:var(--s3)}
+svg .sum{fill:var(--panel);stroke:var(--ink);stroke-width:1.4}
+svg .vm{fill:var(--accent)} svg .vf{fill:var(--s2)} svg .vd{fill:var(--s3)} svg .vc{fill:var(--crit)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:box-shadow .15s, transform .15s}
+.card.dragging{box-shadow:var(--shadow);transform:scale(1.015);border-color:var(--accent);z-index:5;position:relative}
+.card header{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:start}
+.card h3{margin:0;font-size:14px;font-weight:700}
+.card .hint{margin:2px 0 0;font-size:12px;color:var(--muted);line-height:1.35}
+.card .val{font-family:var(--f-mono);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.card .val .s2{color:var(--s2)} .card .val .s3{color:var(--crit)}
+.handle{border:1px solid transparent;background:transparent;border-radius:6px;width:30px;height:30px;display:grid;place-items:center;cursor:grab;color:var(--muted);touch-action:none;margin:-4px -4px 0 0}
+.handle:hover{border-color:var(--rule);color:var(--ink)}
+.handle svg{width:14px;height:14px;fill:currentColor}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+canvas{width:100%;height:150px;display:block}
+
+.guide{background:var(--panel);border:1px solid var(--rule);border-radius:8px}
+.guide summary{cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;list-style:none}
+.guide summary::-webkit-details-marker{display:none}
+.guide summary span{font-weight:700;font-size:14px}
+.guide summary span::before{content:"▸";display:inline-block;width:14px;color:var(--muted);transition:transform .15s}
+.guide[open] summary span::before{transform:rotate(90deg)}
+.guide summary small{color:var(--muted);font-size:12px}
+.guide-scroll{overflow-x:auto;border-top:1px solid var(--rule)}
+.guide table{border-collapse:collapse;width:100%;min-width:820px;font-size:12.5px}
+.guide th,.guide td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--grid)}
+.guide thead th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.guide tbody th{font-weight:700;white-space:nowrap}
+.guide tbody tr:last-child>*{border-bottom:0}
+.guide td.up{color:var(--crit);font-weight:600} .guide td.dn{color:var(--accent);font-weight:600}
+@media (prefers-reduced-motion: reduce){ .guide summary span::before{transition:none} }
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr);padding-bottom:calc(var(--deskH,46vh) + 16px)}
+  .desk{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:46vh;border-radius:14px 14px 0 0;border-bottom:0;z-index:20;box-shadow:0 -8px 24px rgba(0,0,0,.12)}
+  .desk-top{padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));gap:8px}
+  .desk-body{padding:12px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .brand h2{font-size:18px}
+  .knobs{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+  .sublabel{grid-column:1/-1}
+  .lever small{display:none}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  canvas{height:140px}
+}
+@media (prefers-reduced-motion: reduce){ .card{transition:none} .card.dragging{transform:none} }
+</style>
+
+<div class="app">
+  <aside class="desk" id="desk" aria-label="Controller settings">
+    <div class="desk-top">
+      <div class="brand"><h2>Controllers</h2><span class="clock" id="clock">Year 0 · Jan</span></div>
+      <div class="transport">
+        <button class="btn primary" id="play" type="button">Pause</button>
+        <div class="seg" role="group" aria-label="Speed">
+          <button type="button" data-speed="2">Slow</button>
+          <button type="button" data-speed="6" aria-pressed="true">Normal</button>
+          <button type="button" data-speed="16">Fast</button>
+        </div>
+        <button class="btn" id="reset" type="button">Restart</button>
+      </div>
+      <div class="readouts">
+        <div class="ro"><span>Inflation</span><b id="roPi">2.0%</b></div>
+        <div class="ro"><span>Unemployed</span><b id="roU">4.5%</b></div>
+        <div class="ro"><span>Real GDP</span><b id="roG">$9.6T</b></div>
+      </div>
+    </div>
+    <div class="desk-body">
+      <div>
+        <p class="group-label">Tuning preset</p>
+        <div class="seg" role="group" aria-label="Tuning preset" id="presets">
+          <button type="button" data-preset="gentle">Gentle</button>
+          <button type="button" data-preset="balanced" aria-pressed="true">Balanced</button>
+          <button type="button" data-preset="aggressive">Aggressive</button>
+          <button type="button" data-preset="volcker">Volcker</button>
+        </div>
+        <p class="preset-hint" id="presetHint"></p>
+      </div>
+
+      <section class="loop m" aria-labelledby="mTitle">
+        <div class="loop-head">
+          <h3 id="mTitle"><i></i>Monetary loop</h3>
+          <div class="seg" role="group" aria-label="Monetary loop mode">
+            <button type="button" data-loop="m" data-mode="auto" aria-pressed="true">Auto</button>
+            <button type="button" data-loop="m" data-mode="manual">Manual</button>
+          </div>
+        </div>
+        <p class="sub">Inflation error sets the interest rate.</p>
+        <div class="knobs" id="mAuto"></div>
+        <div class="knobs" id="mManual" hidden></div>
+      </section>
+
+      <section class="loop f" aria-labelledby="fTitle">
+        <div class="loop-head">
+          <h3 id="fTitle"><i></i>Fiscal loop</h3>
+          <div class="seg" role="group" aria-label="Fiscal loop mode">
+            <button type="button" data-loop="f" data-mode="auto" aria-pressed="true">Auto</button>
+            <button type="button" data-loop="f" data-mode="manual">Manual</button>
+          </div>
+        </div>
+        <p class="sub">Unemployment error sets infrastructure spending, funded by bonds.</p>
+        <div class="knobs" id="fAuto"></div>
+        <div class="knobs" id="fManual" hidden></div>
+      </section>
+
+      <section class="loop d" aria-labelledby="dTitle">
+        <div class="loop-head">
+          <h3 id="dTitle"><i></i>Debt brake</h3>
+          <div class="seg" role="group" aria-label="Debt brake mode">
+            <button type="button" data-loop="d" data-mode="auto" aria-pressed="true">Auto</button>
+            <button type="button" data-loop="d" data-mode="manual">Manual</button>
+          </div>
+        </div>
+        <p class="sub">Debt-to-GDP error sets consolidation: it cuts infrastructure first, then raises taxes to repay bonds.</p>
+        <div class="knobs" id="dAuto"></div>
+        <div class="knobs" id="dManual" hidden></div>
+      </section>
+
+      <div class="knobs" id="shared"></div>
+
+      <div class="treasury" id="treasury" hidden>
+        <div class="row"><span>Unspent bond cash</span><b id="cash">$0B</b></div>
+        <div class="row"><span>Mail cheques now</span><button class="btn" id="drop" type="button">Drop 2% of GDP</button></div>
+        <div class="warn" id="capped" hidden>Spending is capped by available cash. Issue more bonds.</div>
+      </div>
+      <div>
+        <p class="group-label">Trigger a shock</p>
+        <div class="shocks">
+          <button class="btn" type="button" data-shock="R">Recession</button>
+          <button class="btn" type="button" data-shock="O">Oil shock</button>
+          <button class="btn" type="button" data-shock="H">Housing crash</button>
+          <button class="btn" type="button" data-shock="B">Bank panic</button>
+          <button class="btn" type="button" data-shock="P">Pandemic</button>
+          <button class="btn" type="button" data-shock="W">War</button>
+        </div>
+      </div>
+      <div>
+        <p class="group-label">What's happening</p>
+        <ul class="notes" id="notes"></ul>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="intro">
+      <div>
+        <h1>The Autopilot Desk</h1>
+        <p>The same toy economy, steered by two PID controllers instead of your hands. Tune the gains, trigger a shock, and watch how the loops respond. Drag any chart by its handle to reorder.</p>
+      </div>
+      <button class="linkbtn" id="resetLayout" type="button">Reset chart order</button>
+    </div>
+
+    <section class="diagram" aria-labelledby="diagTitle">
+      <div class="diagram-head">
+        <h3 id="diagTitle">Control system</h3>
+        <p>Dual mandate plus a debt brake: one loop per target. Values update live.</p>
+      </div>
+      <div class="diagram-scroll">
+        <svg viewBox="0 0 900 470" role="img" aria-label="Block diagram of the monetary, fiscal and debt feedback loops">
+          <defs>
+            <marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah m" d="M0,0 L10,5 L0,10 z"/></marker>
+            <marker id="ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah d" d="M0,0 L10,5 L0,10 z"/></marker>
+            <marker id="af" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah f" d="M0,0 L10,5 L0,10 z"/></marker>
+          </defs>
+
+          <!-- Economy -->
+          <rect class="box econ" x="640" y="58" width="150" height="360" rx="8"/>
+          <text class="ttl" x="715" y="225" text-anchor="middle" style="font-size:15px">Economy</text>
+          <text class="small" x="715" y="245" text-anchor="middle">jobs · prices</text>
+          <text class="small" x="715" y="260" text-anchor="middle">housing · credit</text>
+          <text class="small" x="715" y="280" text-anchor="middle">6–18 month lags</text>
+
+          <!-- Monetary loop -->
+          <rect class="box m" x="10" y="68" width="110" height="44" rx="6"/>
+          <text class="small" x="65" y="85" text-anchor="middle">Target inflation</text>
+          <text class="val mono vm" id="dmSp" x="65" y="103" text-anchor="middle">2.0%</text>
+          <path class="w m" d="M120,90 H144" marker-end="url(#am)"/>
+          <circle class="sum" cx="160" cy="90" r="14"/>
+          <text x="160" y="95" text-anchor="middle" style="font-size:14px;font-weight:700">Σ</text>
+          <text class="small" x="140" y="80" text-anchor="end">+</text>
+          <text class="small" x="168" y="70">−</text>
+          <text class="small mono" id="dmE" x="160" y="124" text-anchor="middle">e +0.00</text>
+          <path class="w m" d="M174,90 H198" marker-end="url(#am)"/>
+          <rect class="box pid m" id="dmBox" x="200" y="62" width="190" height="56" rx="6"/>
+          <text class="ttl" id="dmTitle" x="295" y="83" text-anchor="middle">Monetary PID</text>
+          <text class="small mono" id="dmTerms" x="295" y="104" text-anchor="middle">P +0.00  I +0.00  D +0.00</text>
+          <path class="w m" d="M390,90 H418" marker-end="url(#am)"/>
+          <rect class="box m" id="dmLimBox" x="420" y="70" width="90" height="40" rx="6"/>
+          <text class="small" x="465" y="86" text-anchor="middle">Limit</text>
+          <text class="small mono" id="dmLim" x="465" y="102" text-anchor="middle">0–15%</text>
+          <path class="w m" d="M510,90 H638" marker-end="url(#am)"/>
+          <text class="val mono vm" id="dmOut" x="574" y="82" text-anchor="middle">rate 4.00%</text>
+          <path class="w m" d="M790,110 H850 V24 H562" marker-end="url(#am)"/>
+          <text class="val mono vm" id="dmPi" x="800" y="104">π 2.0%</text>
+          <rect class="box m" x="420" y="8" width="140" height="32" rx="6"/>
+          <text class="small" id="dmSens" x="490" y="28" text-anchor="middle">Measured π · 3 mo late</text>
+          <path class="w m" d="M420,24 H160 V74" marker-end="url(#am)"/>
+
+          <!-- Fiscal loop -->
+          <rect class="box f" x="10" y="198" width="110" height="44" rx="6"/>
+          <text class="small" x="65" y="215" text-anchor="middle">Target unemp.</text>
+          <text class="val mono vf" id="dfSp" x="65" y="233" text-anchor="middle">4.5%</text>
+          <path class="w f" d="M120,220 H144" marker-end="url(#af)"/>
+          <circle class="sum" cx="160" cy="220" r="14"/>
+          <text x="160" y="225" text-anchor="middle" style="font-size:14px;font-weight:700">Σ</text>
+          <text class="small" x="140" y="210" text-anchor="end">−</text>
+          <text class="small" x="168" y="250">+</text>
+          <text class="small mono" id="dfE" x="160" y="194" text-anchor="middle">e +0.00</text>
+          <path class="w f" d="M174,220 H198" marker-end="url(#af)"/>
+          <rect class="box pid f" id="dfBox" x="200" y="192" width="190" height="56" rx="6"/>
+          <text class="ttl" id="dfTitle" x="295" y="213" text-anchor="middle">Fiscal PID</text>
+          <text class="small mono" id="dfTerms" x="295" y="234" text-anchor="middle">P +0.00  I +0.00  D +0.00</text>
+          <path class="w f" d="M390,220 H418" marker-end="url(#af)"/>
+          <rect class="box f" id="dfLimBox" x="420" y="200" width="90" height="40" rx="6"/>
+          <text class="small" x="465" y="216" text-anchor="middle">Limit</text>
+          <text class="small mono" id="dfLim" x="465" y="232" text-anchor="middle">0–8%</text>
+          <path class="w f" d="M510,220 H638" marker-end="url(#af)"/>
+          <text class="val mono vf" id="dfOut" x="574" y="212" text-anchor="middle">infra 0.0%</text>
+          <text class="small" x="574" y="236" text-anchor="middle">of GDP, bond-funded</text>
+
+          <rect class="box f" id="dhBox" x="200" y="262" width="190" height="36" rx="6"/>
+          <text class="small" x="295" y="277" text-anchor="middle" style="font-weight:700;fill:var(--ink)">Emergency helicopter</text>
+          <text class="small mono" id="dhTxt" x="295" y="291" text-anchor="middle">fires when u &gt; 8.0%</text>
+          <path class="w f" d="M390,280 H638" marker-end="url(#af)"/>
+          <text class="val mono vf" id="dhOut" x="574" y="272" text-anchor="middle">heli 0.0%</text>
+
+          <path class="w f" d="M790,240 H850 V328 H562" marker-end="url(#af)"/>
+          <text class="val mono vf" id="dfU" x="800" y="234">u 4.5%</text>
+          <rect class="box f" x="420" y="312" width="140" height="32" rx="6"/>
+          <text class="small" id="dfSens" x="490" y="332" text-anchor="middle">Measured u · 3 mo late</text>
+          <path class="w f" d="M420,328 H160 V236" marker-end="url(#af)"/>
+          <path class="w f" d="M295,328 V300" marker-end="url(#af)"/>
+
+          <!-- Debt loop -->
+          <rect class="box d" x="10" y="370" width="110" height="44" rx="6"/>
+          <text class="small" x="65" y="387" text-anchor="middle">Target debt/GDP</text>
+          <text class="val mono vd" id="ddSp" x="65" y="405" text-anchor="middle">100%</text>
+          <path class="w d" d="M120,392 H144" marker-end="url(#ad)"/>
+          <circle class="sum" cx="160" cy="392" r="14"/>
+          <text x="160" y="397" text-anchor="middle" style="font-size:14px;font-weight:700">Σ</text>
+          <text class="small" x="140" y="382" text-anchor="end">−</text>
+          <text class="small" x="168" y="422">+</text>
+          <text class="small mono" id="ddE" x="160" y="366" text-anchor="middle">e +0.00</text>
+          <path class="w d" d="M174,392 H198" marker-end="url(#ad)"/>
+          <rect class="box pid d" id="ddBox" x="200" y="364" width="190" height="56" rx="6"/>
+          <text class="ttl" id="ddTitle" x="295" y="385" text-anchor="middle">Debt PID</text>
+          <text class="small mono" id="ddTerms" x="295" y="406" text-anchor="middle">P +0.00  I +0.00  D +0.00</text>
+          <path class="w d" d="M390,392 H418" marker-end="url(#ad)"/>
+          <rect class="box d" id="ddLimBox" x="420" y="372" width="90" height="40" rx="6"/>
+          <text class="small" x="465" y="388" text-anchor="middle">Limit</text>
+          <text class="small mono" id="ddLim" x="465" y="404" text-anchor="middle">0–6%</text>
+          <path class="w d" d="M510,392 H638" marker-end="url(#ad)"/>
+          <text class="val mono vd" id="ddOut" x="574" y="384" text-anchor="middle">brake 0.0%</text>
+          <text class="small" x="574" y="408" text-anchor="middle">cuts infra, then taxes</text>
+          <path class="w d" d="M790,400 H870 V456 H562" marker-end="url(#ad)"/>
+          <text class="val mono vd" id="ddD" x="796" y="394">d 96%</text>
+          <rect class="box d" x="420" y="440" width="140" height="28" rx="6"/>
+          <text class="small" id="ddSens" x="490" y="458" text-anchor="middle">Measured debt · 3 mo late</text>
+          <path class="w d" d="M420,454 H160 V408" marker-end="url(#ad)"/>
+        </svg>
+      </div>
+    </section>
+
+    <details class="guide">
+      <summary><span>What each shock does</span><small>Mechanism, effects, and why it is hard for the controllers</small></summary>
+      <div class="guide-scroll">
+        <table>
+          <thead><tr><th>Shock</th><th>What happens in the model</th><th>Inflation</th><th>Unemployment</th><th>Also moves</th><th>Why it is hard to control</th></tr></thead>
+          <tbody>
+            <tr><th>Recession</th><td>Business and consumer confidence drops. Demand falls by about 5% of the workforce and fades with a half-life of roughly a year.</td><td class="dn">Falls</td><td class="up">Rises</td><td>Mortgages, house prices, velocity fall</td><td>The easy one. A pure demand shock, so both loops push the same way: cut rates and spend.</td></tr>
+            <tr><th>Oil shock</th><td>Energy costs add 6 points to inflation, fading over about 9 months. Confidence dips slightly.</td><td class="up">Jumps</td><td class="up">Rises a little</td><td>Real wages fall, rates rise</td><td>A supply shock. Inflation and unemployment rise together, so the monetary loop hikes while the fiscal loop spends. The loops fight.</td></tr>
+            <tr><th>Housing crash</th><td>House prices drop 20% at once. New mortgages fall by about two thirds for 8 months, and construction demand collapses.</td><td class="dn">Falls</td><td class="up">Rises</td><td>Mortgages, money supply, velocity fall</td><td>Lower rates help, but only after the 8-month freeze ends. Integral wind-up is a risk.</td></tr>
+            <tr><th>Bank panic</th><td>10% of the money supply vanishes as loans are called in. Mortgage lending freezes for 4 months and confidence drops.</td><td class="dn">Falls</td><td class="up">Rises</td><td>Money supply drops, velocity rises</td><td>Money can't reach borrowers, so rate cuts transmit weakly at first.</td></tr>
+            <tr><th>Pandemic</th><td>A 6-month lockdown caps employment at 88% of the workforce and confidence collapses. Unspent income piles up as forced savings. On reopening, supply chains clog (+4 points to inflation) while households spend those savings.</td><td class="dn">Falls, then surges</td><td class="up">Spikes to 12%+</td><td>R&amp;D stops, efficiency freezes, velocity collapses then recovers</td><td>Two phases with opposite needs. Rate cuts can't create jobs that are legally shut, so the integral winds up. On reopening, the stimulus meets pent-up demand and inflation overshoots, like 2021–22.</td></tr>
+            <tr><th>War</th><td>Three years of defence spending at 5% of GDP, all borrowed, which hires workers directly. Commodity prices add inflation, lenders charge a 1-point premium, and 3% of productive capacity is destroyed.</td><td class="up">Rises and stays high</td><td class="dn">Falls</td><td>Debt and interest bill jump, efficiency drops 3%, mortgage rates rise</td><td>The economy runs hot on spending the controllers don't own. The monetary loop must lean against it, and the fiscal loop correctly goes quiet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/*MODEL-START*/
+const L = 100, NEUTRAL_R = 2, U_STAR = 4.5, MAX_HIST = 1200;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const ctl = { rate:4, bonds:0, infra:0, heli:0, cons:0 };
+let S, hist, events;
+
+function fresh(){
+  return { t:0, E:95.5, privE:95.5, infraJobs:0, A:100, P:1, pi:2, pie:2, W:6, H:400, N:50, orig:0.25,
+    rS:2, M:7, D:9, cash:0, effRate:3.5, Sav:0, conf:0, supply:0, hShock:0, rd:0.79, capped:false, spendShare:0, lock:0, war:0, warJobs:0 };
+}
+const ngdpOf = s => s.E*s.A*s.P/1000;
+
+// ---- Controllers ----
+const pid = {
+  m:{ auto:true, sp:2, kp:1.5, ki:0.3, kd:0.5, lo:0, hi:15, ilim:10 },
+  f:{ auto:true, sp:4.5, kp:1.0, ki:0.3, kd:0, lo:0, hi:8, ilim:10, thr:8, hg:1, hmax:6 },
+  d:{ auto:true, sp:100, kp:0.15, ki:0.04, kd:0, lo:0, hi:6, ilim:100 },
+  delay:3
+};
+const cs = { m:{ I:0, prev:null, P:0, Iv:0, D:0, e:0, sat:false, out:4 }, f:{ I:0, prev:null, P:0, Iv:0, D:0, e:0, sat:false, out:0, heli:0, meas:4.5 }, d:{ I:0, prev:null, P:0, Iv:0, D:0, e:0, sat:false, out:0 } };
+const inflTarget = () => pid.m.auto ? pid.m.sp : 2;
+
+function runPid(p, c, e, meas, bias, freeze){
+  const dt = 1/12;
+  const dMeas = c.prev == null ? 0 : (meas - c.prev)/dt;   // derivative on measurement: no kick when the target moves
+  c.prev = meas;
+  const Inew = clamp(c.I + e*dt, -p.ilim, p.ilim);
+  c.P = p.kp*e; c.D = p.kd*dMeas;                                        // both errors rise with their measurement
+  const raw = bias + c.P + p.ki*Inew + c.D;
+  const out = clamp(raw, p.lo, p.hi);
+  // Anti-windup: stop integrating while the output is pinned and the error pushes further into the limit
+  if (!freeze && !(raw !== out && Math.sign(raw - out) === Math.sign(e))) c.I = Inew;
+  c.Iv = p.ki*c.I;
+  c.out = clamp(bias + c.P + c.Iv + c.D, p.lo, p.hi);
+  c.sat = raw > p.hi + 1e-9 || raw < p.lo - 1e-9;
+  c.e = e;
+  return c.out;
+}
+function control(){
+  if (!hist.length) return;
+  const m = hist[Math.max(0, hist.length - 1 - pid.delay)];
+  cs.m.meas = m.pi; cs.f.meas = m.u;
+  if (pid.m.auto) ctl.rate = runPid(pid.m, cs.m, m.pi - pid.m.sp, m.pi, NEUTRAL_R + pid.m.sp);
+  if (pid.d.auto) ctl.cons = runPid(pid.d, cs.d, m.dg - pid.d.sp, m.dg, 0);
+  if (pid.f.auto){
+    // While the debt brake is cutting its spending, the fiscal integral holds still instead of winding up
+    const braked = ctl.cons > 0.05 && ctl.infra > 0.05;
+    ctl.infra = runPid(pid.f, cs.f, m.u - pid.f.sp, m.u, 0, braked && m.u > pid.f.sp);
+    cs.f.heli = m.u > pid.f.thr ? Math.min(pid.f.hg*(m.u - pid.f.thr), pid.f.hmax) : 0;
+    ctl.heli = cs.f.heli;
+    ctl.bonds = Math.max(0, ctl.infra - ctl.cons) + ctl.heli; // bonds are issued to match what is actually spent
+  }
+}
+// Bumpless transfer: when a loop goes back to auto, seed its integral so the output starts where manual left it
+function bumpless(k){
+  const p = pid[k], c = cs[k], m = hist[Math.max(0, hist.length - 1 - pid.delay)];
+  const meas = k === "m" ? m.pi : k === "f" ? m.u : m.dg, e = meas - p.sp, bias = k === "m" ? NEUTRAL_R + p.sp : 0;
+  const cur = k === "m" ? ctl.rate : k === "f" ? ctl.infra : ctl.cons;
+  c.prev = meas;
+  c.I = p.ki > 0 ? clamp((cur - bias - p.kp*e)/p.ki, -p.ilim, p.ilim) : 0;
+}
+function resetControllers(){
+  for (const k of ["m","f","d"]) Object.assign(cs[k], { I:0, prev:null, P:0, Iv:0, D:0, e:0, sat:false });
+  cs.m.out = 4; cs.f.out = 0; cs.f.heli = 0; cs.d.out = 0;
+}
+
+function step(){
+  control();
+  const s = S, ngdp = ngdpOf(s);
+  const issue = ctl.bonds/100*ngdp/12;
+  s.D += issue; s.cash += issue;
+  // Debt brake: consolidation first cuts infrastructure, and any remainder is a tax surplus that repays bonds
+  const infraUse = Math.max(0, ctl.infra - ctl.cons), taxPct = Math.max(0, ctl.cons - ctl.infra);
+  const taxFlow = taxPct/100*ngdp/12;
+  s.D = Math.max(0, s.D - taxFlow); s.M = Math.max(0.5, s.M - 0.6*taxFlow);
+  const wantInfra = infraUse/100*ngdp/12, infraFlow = Math.min(wantInfra, s.cash); s.cash -= infraFlow;
+  const wantHeli = ctl.heli/100*ngdp/12, heliFlow = Math.min(wantHeli, s.cash); s.cash -= heliFlow;
+  s.capped = infraFlow < wantInfra - 1e-9 || heliFlow < wantHeli - 1e-9;
+  if (s.cash < 1e-9) s.cash = 0;
+  s.Sav += heliFlow;
+  s.M += 0.6*(infraFlow + heliFlow);
+  // War: defence spending of 5% of GDP, borrowed, plus commodity-price pressure
+  let warFlow = 0;
+  if (s.war > 0){ warFlow = 0.05*ngdp/12; s.D += warFlow; s.M += 0.6*warFlow; s.supply = Math.max(s.supply, 2); s.war--; }
+  const debtRatio = s.D/ngdp*100;
+  const premium = Math.max(0, (debtRatio - 150)*0.04) + (s.war > 0 ? 1 : 0);   // lenders charge more in wartime
+  s.effRate += (ctl.rate + 0.5 + premium - s.effRate)/72;
+  const interest = s.D*s.effRate/1200; s.D += interest;
+
+  s.rS += ((ctl.rate - s.pie) - s.rS)/9;
+
+  const mRate = Math.max(ctl.rate + 1.75 + premium, 0.1), mr = mRate/1200;
+  const pay = s.H*0.8*mr/(1 - Math.pow(1+mr, -360));
+  const aff = pay/s.W;
+  const affF = clamp(Math.exp(-(aff - 0.31)/0.07), 0.1, 2.5);
+  let origT = 0.25*affF*Math.pow(s.E/95.5, 3);
+  if (s.hShock > 0){ origT *= 0.35; s.hShock--; }
+  s.orig += (origT - s.orig)/4;
+  s.N += s.orig - s.N/200;
+  const hd = s.orig/0.25 - 1;
+  s.H *= 1 + clamp(0.006*hd + (s.pi + 2.5*s.rd)/1200, -0.03, 0.03);
+
+  // Lockdown: shops shut, so income piles up as forced savings and is spent after reopening
+  if (s.lock > 0) s.Sav += 0.03*ngdp/12;
+  const spend = s.Sav*(s.lock > 0 ? 0.02 : 0.08); s.Sav -= spend;
+  s.spendShare = spend*12/ngdp*100;
+
+  const gap = -1.2*(s.rS - NEUTRAL_R) + s.spendShare + clamp(1.5*hd, -4, 3) + 0.4*s.infraJobs/L*100 + s.conf - 0.8*taxPct;   // taxes drain demand
+  s.conf *= 0.94;
+  const demandRate = 95.5 + gap;
+  s.privE += (clamp(demandRate, 70, 98)/100*L - s.privE)/5;
+  const jobsT = infraFlow*1000/(s.W*1.6);
+  s.infraJobs += (jobsT - s.infraJobs)/3;
+  const warJobsT = warFlow*1000/(s.W*1.6);
+  s.warJobs += (warJobsT - s.warJobs)/3;
+  const cap = s.lock > 0 ? 0.88*L : 0.99*L;                 // lockdown: many jobs simply can't be done
+  s.E = Math.min(s.privE + s.infraJobs + s.warJobs, cap);
+  if (s.lock > 0){ if (s.lock === 1) s.supply += 4; s.lock--; }   // reopening hits clogged supply chains
+  const u = 100*(1 - s.E/L);
+
+  const overheat = Math.max(0, demandRate + (s.infraJobs + s.warJobs)/L*100 - 98);
+  const piT = s.pie + 0.5*(U_STAR - u) + 0.5*overheat + s.supply + 0.3*s.spendShare;
+  s.pi += (piT - s.pi)/3;
+  s.pie += 0.03*(s.pi - s.pie) + (s.rS > 0 ? 0.015 : 0.004)*(inflTarget() - s.pie);   // a credible bank anchors expectations to its target
+  s.supply *= 0.92;
+  s.P *= 1 + s.pi/1200;
+
+  s.rd = clamp((s.E/L - 0.90)/0.07, 0, 1);
+  s.A *= 1 + 0.025*s.rd/12;
+  s.W *= 1 + (s.pie + 2.5*s.rd + 0.6*(U_STAR - u))/1200;
+
+  s.M *= 1 + 0.035*(s.orig/0.25)/12;
+  s.t++;
+
+  const ng = ngdpOf(s);
+  hist.push({ t:s.t, pi:s.pi, u, V:ng/s.M, N:s.N, D:s.D, gdp:s.E*s.A/1000, A:s.A, H:s.H, aff:aff*100,
+    dg:s.D/ng*100, int:interest*12*1000, M:s.M, i:ctl.rate, r:ctl.rate - s.pi, wage:s.W/6*100, price:s.P*100,
+    inf:infraUse, hel:ctl.heli, war:warFlow*12/ngdp*100, cons:ctl.cons, tax:taxPct });
+  if (hist.length > MAX_HIST) hist.shift();
+}
+
+function shock(k){
+  const s = S;
+  if (k === "R"){ s.conf -= 5; }
+  if (k === "O"){ s.supply += 6; s.conf -= 1.5; }
+  if (k === "H"){ s.H *= 0.8; s.hShock = 8; s.conf -= 2.5; }
+  if (k === "B"){ s.M *= 0.9; s.conf -= 3; s.hShock = Math.max(s.hShock, 4); }
+  if (k === "P"){ s.lock = 6; s.conf -= 6; }
+  if (k === "W"){ s.war = 36; s.conf -= 2; s.supply += 4; s.A *= 0.97; }
+  events.push({ t:s.t, k });
+}
+function reset(){
+  S = fresh(); hist = []; events = [];
+  resetControllers();
+  // 24 months of history at neutral before the controllers switch on
+  const saved = [pid.m.auto, pid.f.auto, pid.d.auto], savedCtl = { ...ctl };
+  pid.m.auto = false; pid.f.auto = false; pid.d.auto = false;
+  Object.assign(ctl, { rate:4, bonds:0, infra:0, heli:0, cons:0 });
+  for (let i = 0; i < 24; i++) step();
+  [pid.m.auto, pid.f.auto, pid.d.auto] = saved;
+  if (!pid.d.auto) ctl.cons = savedCtl.cons;
+  if (!pid.m.auto) ctl.rate = savedCtl.rate;
+  if (!pid.f.auto) Object.assign(ctl, { bonds:savedCtl.bonds, infra:savedCtl.infra, heli:savedCtl.heli });
+  if (pid.m.auto) bumpless("m");
+  if (pid.f.auto) bumpless("f");
+  if (pid.d.auto) bumpless("d");
+}
+/*MODEL-END*/
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const $ = id => document.getElementById(id);
+let playing = true, speed = 6, acc = 0, dirty = true;
+
+// ---------- Presets ----------
+const PRESETS = {
+  gentle:{ hint:"Small gains. Smooth, but slow to fix a shock.",
+    m:{ kp:0.8, ki:0.15, kd:0.2, sp:2, lo:0, hi:15 }, f:{ kp:0.5, ki:0.1, kd:0, sp:4.5, hi:6, thr:9, hg:0.5 }, d:{ kp:0.08, ki:0.02, kd:0, sp:110, hi:4 } },
+  balanced:{ hint:"Taylor-rule-like monetary loop, moderate fiscal support.",
+    m:{ kp:1.5, ki:0.3, kd:0.5, sp:2, lo:0, hi:15 }, f:{ kp:1.0, ki:0.3, kd:0, sp:4.5, hi:8, thr:8, hg:1 }, d:{ kp:0.15, ki:0.04, kd:0, sp:100, hi:6 } },
+  aggressive:{ hint:"Large gains. Fast, but prone to overshoot and oscillation.",
+    m:{ kp:3, ki:1.0, kd:1.0, sp:2, lo:0, hi:20 }, f:{ kp:2.5, ki:1.0, kd:0.5, sp:4.5, hi:12, thr:7, hg:2 }, d:{ kp:0.4, ki:0.12, kd:0, sp:100, hi:10 } },
+  volcker:{ hint:"Inflation at any cost. Steep rate response, no fiscal help.",
+    m:{ kp:3.5, ki:0.8, kd:0, sp:2, lo:0, hi:20 }, f:{ kp:0, ki:0, kd:0, sp:4.5, hi:0, thr:20, hg:0 }, d:{ kp:0.15, ki:0.04, kd:0, sp:100, hi:6 } },
+};
+
+// ---------- Knobs ----------
+const pct = d => v => v.toFixed(d) + "%";
+const num = d => v => v.toFixed(d);
+const KNOBS = {
+  mAuto:[
+    { sub:"Setpoint" },
+    { id:"m-sp", lbl:"Target inflation", o:pid.m, k:"sp", min:0, max:6, step:0.25, f:pct(2), h:"Neutral rate follows: 2% real + target." },
+    { sub:"Gains" },
+    { id:"m-kp", lbl:"Kp · proportional", o:pid.m, k:"kp", min:0, max:5, step:0.1, f:num(1), h:"Rate points per point of inflation error." },
+    { id:"m-ki", lbl:"Ki · integral", o:pid.m, k:"ki", min:0, max:2, step:0.05, f:num(2), h:"Removes persistent error. Too much causes overshoot." },
+    { id:"m-kd", lbl:"Kd · derivative", o:pid.m, k:"kd", min:0, max:3, step:0.1, f:num(1), h:"Reacts to how fast inflation is moving." },
+    { sub:"Limits" },
+    { id:"m-lo", lbl:"Rate floor", o:pid.m, k:"lo", min:0, max:5, step:0.25, f:pct(2), h:"The zero lower bound lives here." },
+    { id:"m-hi", lbl:"Rate ceiling", o:pid.m, k:"hi", min:5, max:25, step:0.5, f:pct(1) },
+    { id:"m-ilim", lbl:"Integral clamp", o:pid.m, k:"ilim", min:0, max:30, step:1, f:num(0), h:"Anti-windup: caps accumulated error (point-years)." },
+  ],
+  fAuto:[
+    { sub:"Setpoint" },
+    { id:"f-sp", lbl:"Target unemployment", o:pid.f, k:"sp", min:2, max:8, step:0.25, f:pct(2), h:"Below about 4.5%, prices start rising." },
+    { sub:"Gains" },
+    { id:"f-kp", lbl:"Kp · proportional", o:pid.f, k:"kp", min:0, max:4, step:0.1, f:num(1), h:"% of GDP per point of unemployment error." },
+    { id:"f-ki", lbl:"Ki · integral", o:pid.f, k:"ki", min:0, max:2, step:0.05, f:num(2) },
+    { id:"f-kd", lbl:"Kd · derivative", o:pid.f, k:"kd", min:0, max:3, step:0.1, f:num(1) },
+    { sub:"Limits" },
+    { id:"f-hi", lbl:"Max infrastructure", o:pid.f, k:"hi", min:0, max:15, step:0.5, f:v => v.toFixed(1) + "% GDP" },
+    { id:"f-ilim", lbl:"Integral clamp", o:pid.f, k:"ilim", min:0, max:30, step:1, f:num(0) },
+    { sub:"Emergency helicopter" },
+    { id:"f-thr", lbl:"Fires above", o:pid.f, k:"thr", min:5, max:20, step:0.5, f:v => v.toFixed(1) + "% unemp.", h:"Measured unemployment that triggers cheques." },
+    { id:"f-hg", lbl:"Gain", o:pid.f, k:"hg", min:0, max:3, step:0.1, f:num(1), h:"% of GDP per point above the trigger." },
+    { id:"f-hmax", lbl:"Cap", o:pid.f, k:"hmax", min:0, max:10, step:0.5, f:v => v.toFixed(1) + "% GDP" },
+  ],
+  dAuto:[
+    { sub:"Setpoint" },
+    { id:"d-sp", lbl:"Target debt/GDP", o:pid.d, k:"sp", min:40, max:200, step:5, f:v => v.toFixed(0) + "%", h:"The brake only pushes when debt is above this." },
+    { sub:"Gains" },
+    { id:"d-kp", lbl:"Kp · proportional", o:pid.d, k:"kp", min:0, max:1, step:0.01, f:num(2), h:"% of GDP of consolidation per point of excess debt." },
+    { id:"d-ki", lbl:"Ki · integral", o:pid.d, k:"ki", min:0, max:0.5, step:0.01, f:num(2), h:"Keeps braking until debt actually reaches target." },
+    { id:"d-kd", lbl:"Kd · derivative", o:pid.d, k:"kd", min:0, max:2, step:0.05, f:num(2), h:"Brakes early when debt is rising fast." },
+    { sub:"Limits" },
+    { id:"d-hi", lbl:"Max consolidation", o:pid.d, k:"hi", min:0, max:12, step:0.5, f:v => v.toFixed(1) + "% GDP", h:"How much austerity is politically possible." },
+    { id:"d-ilim", lbl:"Integral clamp", o:pid.d, k:"ilim", min:0, max:300, step:10, f:num(0) },
+  ],
+  dManual:[
+    { id:"cons", lbl:"Consolidation", o:ctl, k:"cons", min:0, max:12, step:0.5, f:v => v.toFixed(1) + "% GDP/yr", h:"Cuts infrastructure first, then taxes to repay bonds." },
+  ],
+  mManual:[
+    { id:"rate", lbl:"Interest rate", o:ctl, k:"rate", min:0, max:15, step:0.25, f:pct(2), h:"Neutral is about 4%." },
+  ],
+  fManual:[
+    { id:"bonds", lbl:"Issue bonds", o:ctl, k:"bonds", min:0, max:20, step:0.5, f:v => v + "% GDP/yr", h:"Borrowed cash lands in the treasury." },
+    { id:"infra", lbl:"Infrastructure", o:ctl, k:"infra", min:0, max:10, step:0.5, f:v => v + "% GDP/yr", h:"Hires workers directly." },
+    { id:"heli", lbl:"Helicopter money", o:ctl, k:"heli", min:0, max:10, step:0.5, f:v => v + "% GDP/yr", h:"Cash to households." },
+  ],
+  shared:[
+    { id:"delay", lbl:"Measurement delay", o:pid, k:"delay", min:0, max:12, step:1, f:v => v + (v === 1 ? " month" : " months"), h:"Both loops see data this old, like real statistics." },
+  ],
+};
+const knobEls = [];
+for (const [box, list] of Object.entries(KNOBS)){
+  const host = $(box);
+  for (const kb of list){
+    if (kb.sub){ const p = document.createElement("p"); p.className = "sublabel"; p.textContent = kb.sub; host.appendChild(p); continue; }
+    const d = document.createElement("div"); d.className = "lever";
+    d.innerHTML = `<label for="${kb.id}">${kb.lbl} <output id="${kb.id}Out"></output></label>
+      <input id="${kb.id}" type="range" min="${kb.min}" max="${kb.max}" step="${kb.step}">${kb.h ? `<small>${kb.h}</small>` : ""}`;
+    host.appendChild(d);
+    const inp = d.querySelector("input"), out = d.querySelector("output");
+    kb.inp = inp; kb.out = out;
+    inp.addEventListener("input", () => {
+      kb.o[kb.k] = parseFloat(inp.value); out.textContent = kb.f(kb.o[kb.k]);
+      if (kb.o === pid.m || kb.o === pid.f || kb.o === pid.d) markCustom();
+      if (kb.id === "m-lo" && pid.m.lo > pid.m.hi) pid.m.hi = pid.m.lo;
+      dirty = true;
+    });
+    knobEls.push(kb);
+  }
+}
+function syncKnobs(){ for (const kb of knobEls){ kb.inp.value = kb.o[kb.k]; kb.out.textContent = kb.f(kb.o[kb.k]); } }
+function markCustom(){
+  document.querySelectorAll("[data-preset]").forEach(b => b.setAttribute("aria-pressed", "false"));
+  $("presetHint").textContent = "Custom tuning.";
+}
+function applyPreset(name){
+  const p = PRESETS[name];
+  Object.assign(pid.m, p.m); Object.assign(pid.f, p.f); Object.assign(pid.d, p.d);
+  setMode("m", true, true); setMode("f", true, true); setMode("d", true, true);
+  bumpless("m"); bumpless("f"); bumpless("d");
+  document.querySelectorAll("[data-preset]").forEach(b => b.setAttribute("aria-pressed", b.dataset.preset === name ? "true" : "false"));
+  $("presetHint").textContent = p.hint;
+  syncKnobs(); dirty = true;
+}
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => applyPreset(b.dataset.preset)));
+
+function setMode(k, auto, quiet){
+  const was = pid[k].auto;
+  pid[k].auto = auto;
+  $(k + "Auto").hidden = !auto; $(k + "Manual").hidden = auto;
+  document.querySelectorAll(`[data-loop="${k}"]`).forEach(b => b.setAttribute("aria-pressed", (b.dataset.mode === "auto") === auto ? "true" : "false"));
+  if (!auto && was){
+    // manual starts from what the controller was doing
+    if (k === "m") ctl.rate = Math.round(ctl.rate*4)/4;
+    else if (k === "f"){ ctl.infra = Math.round(ctl.infra*2)/2; ctl.heli = Math.round(ctl.heli*2)/2; ctl.bonds = Math.round((ctl.infra + ctl.heli)*2)/2; }
+    else ctl.cons = Math.round(ctl.cons*2)/2;
+  }
+  if (auto && !was && !quiet) bumpless(k);
+  $("treasury").hidden = pid.f.auto;
+  syncKnobs(); dirty = true;
+}
+document.querySelectorAll("[data-loop]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.loop, b.dataset.mode === "auto")));
+
+// ---------- Charts ----------
+const fPct = v => v.toFixed(1) + "%";
+const fT = v => "$" + v.toFixed(1) + "T";
+const CHARTS = [
+  { id:"inflation", title:"Inflation", hint:"Annual price growth. Dashed line is the controller's target.", series:[{k:"pi"}], refs:() => [{v:pid.m.sp,l:"target"}], fmt:fPct },
+  { id:"unemp", title:"Unemployment", hint:"Share of workers without a job. Above 10%, R&D stops.", series:[{k:"u"}], refs:() => [{v:pid.f.sp,l:"target"},{v:10,l:"R&D stops"}], zero:true, fmt:fPct },
+  { id:"velocity", title:"Velocity of money", hint:"Times each dollar is spent per year: nominal GDP ÷ money supply.", series:[{k:"V"}], fmt:v => v.toFixed(2) + "×" },
+  { id:"mortgages", title:"Active mortgages", hint:"Homes with a mortgage. New loans dry up when payments get expensive.", series:[{k:"N"}], fmt:v => v.toFixed(1) + "M" },
+  { id:"debt", title:"Total government debt", hint:"Every bond issued, plus interest that rolls on top.", series:[{k:"D"}], zero:true, fmt:fT },
+  { id:"gdp", title:"Real GDP", hint:"Employed workers × efficiency, in starting-year dollars.", series:[{k:"gdp"}], fmt:v => "$" + v.toFixed(2) + "T" },
+  { id:"eff", title:"Efficiency", hint:"Output per worker. Grows only while R&D runs, at more than 90% employed.", series:[{k:"A"}], fmt:v => "$" + v.toFixed(1) + "k" },
+  { id:"house", title:"House prices", hint:"Median home price. Cheap mortgages bid prices up.", series:[{k:"H"}], fmt:v => "$" + Math.round(v) + "k" },
+  { id:"afford", title:"Mortgage payment vs income", hint:"Monthly payment on a new mortgage as a share of a monthly wage.", series:[{k:"aff"}], refs:() => [{v:31,l:"start"}], fmt:fPct },
+  { id:"debtgdp", title:"Debt to GDP", hint:"Above 150%, lenders charge a risk premium on all new borrowing.", series:[{k:"dg"}], refs:() => [{v:150,l:"premium"},{v:pid.d.sp,l:"brake target"}], fmt:v => v.toFixed(0) + "%" },
+  { id:"interest", title:"Interest paid on debt", hint:"The yearly interest bill. It is borrowed too, so debt compounds.", series:[{k:"int"}], zero:true, fmt:v => "$" + v.toFixed(0) + "B" },
+  { id:"money", title:"Money supply", hint:"Deposits created by bank lending and government spending.", series:[{k:"M"}], fmt:fT },
+  { id:"rates", title:"Policy rate vs real rate", hint:"Real rate = policy rate − inflation. Above zero, policy cools the economy.", series:[{k:"i",n:"Policy rate"},{k:"r",n:"Real rate"}], refs:() => [{v:0,l:""}], fmt:fPct },
+  { id:"wages", title:"Wages vs prices", hint:"Both start at 100. Wages above prices means workers are better off.", series:[{k:"wage",n:"Wages"},{k:"price",n:"Prices"}], fmt:v => v.toFixed(0) },
+  { id:"brake", title:"Debt brake", hint:"Consolidation the debt loop asks for, and the part that becomes taxes after cutting infrastructure.", series:[{k:"cons",n:"Consolidation"},{k:"tax",n:"Tax surplus"}], zero:true, fmt:v => v.toFixed(1) + "%" },
+  { id:"fiscal", title:"Fiscal actuators", hint:"Spending actually going out, in % of GDP per year, after the debt brake. War spending is outside the controllers.", series:[{k:"inf",n:"Infrastructure"},{k:"hel",n:"Helicopter"},{k:"war",n:"War spending"}], zero:true, fmt:v => v.toFixed(1) + "%" },
+];
+const DEFAULT_ORDER = CHARTS.map(c => c.id);
+const SERIES_VARS = ["--accent","--s2","--crit"];
+const STORE_KEY = "autopilot-desk-order";
+const grid = $("grid"), cards = new Map();
+const HANDLE = '<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="4" cy="2.5" r="1.4"/><circle cx="10" cy="2.5" r="1.4"/><circle cx="4" cy="7" r="1.4"/><circle cx="10" cy="7" r="1.4"/><circle cx="4" cy="11.5" r="1.4"/><circle cx="10" cy="11.5" r="1.4"/></svg>';
+
+function loadOrder(){
+  try{
+    const o = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (Array.isArray(o) && o.length === DEFAULT_ORDER.length && DEFAULT_ORDER.every(id => o.includes(id))) return o;
+  }catch(e){}
+  return DEFAULT_ORDER.slice();
+}
+function saveOrder(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify([...grid.children].map(c => c.dataset.id))); }catch(e){} }
+
+function buildCards(order){
+  grid.innerHTML = ""; cards.clear();
+  for (const id of order){
+    const def = CHARTS.find(c => c.id === id);
+    const el = document.createElement("article");
+    el.className = "card"; el.dataset.id = id;
+    const legend = def.series.length > 1
+      ? `<div class="legend">${def.series.map((s,i) => `<span><i style="background:var(${SERIES_VARS[i]})"></i>${s.n}</span>`).join("")}</div>` : "";
+    el.innerHTML = `<header><div><h3>${def.title}</h3><p class="hint">${def.hint}</p></div><div class="val"></div>
+      <button class="handle" type="button" aria-label="Move ${def.title} chart. Use arrow keys or drag.">${HANDLE}</button></header>${legend}<canvas></canvas>`;
+    grid.appendChild(el);
+    cards.set(id, { el, def, canvas: el.querySelector("canvas"), val: el.querySelector(".val") });
+  }
+}
+
+let colors = {}, monoFont = "monospace";
+function readColors(){
+  const st = getComputedStyle(document.documentElement);
+  for (const k of ["ink","muted","rule","grid","accent","s2","crit","panel"]) colors[k] = st.getPropertyValue("--" + k).trim();
+  monoFont = st.getPropertyValue("--f-mono");
+}
+function niceStep(range, n){
+  const raw = range/n, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw/mag;
+  return (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10)*mag;
+}
+const EV_LABEL = { R:"Recession", O:"Oil", H:"Housing", B:"Bank", P:"Pandemic", W:"War", $:"Cheques" };
+
+function draw(c){
+  const cv = c.canvas, w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+  const g = cv.getContext("2d");
+  g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  if (hist.length < 2) return;
+  const def = c.def, refs = def.refs ? def.refs() : [];
+  const pl = 44, pr = 8, pt = 8, pb = 20, iw = w - pl - pr, ih = h - pt - pb;
+  let lo = Infinity, hi = -Infinity;
+  for (const p of hist) for (const s of def.series){ const v = p[s.k]; if (v < lo) lo = v; if (v > hi) hi = v; }
+  for (const r of refs){ lo = Math.min(lo, r.v); hi = Math.max(hi, r.v); }
+  if (def.zero) lo = Math.min(lo, 0);
+  if (hi - lo < 1e-6){ hi += 1; lo -= 1; }
+  const padv = (hi - lo)*0.08; hi += padv; if (!(def.zero && lo === 0)) lo -= padv;
+  const st = niceStep(hi - lo, 4); lo = Math.floor(lo/st)*st; hi = Math.ceil(hi/st)*st;
+  const t0 = hist[0].t, t1 = Math.max(hist[hist.length-1].t, t0 + 12);
+  const X = t => pl + (t - t0)/(t1 - t0)*iw, Y = v => pt + (1 - (v - lo)/(hi - lo))*ih;
+
+  g.font = "10.5px " + monoFont; g.textBaseline = "middle"; g.lineWidth = 1;
+  const dec = st < 0.1 ? 2 : st < 1 ? 1 : 0;
+  for (let v = lo; v <= hi + st/2; v += st){
+    const y = Math.round(Y(v)) + .5;
+    g.strokeStyle = colors.grid; g.beginPath(); g.moveTo(pl, y); g.lineTo(w - pr, y); g.stroke();
+    g.fillStyle = colors.muted; g.textAlign = "right"; g.fillText(Math.abs(v) < st/1e3 ? "0" : v.toFixed(dec), pl - 6, y);
+  }
+  const spanY = (t1 - t0)/12, yst = [1,2,5,10,20,50].find(s => spanY/s <= 6) || 50;
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  for (let yr = Math.ceil(t0/12/yst)*yst; yr*12 <= t1; yr += yst){
+    const x = X(yr*12); if (x < pl + 8) continue;
+    g.fillStyle = colors.muted; g.fillText("Y" + yr, x, h - 5);
+  }
+  g.setLineDash([4,4]);
+  for (const r of refs){
+    const y = Math.round(Y(r.v)) + .5;
+    g.strokeStyle = colors.muted; g.beginPath(); g.moveTo(pl, y); g.lineTo(w - pr, y); g.stroke();
+    if (r.l){ g.fillStyle = colors.muted; g.textAlign = "left"; g.textBaseline = "bottom"; g.fillText(r.l, pl + 4, y - 2); }
+  }
+  g.setLineDash([2,3]);
+  for (const e of events){
+    if (e.t < t0) continue;
+    const x = Math.round(X(e.t)) + .5;
+    g.strokeStyle = colors.crit; g.beginPath(); g.moveTo(x, pt); g.lineTo(x, pt + ih); g.stroke();
+    g.fillStyle = colors.crit; g.textAlign = "left"; g.textBaseline = "top"; g.fillText(EV_LABEL[e.k], x + 3, pt);
+  }
+  g.setLineDash([]);
+  def.series.forEach((s, si) => {
+    const col = [colors.accent, colors.s2, colors.crit][si];
+    const path = () => { g.beginPath(); hist.forEach((p, i) => { const x = X(p.t), y = Y(p[s.k]); i ? g.lineTo(x, y) : g.moveTo(x, y); }); };
+    if (def.series.length === 1){
+      path(); g.save(); g.lineTo(X(hist[hist.length-1].t), pt + ih); g.lineTo(X(hist[0].t), pt + ih); g.closePath();
+      g.globalAlpha = 0.12; g.fillStyle = col; g.fill(); g.restore();
+    }
+    path(); g.strokeStyle = col; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
+    const last = hist[hist.length-1];
+    g.fillStyle = col; g.beginPath(); g.arc(X(last.t), Y(last[s.k]), 3.5, 0, Math.PI*2); g.fill();
+    g.strokeStyle = colors.panel; g.lineWidth = 1.5; g.stroke();
+  });
+}
+
+// ---------- Diagram ----------
+const sg = v => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+function updateDiagram(){
+  const late = pid.delay ? ` · ${pid.delay} mo late` : " · live";
+  $("dmSp").textContent = pid.m.sp.toFixed(1) + "%";
+  $("dfSp").textContent = pid.f.sp.toFixed(1) + "%";
+  $("dmSens").textContent = "Measured π" + late;
+  $("dfSens").textContent = "Measured u" + late;
+  $("dmLim").textContent = `${pid.m.lo}–${pid.m.hi}%`;
+  $("ddSp").textContent = pid.d.sp.toFixed(0) + "%";
+  $("ddSens").textContent = "Measured debt" + late;
+  $("ddLim").textContent = `0–${pid.d.hi}%`;
+  $("ddOut").textContent = "brake " + ctl.cons.toFixed(1) + "%";
+  $("ddD").textContent = "d " + hist[hist.length-1].dg.toFixed(0) + "%";
+  $("dfLim").textContent = `0–${pid.f.hi}%`;
+  const last = hist[hist.length-1];
+  $("dmPi").textContent = "π " + last.pi.toFixed(1) + "%";
+  $("dfU").textContent = "u " + last.u.toFixed(1) + "%";
+  $("dmOut").textContent = "rate " + ctl.rate.toFixed(2) + "%";
+  $("dfOut").textContent = "infra " + ctl.infra.toFixed(1) + "%";
+  $("dhOut").textContent = "heli " + ctl.heli.toFixed(1) + "%";
+  for (const k of ["m","f","d"]){
+    const auto = pid[k].auto, c = cs[k];
+    $("d" + k + "Title").textContent = ({ m:"Monetary PID", f:"Fiscal PID", d:"Debt PID" })[k] + (auto ? "" : " · manual");
+    $("d" + k + "Box").classList.toggle("off", !auto);
+    $("d" + k + "Terms").textContent = auto ? `P ${sg(c.P)}  I ${sg(c.Iv)}  D ${sg(c.D)}` : "you set the output";
+    $("d" + k + "E").textContent = auto ? "e " + sg(c.e) : "e —";
+    $("d" + k + "LimBox").classList.toggle("sat", auto && c.sat);
+  }
+  $("dhBox").classList.toggle("off", !pid.f.auto);
+  $("dhBox").classList.toggle("sat", pid.f.auto && cs.f.heli > 0);
+  $("dhTxt").textContent = pid.f.auto ? `fires when u > ${pid.f.thr.toFixed(1)}%` : "manual";
+}
+
+// ---------- UI ----------
+const fmtCash = v => v >= 1 ? "$" + v.toFixed(2) + "T" : "$" + Math.round(v*1000) + "B";
+function updateUI(){
+  const s = S, last = hist[hist.length-1];
+  $("clock").textContent = `Year ${Math.floor(s.t/12)} · ${MONTHS[s.t % 12]}`;
+  $("roPi").textContent = fPct(s.pi); $("roPi").classList.toggle("hot", s.pi > pid.m.sp + 2 || s.pi < 0);
+  $("roU").textContent = fPct(last.u); $("roU").classList.toggle("hot", last.u > 7);
+  $("roG").textContent = "$" + last.gdp.toFixed(1) + "T";
+  $("cash").textContent = fmtCash(s.cash);
+  $("capped").hidden = !s.capped;
+  if (!pid.m.auto){ const kb = knobEls.find(k => k.id === "rate"); kb.out.textContent = kb.f(ctl.rate); }
+  if (!pid.d.auto){ const kb = knobEls.find(k => k.id === "cons"); kb.out.textContent = kb.f(ctl.cons); }
+  for (const c of cards.values()){
+    const d = c.def;
+    c.val.innerHTML = d.series.map((sr, i) => `<span class="${["","s2","s3"][i]}">${d.fmt(last[sr.k])}</span>`).join(" · ");
+  }
+  updateDiagram();
+  const n = [];
+  if (s.lock > 0) n.push([`Lockdown: ${s.lock} more month${s.lock === 1 ? "" : "s"}. No rate cut can bring these jobs back until it ends.`, 1]);
+  if (s.war > 0) n.push([`War: ${Math.ceil(s.war/12*10)/10} years left. Defence spending is adding jobs, debt and inflation.`, 1]);
+  if (pid.m.auto && cs.m.sat && ctl.rate <= pid.m.lo + 1e-6) n.push(["The rate is stuck at its floor. The monetary loop can't stimulate any further.", 1]);
+  else if (pid.m.auto && cs.m.sat) n.push(["The rate is pinned at its ceiling. Inflation is outrunning the controller.", 1]);
+  if (pid.f.auto && cs.f.sat && ctl.infra >= pid.f.hi - 1e-6 && pid.f.hi > 0) n.push(["Infrastructure is at its maximum. Unemployment is beyond what the fiscal loop can fix.", 1]);
+  if (pid.f.auto && cs.f.heli > 0) n.push([`Emergency cheques are flowing: ${cs.f.heli.toFixed(1)}% of GDP per year.`, 1]);
+  if (Math.abs(s.pi - pid.m.sp) > 2) n.push([`Inflation is ${(s.pi - pid.m.sp).toFixed(1)} points from target. Remember the controller acts on ${pid.delay}-month-old data.`, 0]);
+  if (pid.m.auto && pid.f.auto && cs.m.e > 0.5 && cs.f.e > 0.5) n.push(["The loops are fighting: monetary tightens for inflation while fiscal spends for jobs.", 1]);
+  if (ctl.cons > 0.1){
+    const t = last.tax;
+    n.push([t > 0.05 ? `Debt brake at ${ctl.cons.toFixed(1)}% of GDP: infrastructure is cut to zero and taxes of ${t.toFixed(1)}% of GDP repay bonds, which drains demand.`
+                     : `Debt brake at ${ctl.cons.toFixed(1)}% of GDP is trimming infrastructure spending.`, 0]);
+  }
+  if (last.dg > 150) n.push(["Debt is above 150% of GDP. The premium raises borrowing and mortgage costs.", 1]);
+  if (!n.length) n.push(["Both loops are near their targets.", 0]);
+  $("notes").innerHTML = n.slice(0,3).map(([t,a]) => `<li class="${a ? "alert" : ""}">${t}</li>`).join("");
+}
+
+let lastDraw = 0;
+function render(){ readColors(); for (const c of cards.values()) draw(c); updateUI(); dirty = false; }
+
+let prev = performance.now();
+function frame(now){
+  const dt = Math.min(0.25, (now - prev)/1000); prev = now;
+  if (playing){ acc += dt*speed; while (acc >= 1){ step(); acc -= 1; dirty = true; } }
+  if (drag) autoScroll();
+  if (dirty && now - lastDraw > 60){ render(); lastDraw = now; }
+  requestAnimationFrame(frame);
+}
+
+$("play").addEventListener("click", () => { playing = !playing; $("play").textContent = playing ? "Pause" : "Play"; });
+document.querySelectorAll("[data-speed]").forEach(b => b.addEventListener("click", () => {
+  speed = +b.dataset.speed;
+  document.querySelectorAll("[data-speed]").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+}));
+$("reset").addEventListener("click", () => { reset(); dirty = true; });
+document.querySelectorAll("[data-shock]").forEach(b => b.addEventListener("click", () => { shock(b.dataset.shock); dirty = true; }));
+$("drop").addEventListener("click", () => {
+  const amt = Math.min(0.02*ngdpOf(S), S.cash);
+  if (amt <= 0){ $("capped").hidden = false; $("capped").textContent = "No bond cash to mail. Issue bonds first."; return; }
+  S.cash -= amt; S.Sav += amt; S.M += 0.6*amt; events.push({ t:S.t, k:"$" }); dirty = true;
+  $("capped").textContent = "Spending is capped by available cash. Issue more bonds.";
+});
+$("resetLayout").addEventListener("click", () => { buildCards(DEFAULT_ORDER); saveOrder(); observe(); dirty = true; });
+
+// ---------- Drag to reorder ----------
+let drag = null;
+grid.addEventListener("pointerdown", e => {
+  const h = e.target.closest(".handle"); if (!h || e.button > 0) return;
+  e.preventDefault();
+  const card = h.closest(".card");
+  h.setPointerCapture(e.pointerId);
+  drag = { card, id:e.pointerId, x:e.clientX, y:e.clientY };
+  card.classList.add("dragging"); document.body.classList.add("is-dragging");
+});
+grid.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.x = e.clientX; drag.y = e.clientY; reorderAt(drag.x, drag.y);
+});
+function endDrag(e){
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.card.classList.remove("dragging"); document.body.classList.remove("is-dragging");
+  drag = null; saveOrder(); dirty = true;
+}
+grid.addEventListener("pointerup", endDrag);
+grid.addEventListener("pointercancel", endDrag);
+function reorderAt(x, y){
+  const hit = document.elementFromPoint(x, y);
+  const el = hit && hit.closest(".card");
+  if (!el || el === drag.card || el.parentNode !== grid) return;
+  const r = el.getBoundingClientRect();
+  const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
+  const after = cols > 1 ? (y > r.bottom - r.height*0.25 || (x > r.left + r.width/2 && y > r.top + r.height*0.25)) : y > r.top + r.height/2;
+  const ref = after ? el.nextSibling : el;
+  if (ref !== drag.card && ref !== drag.card.nextSibling) grid.insertBefore(drag.card, ref);
+}
+function autoScroll(){
+  const desk = $("desk"), mobile = getComputedStyle(desk).position === "fixed";
+  const bottom = mobile ? window.innerHeight - desk.offsetHeight : window.innerHeight, edge = 70;
+  let dy = 0;
+  if (drag.y < edge) dy = -Math.ceil((edge - drag.y)/5);
+  else if (drag.y > bottom - edge) dy = Math.ceil((drag.y - (bottom - edge))/5);
+  if (dy){ window.scrollBy(0, dy); reorderAt(drag.x, drag.y); }
+}
+grid.addEventListener("keydown", e => {
+  const h = e.target.closest(".handle"); if (!h) return;
+  const card = h.closest(".card");
+  if (e.key === "ArrowUp" || e.key === "ArrowLeft"){ if (card.previousElementSibling) grid.insertBefore(card, card.previousElementSibling); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowRight"){ if (card.nextElementSibling) grid.insertBefore(card.nextElementSibling, card); }
+  else return;
+  e.preventDefault(); h.focus(); saveOrder(); dirty = true;
+});
+
+let ro;
+function observe(){
+  if (ro) ro.disconnect();
+  ro = new ResizeObserver(() => { dirty = true; });
+  for (const c of cards.values()) ro.observe(c.canvas);
+}
+new ResizeObserver(() => { document.documentElement.style.setProperty("--deskH", $("desk").offsetHeight + "px"); }).observe($("desk"));
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+if (mq.addEventListener) mq.addEventListener("change", () => { dirty = true; });
+new MutationObserver(() => { dirty = true; }).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] });
+
+buildCards(loadOrder());
+observe();
+reset();
+applyPreset("balanced");
+render();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

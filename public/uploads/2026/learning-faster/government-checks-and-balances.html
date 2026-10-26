@@ -1,0 +1,420 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Three Branches, One Constitution</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column; a triangle diagram of the branches is the centerpiece, followed by a bill simulator and a short quiz. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#16202E; --muted:#596577; --line:#D3DAE3;
+  --leg:#1D7565; --exe:#3A49B0; --jud:#9C6210; --soft:#E8ECF2;
+  --good:#1D7565; --bad:#A3322B;
+  --display:"Libre Caslon Display","Libre Caslon Text",Georgia,serif;
+  --serif:"Libre Caslon Text",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA6B6; --line:#2A3442;
+  --leg:#4DBFA9; --exe:#8E9CFF; --jud:#E2A64A; --soft:#1F2833; --good:#4DBFA9; --bad:#F07C72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --surface:#171E28; --ink:#E5EAF1; --muted:#9AA6B6; --line:#2A3442;
+  --leg:#4DBFA9; --exe:#8E9CFF; --jud:#E2A64A; --soft:#1F2833; --good:#4DBFA9; --bad:#F07C72; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6}
+.wrap{max-width:880px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:64px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2.3rem,6vw,3.6rem);line-height:1.05;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4vw,2.2rem);line-height:1.15}
+h3{font-family:var(--serif);font-size:1.15rem;font-weight:700}
+p{margin:0;max-width:65ch}
+.eyebrow{font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cite{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+section{display:grid;gap:20px}
+.lede{font-family:var(--serif);font-size:1.15rem;color:var(--ink)}
+.lede em{font-style:italic}
+.muted{color:var(--muted)}
+header{display:grid;gap:18px}
+blockquote{margin:0;padding:4px 0 4px 18px;border-left:2px solid var(--line);font-family:var(--serif);font-style:italic;color:var(--muted);max-width:60ch}
+
+/* glance */
+.glance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.glance{grid-template-columns:1fr}}
+.branch{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:6px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.branch h3{color:var(--c)}
+.branch dl{margin:0;display:grid;gap:8px}
+.branch dt{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.branch dd{margin:0;font-size:.93rem}
+.branch ul{margin:0;padding-left:18px;font-size:.93rem}
+.L{--c:var(--leg)} .E{--c:var(--exe)} .J{--c:var(--jud)}
+
+/* diagram */
+.diagram-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:18px}
+.diagram-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+@media (max-width:760px){.diagram-grid{grid-template-columns:1fr}}
+svg.tri{width:100%;max-width:420px;height:auto;justify-self:center;display:block}
+.arrow{cursor:pointer}
+.arrow path.hit{stroke:transparent;stroke-width:18;fill:none}
+.arrow path.line{fill:none;stroke-width:2.2;opacity:.35;transition:opacity .15s,stroke-width .15s}
+.arrow:hover path.line,.arrow:focus path.line{opacity:.75}
+.arrow.on path.line{opacity:1;stroke-width:3.4}
+.arrow:focus{outline:none}
+.arrow:focus-visible path.hit{stroke:var(--line)}
+.node{cursor:pointer}
+.node circle{fill:var(--surface);stroke-width:2.5;transition:stroke-width .15s}
+.node.on circle{stroke-width:5}
+.node text{font-family:var(--sans);font-size:13px;font-weight:600;fill:var(--ink);text-anchor:middle}
+.node text.sub{font-family:var(--mono);font-size:10px;font-weight:400;fill:var(--muted)}
+.node:focus{outline:none}
+.node:focus-visible circle{stroke-dasharray:4 3}
+.picker{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:6px 12px;font-size:.85rem;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--c);color:var(--surface)}
+.seg button:focus-visible{outline:2px solid var(--c);outline-offset:-2px}
+.panel{display:grid;gap:12px;min-width:0}
+.panel .title{font-family:var(--serif);font-size:1.25rem;font-weight:700}
+.title .f{color:var(--cf)} .title .t{color:var(--ct)}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.checks li{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:4px;background:var(--bg)}
+.checks b{font-weight:600}
+.checks .ex{font-size:.88rem;color:var(--muted)}
+.hint{font-size:.85rem;color:var(--muted)}
+
+/* simulator */
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:18px}
+.trail{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--mono);font-size:.72rem}
+.trail span{padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--muted)}
+.stage{display:grid;gap:12px}
+.stage .where{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.stage h3{font-size:1.35rem}
+.tag{display:inline-flex;gap:8px;align-items:baseline;border-left:3px solid var(--c);background:var(--soft);padding:10px 12px;border-radius:0 6px 6px 0;font-size:.92rem;max-width:65ch}
+.tag b{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--c);white-space:nowrap}
+.choices{display:flex;flex-wrap:wrap;gap:10px}
+.btn{font:inherit;font-size:.92rem;font-weight:500;cursor:pointer;padding:9px 14px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:left}
+.btn:hover{border-color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--exe);outline-offset:2px}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.end-law{--c:var(--good)} .end-dead{--c:var(--bad)}
+
+/* quiz */
+.quiz{display:grid;gap:16px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;display:grid;gap:12px}
+.q .opts{display:grid;gap:8px}
+.q .btn{width:100%;box-sizing:border-box}
+.q .btn.right{border-color:var(--good);color:var(--good);font-weight:600}
+.q .btn.wrong{border-color:var(--bad);color:var(--bad)}
+.q .why{font-size:.92rem;color:var(--muted)}
+.score{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+
+footer{font-size:.85rem;color:var(--muted);display:grid;gap:8px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">U.S. Constitution · Articles I, II, III</div>
+  <h1>Three Branches, One Constitution</h1>
+  <p class="lede">The framers split federal power three ways, then gave each branch tools to block the other two. No branch can act alone for long. That friction is the design: it forces bargaining, slows rash decisions, and makes it hard for any one faction to take control.</p>
+  <blockquote>“Ambition must be made to counteract ambition.” — James Madison, <span style="font-style:normal">Federalist No. 51</span></blockquote>
+</header>
+
+<section aria-labelledby="g">
+  <div class="eyebrow">Part 1</div>
+  <h2 id="g">Who does what</h2>
+  <p class="muted">Separation of powers: each branch gets its own job, its own people, and its own way of being chosen. Different terms and different electorates mean they rarely all shift at once.</p>
+  <div class="glance">
+    <article class="branch L">
+      <span class="cite">Article I</span>
+      <h3>Legislative · Congress</h3>
+      <dl>
+        <div><dt>Job</dt><dd>Writes the laws and controls the money.</dd></div>
+        <div><dt>Who</dt><dd>House: 435 members, 2-year terms, seats by population. Senate: 100 members, 6-year staggered terms, 2 per state.</dd></div>
+      </dl>
+      <ul>
+        <li>Pass bills, tax and spend</li>
+        <li>Declare war, regulate commerce</li>
+        <li>House impeaches; Senate tries</li>
+        <li>Senate confirms nominees, ratifies treaties</li>
+      </ul>
+    </article>
+    <article class="branch E">
+      <span class="cite">Article II</span>
+      <h3>Executive · President</h3>
+      <dl>
+        <div><dt>Job</dt><dd>Carries out and enforces the laws.</dd></div>
+        <div><dt>Who</dt><dd>President and Vice President, 4-year terms via the Electoral College; two-term limit (22nd Amendment). Runs the federal departments and agencies.</dd></div>
+      </dl>
+      <ul>
+        <li>Sign or veto bills</li>
+        <li>Commander in chief</li>
+        <li>Nominate judges and officials</li>
+        <li>Negotiate treaties, grant pardons</li>
+      </ul>
+    </article>
+    <article class="branch J">
+      <span class="cite">Article III</span>
+      <h3>Judicial · Courts</h3>
+      <dl>
+        <div><dt>Job</dt><dd>Interprets the laws and the Constitution in actual cases.</dd></div>
+        <div><dt>Who</dt><dd>Supreme Court (9 justices, a number set by Congress) plus lower federal courts. Judges serve “during good behaviour”, in practice for life.</dd></div>
+      </dl>
+      <ul>
+        <li>Decide cases and controversies</li>
+        <li>Judicial review: void unconstitutional laws and acts</li>
+        <li>Settle disputes between states</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="c">
+  <div class="eyebrow">Part 2</div>
+  <h2 id="c">The checks, branch by branch</h2>
+  <p class="muted">Each arrow is a power one branch holds over another. Tap an arrow, a branch, or use the selectors.</p>
+  <div class="diagram-card">
+    <div class="picker">
+      <span>From</span>
+      <div class="seg" id="fromSeg" role="group" aria-label="Checking branch"></div>
+      <span>on</span>
+      <div class="seg" id="toSeg" role="group" aria-label="Checked branch"></div>
+    </div>
+    <div class="diagram-grid">
+      <svg class="tri" id="tri" viewBox="0 0 400 360" role="img" aria-label="Triangle of the three branches with arrows showing checks between them"></svg>
+      <div class="panel" id="panel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s">
+  <div class="eyebrow">Part 3</div>
+  <h2 id="s">Walk a bill through the gauntlet</h2>
+  <p class="muted">Pick what happens at each step and watch which check kicks in. Every path that ends in a law needed at least two branches to agree.</p>
+  <div class="sim" id="sim"></div>
+</section>
+
+<section aria-labelledby="q">
+  <div class="eyebrow">Part 4</div>
+  <h2 id="q">Check yourself</h2>
+  <div class="score" id="score">0 of 6 answered</div>
+  <div class="quiz" id="quiz"></div>
+</section>
+
+<footer>
+  <p>Beyond the three branches, two more checks sit underneath everything: <b>voters</b>, who replace the House every two years, a third of the Senate every two years, and the President every four; and <b>federalism</b>, which keeps many powers with the states. Constitutional amendments need two-thirds of both chambers and three-quarters of the states, so the people and states hold the final word even over the Supreme Court.</p>
+</footer>
+</div>
+
+<script>
+const B = {
+  L:{name:"Legislative",short:"Congress",cls:"--leg"},
+  E:{name:"Executive",short:"President",cls:"--exe"},
+  J:{name:"Judicial",short:"Courts",cls:"--jud"}
+};
+const CHECKS = {
+  "L>E":[
+    ["Override a veto","Two-thirds of both House and Senate can pass a bill the President rejected.","Art. I §7","The War Powers Resolution of 1973 became law over Nixon's veto."],
+    ["Impeach and remove","House impeaches by simple majority; Senate convicts with two-thirds.","Art. I §2–3","Andrew Johnson (1868) was acquitted by a single vote. Nixon resigned in 1974 before a House vote."],
+    ["Power of the purse","No money leaves the Treasury without an appropriation from Congress.","Art. I §9","Government shutdowns happen when Congress and the President can't agree on funding."],
+    ["Confirm appointments","The Senate must approve cabinet secretaries, ambassadors and other top officials.","Art. II §2",""],
+    ["Ratify treaties","Treaties need two-thirds of the Senate.","Art. II §2","The Senate rejected the Treaty of Versailles in 1919–20."],
+    ["Declare war, investigate","Only Congress declares war; committees can subpoena and hold oversight hearings.","Art. I §8",""]
+  ],
+  "L>J":[
+    ["Confirm judges","Every federal judge, including Supreme Court justices, needs Senate approval.","Art. II §2","The Senate rejected Robert Bork's Supreme Court nomination in 1987."],
+    ["Shape the courts","Congress creates the lower courts, sets the Supreme Court's size and much of its jurisdiction.","Art. III §1","Nine justices since the Judiciary Act of 1869. FDR's 1937 plan to add justices failed in Congress."],
+    ["Impeach judges","Judges can be impeached and removed like executive officials.","Art. III §1","Justice Samuel Chase was impeached in 1804 and acquitted."],
+    ["Overrule by amendment or new law","Congress can rewrite a statute the Court interpreted, or propose an amendment to override a constitutional ruling.","Art. V","The 14th Amendment overturned Dred Scott; the 26th followed Oregon v. Mitchell."]
+  ],
+  "E>L":[
+    ["Veto","The President can reject a bill and send it back. A pocket veto kills it outright if Congress adjourns within 10 days.","Art. I §7",""],
+    ["Agenda and special sessions","The State of the Union lets the President recommend laws; the President can call Congress into session.","Art. II §3",""],
+    ["Vice President breaks ties","The VP presides over the Senate and casts the deciding vote in a tie.","Art. I §3",""]
+  ],
+  "E>J":[
+    ["Nominate judges","Every federal judge starts as a presidential nominee.","Art. II §2",""],
+    ["Pardons","The President can pardon federal crimes, undoing the effect of a conviction (except in impeachment).","Art. II §2","Gerald Ford pardoned Richard Nixon in 1974."],
+    ["Enforcement","Courts have no army or budget of their own; their rulings rely on the executive to carry them out.","Art. II §3","Eisenhower sent federal troops to Little Rock in 1957 to enforce school desegregation."]
+  ],
+  "J>L":[
+    ["Judicial review","Courts can strike down laws that violate the Constitution.","Marbury v. Madison, 1803","Not written in the text; the Court claimed the power in Marbury and it has held ever since."],
+    ["Interpret statutes","When a law is ambiguous, the courts' reading decides how it applies.","Art. III §2",""]
+  ],
+  "J>E":[
+    ["Rule executive acts unconstitutional","Courts can block orders, regulations and actions that exceed the President's authority.","Art. III §2","Youngstown v. Sawyer (1952) stopped Truman's seizure of the steel mills."],
+    ["No one above the law","Courts can compel the President and officials to comply with legal process.","Art. III §2","United States v. Nixon (1974) forced release of the Watergate tapes."],
+    ["Chief Justice presides","The Chief Justice runs the Senate trial when a President is impeached.","Art. I §3",""]
+  ]
+};
+const POS = {L:[200,52],E:[62,290],J:[338,290]};
+let from="L", to="E";
+const cssVar = n => `var(${B[n].cls})`;
+
+const svg = document.getElementById("tri");
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+
+// markers per branch color
+const defs = el("defs",{},svg);
+for(const k of "LEJ"){
+  const m=el("marker",{id:"m"+k,viewBox:"0 0 10 10",refX:"8",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+  el("path",{d:"M0,0 L10,5 L0,10 z",style:`fill:${cssVar(k)}`},m);
+}
+const R=46;
+function curve(a,b){
+  const [x1,y1]=POS[a],[x2,y2]=POS[b];
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;
+  const nx=-uy,ny=ux, off=14;
+  const sx=x1+ux*R+nx*off, sy=y1+uy*R+ny*off;
+  const ex=x2-ux*(R+4)+nx*off, ey=y2-uy*(R+4)+ny*off;
+  const mx=(sx+ex)/2+nx*22, my=(sy+ey)/2+ny*22;
+  return `M${sx},${sy} Q${mx},${my} ${ex},${ey}`;
+}
+const arrows={};
+for(const key of Object.keys(CHECKS)){
+  const [a,b]=key.split(">");
+  const g=el("g",{class:"arrow",tabindex:"0",role:"button","aria-label":`${B[a].name} checks on ${B[b].name}`},svg);
+  const d=curve(a,b);
+  el("path",{d,class:"hit"},g);
+  el("path",{d,class:"line",style:`stroke:${cssVar(a)}`,"marker-end":`url(#m${a})`},g);
+  const act=()=>{from=a;to=b;render()};
+  g.addEventListener("click",act);
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+  arrows[key]=g;
+}
+const nodes={};
+for(const k of "LEJ"){
+  const [x,y]=POS[k];
+  const g=el("g",{class:"node",tabindex:"0",role:"button","aria-label":`Show checks held by the ${B[k].name} branch`},svg);
+  el("circle",{cx:x,cy:y,r:R,style:`stroke:${cssVar(k)}`},g);
+  const t=el("text",{x,y:y-2},g); t.textContent=B[k].short;
+  const s=el("text",{x,y:y+14,class:"sub"},g); s.textContent=B[k].name.toUpperCase().slice(0,11);
+  const act=()=>{from=k; if(to===k) to = k==="L"?"E":"L"; render()};
+  g.addEventListener("click",act);
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();act()}});
+  nodes[k]=g;
+}
+
+function seg(id,get,set){
+  const box=document.getElementById(id); box.innerHTML="";
+  for(const k of "LEJ"){
+    const b=document.createElement("button");
+    b.textContent=B[k].short; b.style.setProperty("--c",cssVar(k));
+    b.setAttribute("aria-pressed",get()===k);
+    b.addEventListener("click",()=>{set(k);render()});
+    box.appendChild(b);
+  }
+}
+function render(){
+  if(from===to) to = "LEJ".replace(from,"")[0];
+  seg("fromSeg",()=>from,k=>{from=k; if(to===k) to="LEJ".replace(k,"")[0]});
+  seg("toSeg",()=>to,k=>{ if(k===from){to=from; from="LEJ".replace(k,"")[0]} else to=k});
+  for(const k in arrows) arrows[k].classList.toggle("on",k===from+">"+to);
+  for(const k in nodes) nodes[k].classList.toggle("on",k===from);
+  const list=CHECKS[from+">"+to];
+  const p=document.getElementById("panel");
+  p.style.setProperty("--cf",cssVar(from)); p.style.setProperty("--ct",cssVar(to));
+  p.innerHTML=`<div class="title"><span class="f">${B[from].name}</span> → <span class="t">${B[to].name}</span></div>
+  <ul class="checks">${list.map(([h,d,c,ex])=>`<li><div><b>${h}</b> <span class="cite">· ${c}</span></div><div>${d}</div>${ex?`<div class="ex">${ex}</div>`:""}</li>`).join("")}</ul>
+  <div class="hint">${list.length} check${list.length>1?"s":""} · ${Object.values(CHECKS).flat().length} in total across all six directions</div>`;
+}
+render();
+
+// --- Simulator ---
+const S = {
+  start:{where:"House of Representatives",c:"L",h:"A representative introduces the Clean Rivers Act.",
+    body:"It goes to committee, gets amended, and reaches the floor. It needs a simple majority: 218 of 435.",
+    opts:[["House passes it","senate"],["House votes it down","dead_house"]]},
+  dead_house:{end:"dead",where:"Bill dies",c:"L",h:"The bill dies in the House.",
+    tag:["Inside Congress","Bicameralism is a check within a branch: both chambers must agree, and the House answers to voters every two years."]},
+  senate:{where:"Senate",c:"L",h:"The bill moves to the Senate.",
+    body:"It needs a majority to pass, but under Senate rules (not the Constitution) most bills need 60 votes to end debate and avoid a filibuster.",
+    opts:[["Senate passes the identical text","president"],["Senate passes a different version","conf"],["Senate rejects it","dead_senate"]]},
+  dead_senate:{end:"dead",where:"Bill dies",c:"L",h:"The Senate kills it.",
+    tag:["Inside Congress","Senators represent whole states on 6-year terms, so they often weigh bills differently than the House."]},
+  conf:{where:"Reconciling versions",c:"L",h:"House and Senate disagree on the text.",
+    body:"A conference committee or back-and-forth amendments must produce one identical bill that both chambers pass again.",
+    opts:[["Both chambers pass the final text","president"],["Talks collapse","dead_senate"]]},
+  president:{where:"White House",c:"E",h:"The bill lands on the President's desk.",
+    body:"The President has 10 days (Sundays excluded) to act.",
+    opts:[["Sign it","law"],["Veto it","veto"],["Do nothing, Congress still in session","law_auto"],["Do nothing, Congress adjourns","pocket"]]},
+  law_auto:{where:"Law without signature",c:"E",h:"After 10 days it becomes law without a signature.",
+    tag:["Rule","Silence isn't a veto while Congress is in session. The President has to act to block it."],
+    opts:[["Continue: someone challenges it in court","court"]]},
+  pocket:{end:"dead",where:"Pocket veto",c:"E",h:"Pocket veto: the bill dies.",
+    tag:["Executive → Legislative","Because Congress adjourned, it can't receive a returned bill, so there's nothing to override. Congress has to start over."]},
+  veto:{where:"Veto",c:"E",h:"The President vetoes it and sends it back with objections.",
+    tag:["Executive → Legislative","The veto forces Congress to build a supermajority instead of a bare majority."],
+    opts:[["Two-thirds of both chambers override","law_override"],["Override vote falls short","dead_veto"]]},
+  dead_veto:{end:"dead",where:"Veto sustained",c:"E",h:"The veto stands. The bill is dead.",
+    tag:["Executive → Legislative","Most vetoes in U.S. history were never overridden. Usually Congress negotiates a new version the President will sign."]},
+  law_override:{where:"Override",c:"L",h:"Congress overrides the veto. It's law.",
+    tag:["Legislative → Executive","A broad enough coalition can beat the President, the same way the War Powers Resolution did in 1973."],
+    opts:[["Continue: someone challenges it in court","court"]]},
+  law:{where:"Signed",c:"E",h:"The President signs. It's law.",
+    tag:["Agreement","Two branches agreed. The executive now has to enforce it."],
+    opts:[["Continue: someone challenges it in court","court"]]},
+  court:{where:"Federal courts",c:"J",h:"A company sues, arguing the law exceeds Congress's power.",
+    body:"Courts don't review laws on their own initiative; they need a real case. It works its way up, possibly to the Supreme Court.",
+    opts:[["The Court upholds the law","upheld"],["The Court strikes it down","struck"]]},
+  upheld:{end:"law",where:"Upheld",c:"J",h:"The law survives judicial review and stays in force.",
+    tag:["All three agreed","Congress wrote it, the President accepted it (or was overridden), and the courts found it constitutional."]},
+  struck:{where:"Struck down",c:"J",h:"The Court rules the law unconstitutional. It can't be enforced.",
+    tag:["Judicial → Legislative","Judicial review, established in Marbury v. Madison (1803)."],
+    opts:[["Congress rewrites a narrower law","start"],["Congress proposes a constitutional amendment","amend"]]},
+  amend:{end:"law",where:"Article V",c:"L",h:"Amendment proposed: two-thirds of both chambers, then three-quarters of the states (38) must ratify.",
+    tag:["The last word","Even the Supreme Court can be overruled, but only with a very broad national consensus. It has happened: the 11th, 14th and 26th Amendments each answered a Court decision."]}
+};
+let trail=[];
+function go(id,label){
+  if(id==="start") trail=[];
+  if(label) trail.push(label);
+  const s=S[id], box=document.getElementById("sim");
+  const cls = s.end ? (s.end==="law"?"end-law":"end-dead") : "";
+  box.innerHTML=`
+   ${trail.length?`<div class="trail">${trail.map(t=>`<span>${t}</span>`).join("")}</div>`:""}
+   <div class="stage" style="--c:${cssVar(s.c)}">
+     <div class="where ${cls}">${s.where}</div>
+     <h3>${s.h}</h3>
+     ${s.body?`<p>${s.body}</p>`:""}
+     ${s.tag?`<div class="tag" style="--c:${cssVar(s.c)}"><b>${s.tag[0]}</b><span>${s.tag[1]}</span></div>`:""}
+   </div>
+   <div class="choices">
+     ${(s.opts||[]).map(([t,n],i)=>`<button class="btn" data-n="${n}" data-i="${i}">${t}</button>`).join("")}
+     ${s.end || id!=="start"?`<button class="btn primary" data-n="start">${s.end?"Start a new bill":"Restart"}</button>`:""}
+   </div>`;
+  box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    const n=b.dataset.n; go(n, n==="start"?null:b.textContent);
+  }));
+}
+go("start");
+
+// --- Quiz ---
+const QUIZ=[
+  ["The President vetoes a bill. What does Congress need to make it law anyway?",["A simple majority in both chambers","Two-thirds of both chambers","Two-thirds of the Senate only","Approval from the Supreme Court"],1,"Art. I §7 requires two-thirds of the House and two-thirds of the Senate."],
+  ["Who has the power to impeach a federal official?",["The Senate","The Supreme Court","The House of Representatives","The Vice President"],2,"The House impeaches (like an indictment). The Senate then holds the trial and needs two-thirds to convict."],
+  ["Where does the Supreme Court's power to strike down laws come from?",["Spelled out in Article III","The Bill of Rights","Marbury v. Madison (1803)","An act of Congress in 1869"],2,"Judicial review isn't in the text. Chief Justice Marshall asserted it in Marbury, and it has been accepted since."],
+  ["Which check does the executive hold over the judiciary?",["Overruling Supreme Court decisions","Nominating federal judges","Setting the number of justices","Removing judges at will"],1,"The President nominates; the Senate confirms. Congress, not the President, sets the Court's size."],
+  ["Why don't all three branches usually change hands at the same time?",["Elections happen every year","Different terms: 2, 4 and 6 years, plus life tenure for judges","The Constitution forbids it","States appoint the President"],1,"Staggered terms are a quiet check: a single election can't remake the whole government."],
+  ["The Supreme Court rules a law unconstitutional. What is the ultimate way to override it?",["A presidential executive order","A two-thirds vote of the Senate","A constitutional amendment","A national referendum"],2,"An amendment changes the Constitution itself. The 14th Amendment, for example, overturned Dred Scott."]
+];
+let answered=0, right=0;
+const qz=document.getElementById("quiz");
+QUIZ.forEach(([q,opts,ans,why],qi)=>{
+  const d=document.createElement("div"); d.className="q";
+  d.innerHTML=`<h3>${qi+1}. ${q}</h3><div class="opts">${opts.map((o,i)=>`<button class="btn" data-i="${i}">${o}</button>`).join("")}</div><p class="why" hidden></p>`;
+  const btns=d.querySelectorAll("button"), w=d.querySelector(".why");
+  btns.forEach(b=>b.addEventListener("click",()=>{
+    if(d.dataset.done) return; d.dataset.done=1;
+    const i=+b.dataset.i; answered++; if(i===ans) right++;
+    btns[ans].classList.add("right"); if(i!==ans) b.classList.add("wrong");
+    w.textContent=(i===ans?"Correct. ":"Not quite. ")+why; w.hidden=false;
+    document.getElementById("score").textContent=`${right} of ${answered} correct · ${QUIZ.length-answered} left`;
+  }));
+  qz.appendChild(d);
+});
+document.getElementById("score").textContent=`0 of ${QUIZ.length} answered`;
+</script>
+
+</body></html>

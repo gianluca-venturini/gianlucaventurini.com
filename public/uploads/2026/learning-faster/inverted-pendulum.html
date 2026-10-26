@@ -1,0 +1,1187 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Force Cart-Pole PID Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: lab bench, force edition. Live stage + gain panel on top, signal-flow diagram, four scope traces, then the tuning notes. */
+:root {
+  --bg: #edf0f3;
+  --surface: #ffffff;
+  --sunk: #f5f7f9;
+  --ink: #16202a;
+  --muted: #5b6875;
+  --line: #d3dae1;
+  --grid: #e7ecf0;
+  --theta: #1b64d6;
+  --vel: #b0306a;
+  --pos: #4c7a1c;
+  --p: #cf5410;
+  --i: #7448dc;
+  --d: #0b8585;
+  --warn: #c0392b;
+  --ok: #2b8a57;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1317; --surface: #151c22; --sunk: #11171c; --ink: #e3e9ee; --muted: #93a1ad;
+    --line: #29343d; --grid: #1d262e; --theta: #63a1ff; --vel: #f06aa0; --pos: #9ccf60;
+    --p: #ff8b4d; --i: #ab8dff; --d: #3ec8c8; --warn: #ff6b5e; --ok: #4cc38a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1317; --surface: #151c22; --sunk: #11171c; --ink: #e3e9ee; --muted: #93a1ad;
+  --line: #29343d; --grid: #1d262e; --theta: #63a1ff; --vel: #f06aa0; --pos: #9ccf60;
+  --p: #ff8b4d; --i: #ab8dff; --d: #3ec8c8; --warn: #ff6b5e; --ok: #4cc38a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 4vw, 40px); line-height: 1.05; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 22px; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--font-display); font-weight: 600; font-size: 17px; margin: 0; }
+.lede { margin: 0; color: var(--muted); max-width: 68ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hint { font-size: 13px; color: var(--muted); }
+.top { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+.left-col { display: grid; gap: 20px; min-width: 0; }
+.top > aside { position: sticky; top: max(12px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 24px); overflow-y: auto; }
+@media (max-width: 900px) { .top > aside { position: static; max-height: none; overflow: visible; } }
+@media (max-width: 900px) { .top { grid-template-columns: minmax(0, 1fr); } }
+
+/* Stage */
+.stage-canvas { position: relative; width: 100%; aspect-ratio: 16 / 7.2; max-width: 100%; background: var(--sunk); border-radius: 8px; overflow: hidden; border: 1px solid var(--grid); cursor: pointer; touch-action: manipulation; }
+@media (max-width: 560px) { .stage-canvas { aspect-ratio: 4 / 3; } }
+.stage-canvas canvas { width: 100%; height: 100%; display: block; }
+.status { position: absolute; top: 10px; left: 10px; font-family: var(--font-mono); font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); display: flex; align-items: center; gap: 6px; }
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.status.fallen::before { background: var(--warn); }
+.status.paused::before { background: var(--muted); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, select { font: 500 13px var(--font-body); color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; }
+button:hover, select:hover { border-color: var(--muted); }
+button.primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--theta); outline-offset: 2px; }
+.toolbar .spacer { flex: 1; }
+label.check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--grid); border: 1px solid var(--grid); border-radius: 8px; overflow: hidden; }
+@media (max-width: 560px) { .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.metric { background: var(--surface); padding: 8px 10px; display: grid; gap: 1px; }
+.metric span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.metric b { font: 500 17px var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Gains */
+.gain { display: grid; grid-template-columns: 30px minmax(0, 1fr) 78px; gap: 10px; align-items: center; }
+.gain .tag { font: 600 15px var(--font-mono); width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center; color: var(--surface); }
+.gain .tag.p { background: var(--p); } .gain .tag.i { background: var(--i); } .gain .tag.d { background: var(--d); }
+.gain input[type=number] { width: 100%; font: 500 14px var(--font-mono); font-variant-numeric: tabular-nums; padding: 6px 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--sunk); color: var(--ink); }
+.gain .meta { grid-column: 2 / 4; font-size: 12px; color: var(--muted); margin-top: -6px; }
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.gain.p input[type=range] { accent-color: var(--p); } .gain.i input[type=range] { accent-color: var(--i); } .gain.d input[type=range] { accent-color: var(--d); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button { font-size: 12px; padding: 5px 10px; border-radius: 99px; }
+.analysis { background: var(--sunk); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; font-size: 13px; }
+.analysis .row { display: flex; justify-content: space-between; gap: 8px; }
+.analysis .row b { font: 500 13px var(--font-mono); font-variant-numeric: tabular-nums; }
+.analysis .eq { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-x: auto; white-space: nowrap; }
+.verdict { font-weight: 600; }
+.verdict.good { color: var(--ok); } .verdict.bad { color: var(--warn); }
+details { border-top: 1px solid var(--grid); padding-top: 10px; }
+summary { cursor: pointer; font: 600 14px var(--font-display); letter-spacing: .02em; }
+.plant { display: grid; gap: 10px; margin-top: 10px; }
+.plant .row { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 4px 10px; align-items: center; font-size: 13px; }
+.plant .row label { color: var(--muted); }
+.plant .row output { font: 500 13px var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.plant .row input[type=range] { grid-column: 1 / 3; }
+.reset-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+.plant .sub { padding-left: 12px; border-left: 2px solid var(--grid); display: grid; gap: 10px; }
+
+/* Diagram */
+.diagram-scroll { overflow-x: auto; }
+.diagram-scroll svg { display: block; min-width: 780px; width: 100%; height: auto; }
+svg .blk { fill: var(--sunk); stroke: var(--line); stroke-width: 1.2; }
+svg .blk.hot { stroke: var(--warn); stroke-width: 2; }
+svg .wire { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+svg .wire.dash { stroke-dasharray: 4 4; }
+svg .off { opacity: .35; }
+svg text { font-family: var(--font-body); fill: var(--ink); }
+svg .lbl { font: 600 14px var(--font-display); }
+svg .sm { font-size: 11px; fill: var(--muted); }
+svg .val { font: 500 12px var(--font-mono); }
+svg .sum { fill: var(--surface); stroke: var(--muted); stroke-width: 1.4; }
+svg .arrow { fill: var(--muted); }
+
+/* Plots */
+.plots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 760px) { .plots { grid-template-columns: minmax(0, 1fr); } }
+.plot { display: grid; gap: 6px; min-width: 0; }
+.plot-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+.legend i.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; }
+.plot canvas { width: 100%; height: 170px; display: block; background: var(--sunk); border-radius: 7px; border: 1px solid var(--grid); }
+
+/* Guide */
+.guide { display: grid; gap: 18px; }
+.guide p, .guide li { max-width: 72ch; }
+.guide p { margin: 0; }
+.guide ol, .guide ul { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.role { background: var(--sunk); border-radius: 8px; padding: 12px; display: grid; gap: 6px; font-size: 14px; }
+.role h3 { display: flex; align-items: center; gap: 8px; }
+.role h3 .tag { font: 600 13px var(--font-mono); width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; color: var(--surface); }
+.math { font-family: var(--font-mono); font-size: 13.5px; background: var(--sunk); border-radius: 8px; padding: 12px 14px; overflow-x: auto; white-space: pre; line-height: 1.7; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { font: 600 12px var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+code { font-family: var(--font-mono); font-size: .92em; }
+kbd { font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--sunk); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.metrics.five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 860px) { .metrics.five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.metric small { font-size: 11px; color: var(--muted); }
+.metric b.good { color: var(--ok); } .metric b.bad { color: var(--warn); }
+.fnote { font-size: 13px; color: var(--warn); border: 1px solid var(--warn); border-radius: 8px; padding: 8px 12px; }
+.freq { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .freq { grid-template-columns: minmax(0, 1fr); } }
+.plot canvas.bode { height: 170px; }
+.plot canvas.sq { height: auto; aspect-ratio: 1 / 1; max-width: 100%; }
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Control lab · inverted pendulum · force-commanded cart</div>
+    <h1>Force Cart-Pole PID Lab</h1>
+    <p class="lede">The same balancing problem, but now the PID output is a force in newtons pushed into a cart with mass. The gains take back their textbook roles. Change them while it runs, push the pole, and compare with the velocity-commanded version.</p>
+  </header>
+
+  <section class="top">
+    <div class="left-col">
+    <div class="panel">
+      <div class="stage-canvas" id="stage" title="Click left or right of the pole to push it">
+        <canvas id="sim"></canvas>
+        <div class="status" id="status">Balancing</div>
+      </div>
+      <div class="toolbar">
+        <button id="btnPause" class="primary">Pause</button>
+        <button id="btnReset">Reset</button>
+        <button id="btnNudgeL" aria-label="Push pole left">← Push</button>
+        <button id="btnNudgeR" aria-label="Push pole right">Push →</button>
+        <span class="spacer"></span>
+        <label class="check"><input type="checkbox" id="autoRestart" checked> Auto-restart</label>
+        <select id="speed" aria-label="Simulation speed">
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+        </select>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span>Upright for</span><b id="mTime">0.0 s</b></div>
+        <div class="metric"><span>RMS θ · last 5 s</span><b id="mRms">0.00°</b></div>
+        <div class="metric"><span>Peak |F| · last 5 s</span><b id="mPeak">0.0 N</b></div>
+        <div class="metric"><span>Cart x · v</span><b id="mX">0.00 m</b></div>
+      </div>
+      <div class="hint">Keys: <kbd>←</kbd> <kbd>→</kbd> push, <kbd>Space</kbd> pause, <kbd>R</kbd> reset. Click the stage left or right of the pole to push it that way.</div>
+    </div>
+
+
+    <section class="panel" id="freqPanel">
+      <div class="panel-head">
+        <h2>Bode and Nyquist</h2>
+        <span class="hint">Loop broken at the controller output. Includes actuator lag, the pure delay, the 20 ms D filter and the half-sample delay of the sampled controller. Updates as you change anything.</span>
+      </div>
+      <div class="metrics five">
+        <div class="metric"><span>Closed loop (Nyquist)</span><b id="fStable">–</b><small id="fStableSub"></small></div>
+        <div class="metric"><span>CCW encirclements of −1</span><b id="fEnc">–</b><small>one per unstable open-loop pole</small></div>
+        <div class="metric"><span>Phase margin</span><b id="fPM">–</b><small id="fPMSub"></small></div>
+        <div class="metric"><span>Gain margin ↑ · ↓</span><b id="fGM">–</b><small>raise · lower all gains</small></div>
+        <div class="metric"><span>Peak sensitivity Ms</span><b id="fMs">–</b><small>aim below 6 dB</small></div>
+      </div>
+      <div class="fnote" id="fNote" hidden>The margins above describe a loop that is already unstable, so ignore them until the Nyquist count is right. A positive phase margin alone does not prove stability when the open loop has an unstable pole.</div>
+      <div class="freq">
+        <div class="plot">
+          <div class="plot-head"><h3>Bode magnitude |L(jω)| (dB)</h3>
+            <div class="legend"><span style="color:var(--theta)"><i class="dash"></i>ωc gain crossover</span><span style="color:var(--muted)"><i class="dash"></i>p unstable pole</span></div></div>
+          <canvas id="bMag" class="bode"></canvas>
+          <div class="plot-head"><h3>Bode phase ∠L(jω)</h3>
+            <div class="legend"><span style="color:var(--warn)"><i class="dash"></i>−180° lines</span><span>x axis: ω in rad/s</span></div></div>
+          <canvas id="bPh" class="bode"></canvas>
+        </div>
+        <div class="plot">
+          <div class="plot-head"><h3>Nyquist L(jω)</h3>
+            <label class="check"><input type="checkbox" id="nyqLog" checked> Log radius</label></div>
+          <canvas id="nyq" class="sq"></canvas>
+          <div class="legend"><span><i style="background:var(--theta)"></i>ω &gt; 0</span><span style="color:var(--muted)"><i class="dash"></i>ω &lt; 0 (mirror)</span><span style="color:var(--warn)">× critical point −1</span></div>
+          <div class="hint">Log radius squeezes large gains so the area around −1 stays readable. It keeps the unit circle and the encirclement count unchanged.</div>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <aside class="panel" aria-label="Controller gains">
+      <div class="panel-head"><h2>Gains</h2><span class="hint">F = Kp·e + Ki·∫e + Kd·ė</span></div>
+      <div class="reset-row"><button type="button" id="btnResetGains">Reset gains to defaults</button><span class="hint" id="resetGainsMsg" aria-live="polite"></span></div>
+
+      <div class="gain p">
+        <div class="tag p">P</div>
+        <input type="range" id="kpR" min="0" max="150" step="0.5" aria-label="Kp slider">
+        <input type="number" id="kpN" min="0" max="1000" step="0.5" aria-label="Kp">
+        <div class="meta">Kp · N per rad</div>
+      </div>
+      <div class="gain i">
+        <div class="tag i">I</div>
+        <input type="range" id="kiR" min="0" max="300" step="1" aria-label="Ki slider">
+        <input type="number" id="kiN" min="0" max="2000" step="1" aria-label="Ki">
+        <div class="meta">Ki · N per rad·s</div>
+      </div>
+      <div class="gain d">
+        <div class="tag d">D</div>
+        <input type="range" id="kdR" min="0" max="30" step="0.1" aria-label="Kd slider">
+        <input type="number" id="kdN" min="0" max="200" step="0.1" aria-label="Kd">
+        <div class="meta">Kd · N per rad/s</div>
+      </div>
+
+      <div>
+        <div class="hint" style="margin-bottom:6px">Presets</div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="analysis" aria-live="polite">
+        <div class="row"><span>Linearized loop</span><span class="verdict" id="aVerdict">–</span></div>
+        <div class="eq" id="aEq">–</div>
+        <div class="row"><span>Poles</span><b id="aPoles">–</b></div>
+        <div class="row"><span>Damping ratio ζ · ωₙ</span><b id="aZeta">–</b></div>
+        <div class="row"><span>Largest stable Ki</span><b id="aKiMax">–</b></div>
+        <div class="hint" id="aNote">Ignores motor lag, saturation, sampling and noise.</div>
+      </div>
+
+      <details id="plantDetails">
+        <summary>Plant, sensor and extras</summary>
+        <div class="plant">
+          <div class="row"><label for="noise">Angle sensor noise (σ)</label><output id="noiseO"></output><input type="range" id="noise" min="0" max="2" step="0.05"></div>
+          <div class="row"><label for="bias">Angle sensor offset</label><output id="biasO"></output><input type="range" id="bias" min="-3" max="3" step="0.1"></div>
+          <div class="row"><label for="tau">Motor force lag τ</label><output id="tauO"></output><input type="range" id="tau" min="0.005" max="0.2" step="0.005"></div>
+          <div class="row"><label for="ts">Controller sample period Ts</label><output id="tsO"></output><input type="range" id="ts" min="0.001" max="0.05" step="0.001"></div>
+          <div class="row"><label for="delay">Pure delay (sensing + compute + bus)</label><output id="delayO"></output><input type="range" id="delay" min="0" max="0.1" step="0.001"></div>
+          <div class="row"><label for="fmax">Force limit ±</label><output id="fmaxO"></output><input type="range" id="fmax" min="2" max="60" step="1"></div>
+          <div class="row"><label for="init">Start angle on reset</label><output id="initO"></output><input type="range" id="init" min="0" max="30" step="1"></div>
+          <div class="row"><label for="push">Push strength (Δω)</label><output id="pushO"></output><input type="range" id="push" min="0.2" max="3" step="0.1"></div>
+          <label class="check"><input type="checkbox" id="walls"> Track ends at ±3 m (camera stops following)</label>
+          <label class="check"><input type="checkbox" id="center"> Centering loop: lean the setpoint to bring the cart home</label>
+          <div class="sub" id="centerSub">
+            <div class="row"><label for="kx">kx · rad per m</label><output id="kxO"></output><input type="range" id="kx" min="0" max="0.2" step="0.005"></div>
+            <div class="row"><label for="kv">kv · rad per m/s</label><output id="kvO"></output><input type="range" id="kv" min="0" max="0.4" step="0.01"></div>
+          </div>
+          <div class="reset-row"><button type="button" id="btnResetExtras">Reset extras to defaults</button><span class="hint" id="resetExtrasMsg" aria-live="polite"></span></div>
+        </div>
+      </details>
+    </aside>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Control loop, live</h2>
+      <span class="hint">Values update in real time. e = θ − θ_ref, so a pole leaning right (θ &gt; 0) pushes the cart right.</span>
+    </div>
+    <div class="diagram-scroll">
+      <svg viewBox="0 0 1000 300" role="img" aria-label="Block diagram of the force PID loop with live signal values">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrow" d="M0,0 L10,5 L0,10 z"></path></marker>
+        </defs>
+
+        <g id="gCenter">
+          <path class="wire dash" d="M710 95 V14 H75 V24" marker-end="url(#ah)"></path>
+          <text class="sm" x="430" y="10" text-anchor="middle">cart x, v</text>
+          <rect class="blk" x="15" y="26" width="120" height="48" rx="6"></rect>
+          <text class="lbl" x="75" y="46" text-anchor="middle">Centering</text>
+          <text class="sm" x="75" y="64" text-anchor="middle">−(kx·x + kv·v)</text>
+          <path class="wire dash" d="M75 74 V117" marker-end="url(#ah)"></path>
+        </g>
+
+        <text class="lbl" x="18" y="130">θ_ref</text>
+        <path class="wire" d="M62 125 H132" marker-end="url(#ah)"></path>
+        <text class="val" id="dRef" x="100" y="146" text-anchor="middle">0.00°</text>
+
+        <circle class="sum" cx="150" cy="125" r="16"></circle>
+        <text class="lbl" x="150" y="130" text-anchor="middle">Σ</text>
+        <text class="sm" x="124" y="117">−</text>
+        <text class="sm" x="157" y="158">+</text>
+
+        <path class="wire" d="M166 125 H206"></path>
+        <text class="val" id="dE" x="190" y="106" text-anchor="middle">e</text>
+        <path class="wire" d="M206 60 V190"></path>
+        <path class="wire" d="M206 60 H238" marker-end="url(#ah)"></path>
+        <path class="wire" d="M206 125 H238" marker-end="url(#ah)"></path>
+        <path class="wire" d="M206 190 H238" marker-end="url(#ah)"></path>
+
+        <rect class="blk" x="240" y="38" width="130" height="44" rx="6"></rect>
+        <text class="lbl" x="252" y="58" style="fill:var(--p)">P</text>
+        <text class="val" id="gP" x="268" y="58">Kp</text>
+        <text class="sm" x="252" y="74">Kp · e</text>
+
+        <rect class="blk" id="bI" x="240" y="103" width="130" height="44" rx="6"></rect>
+        <text class="lbl" x="252" y="123" style="fill:var(--i)">I</text>
+        <text class="val" id="gI" x="268" y="123">Ki</text>
+        <text class="sm" id="iNote" x="252" y="139">Ki · ∫e dt</text>
+
+        <rect class="blk" x="240" y="168" width="130" height="44" rx="6"></rect>
+        <text class="sm" id="dTs" x="305" y="232" text-anchor="middle">PID sampled every 10 ms</text>
+        <text class="lbl" x="252" y="188" style="fill:var(--d)">D</text>
+        <text class="val" id="gD" x="268" y="188">Kd</text>
+        <text class="sm" x="252" y="204">Kd · dθ/dt (filtered)</text>
+
+        <path class="wire" d="M370 60 H420 V109" marker-end="url(#ah)"></path>
+        <path class="wire" d="M370 125 H412" marker-end="url(#ah)"></path>
+        <path class="wire" d="M370 190 H420 V141" marker-end="url(#ah)"></path>
+        <text class="val" id="dP" x="376" y="52" style="fill:var(--p)">0.0</text>
+        <text class="val" id="dI" x="376" y="118" style="fill:var(--i)">0.0</text>
+        <text class="val" id="dD" x="376" y="207" style="fill:var(--d)">0.0</text>
+
+        <circle class="sum" cx="430" cy="125" r="16"></circle>
+        <text class="lbl" x="430" y="130" text-anchor="middle">Σ</text>
+        <path class="wire" d="M446 125 H478" marker-end="url(#ah)"></path>
+        <text class="val" id="dURaw" x="462" y="114" text-anchor="middle">0.0</text>
+
+        <rect class="blk" id="bSat" x="480" y="100" width="76" height="50" rx="6"></rect>
+        <path class="wire" d="M492 140 L504 140 L532 110 L544 110" style="stroke:var(--ink)"></path>
+        <text class="sm" id="dFmax" x="518" y="164" text-anchor="middle">±20 N</text>
+        <path class="wire" d="M556 125 H578" marker-end="url(#ah)"></path>
+        <text class="val" id="dU" x="567" y="92" text-anchor="middle">F_cmd</text>
+
+        <rect class="blk" x="580" y="100" width="80" height="50" rx="6"></rect>
+        <text class="lbl" x="620" y="121" text-anchor="middle">Motor</text>
+        <text class="sm" id="dTau" x="620" y="138" text-anchor="middle">τ</text>
+        <text class="sm" id="dDelay" x="620" y="164" text-anchor="middle">delay 0 ms</text>
+        <path class="wire" d="M660 125 H678" marker-end="url(#ah)"></path>
+        <text class="val" id="dF" x="669" y="182" text-anchor="middle" style="fill:var(--vel)">F</text>
+
+        <rect class="blk" x="680" y="95" width="100" height="60" rx="6"></rect>
+        <text class="lbl" x="730" y="117" text-anchor="middle">Cart</text>
+        <text class="sm" x="730" y="133" text-anchor="middle">M = 1 kg</text>
+        <text class="val" id="dV" x="730" y="148" text-anchor="middle" style="fill:var(--pos)">v</text>
+        <path class="wire" d="M780 118 H808" marker-end="url(#ah)"></path>
+        <path class="wire dash" d="M810 136 H782" marker-end="url(#ah)"></path>
+        <text class="val" id="dA" x="795" y="90" text-anchor="middle">a</text>
+        <text class="sm" x="795" y="168" text-anchor="middle">reaction</text>
+
+        <path class="wire" d="M870 40 V93" marker-end="url(#ah)" style="stroke:var(--warn)"></path>
+        <text class="sm" x="878" y="52">push</text>
+        <rect class="blk" x="810" y="95" width="120" height="60" rx="6"></rect>
+        <text class="lbl" x="870" y="117" text-anchor="middle">Pendulum</text>
+        <text class="sm" x="870" y="133" text-anchor="middle">m = 0.2 kg, L = 1 m</text>
+        <text class="val" id="dTh" x="870" y="148" text-anchor="middle" style="fill:var(--theta)">θ</text>
+        <path class="wire" d="M930 125 H990" marker-end="url(#ah)"></path>
+        <text class="lbl" x="965" y="114" style="fill:var(--theta)">θ</text>
+
+        <path class="wire" d="M955 125 V270 H150 V143" marker-end="url(#ah)"></path>
+        <circle cx="955" cy="125" r="3" class="arrow"></circle>
+        <circle class="sum" cx="560" cy="270" r="11"></circle>
+        <text class="sm" x="560" y="274" text-anchor="middle">+</text>
+        <path class="wire" d="M560 238 V257" marker-end="url(#ah)"></path>
+        <text class="sm" id="dNoise" x="560" y="232" text-anchor="middle">sensor noise + offset</text>
+        <text class="val" id="dMeas" x="350" y="262" text-anchor="middle" style="fill:var(--theta)">θ measured</text>
+        <text class="sm" x="760" y="262" text-anchor="middle">angle sensor</text>
+      </svg>
+    </div>
+  </section>
+
+
+  <section class="panel">
+    <div class="panel-head"><h2>Scope</h2><span class="hint">Last 10 seconds of simulated time</span></div>
+    <div class="plots">
+      <div class="plot">
+        <div class="plot-head"><h3>Angle θ (degrees)</h3>
+          <div class="legend"><span><i style="background:var(--theta)"></i>θ</span><span style="color:var(--muted)"><i class="dash"></i>θ_ref</span></div></div>
+        <canvas id="pAngle"></canvas>
+      </div>
+      <div class="plot">
+        <div class="plot-head"><h3>Force on the cart (N)</h3>
+          <div class="legend"><span><i style="background:var(--vel)"></i>F applied</span><span style="color:var(--ink)"><i class="dash"></i>F command</span></div></div>
+        <canvas id="pForce"></canvas>
+      </div>
+      <div class="plot">
+        <div class="plot-head"><h3>PID terms (N)</h3>
+          <div class="legend"><span><i style="background:var(--p)"></i>P</span><span><i style="background:var(--i)"></i>I</span><span><i style="background:var(--d)"></i>D</span></div></div>
+        <canvas id="pTerms"></canvas>
+      </div>
+      <div class="plot">
+        <div class="plot-head"><h3>Cart position (m) and velocity (m/s)</h3>
+          <div class="legend"><span><i style="background:var(--pos)"></i>x</span><span style="color:var(--pos)"><i class="dash"></i>v</span></div></div>
+        <canvas id="pPos"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel guide">
+    <h2>How to tune it</h2>
+
+    <p>A force goes straight into acceleration, so the pole feels the controller output directly. Gravity makes upright an unstable equilibrium, and the controller has to supply a restoring "spring" plus damping. Linearized around upright, with the cart mass M, pole mass m and length L:</p>
+
+    <div class="math">plant              M·L·θ̈ = (M + m)·g·θ − F            (small angles)
+PD controller      F = Kp·θ + Kd·θ̇
+
+closed loop        M·L·θ̈  +  Kd·θ̇  +  (Kp − (M+m)·g)·θ  =  0
+                   mass       damper    spring
+
+with Ki            M·L·s³ + Kd·s² + (Kp − (M+m)·g)·s + Ki = 0</div>
+
+    <div class="cols">
+      <div class="role"><h3><span class="tag" style="background:var(--p)">P</span>Kp is the spring</h3>
+        <p>It must beat gravity: Kp &gt; (M+m)·g = 11.8 N/rad here. Below that the pole falls no matter what else you do. Higher Kp gives a stiffer, faster response and bigger forces.</p></div>
+      <div class="role"><h3><span class="tag" style="background:var(--d)">D</span>Kd is the damper</h3>
+        <p>Without it, the pole rocks around upright and motor lag makes the rocking grow. Kd is what kills it. It also passes sensor noise straight into the force.</p></div>
+      <div class="role"><h3><span class="tag" style="background:var(--i)">I</span>Ki is mostly a liability</h3>
+        <p>It adds a third pole and eats phase. Stability needs Kd·(Kp − 11.8) &gt; M·L·Ki, shown live as "Largest stable Ki". It cannot fix the problems you would expect it to fix (see below).</p></div>
+    </div>
+
+    <h3>How this compares with the velocity version</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Gain</th><th>Commanding velocity</th><th>Commanding force</th></tr></thead>
+        <tbody>
+          <tr><td>Kp</td><td>Damper</td><td>Spring, must exceed (M+m)·g</td></tr>
+          <tr><td>Ki</td><td>Spring, must exceed g·L</td><td>Optional, limited by Routh</td></tr>
+          <tr><td>Kd</td><td>Extra mass, keep small</td><td>Damper, required</td></tr>
+          <tr><td>Units</td><td>m/s per rad</td><td>N per rad</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The velocity servo in the first lab was itself a controller that hid the cart's mass. That inner loop integrated your command once, which shifted every gain's job up a derivative. With raw force there is no hidden loop, so PD does the work.</p>
+
+    <h3>A tuning recipe</h3>
+    <ol>
+      <li>Set Ki = 0 and Kd = 0. Raise <b>Kp</b> until the pole stops falling over and starts rocking around upright. That happens just above 11.8; go to about 3× that, say 40.</li>
+      <li>Raise <b>Kd</b> until a push settles in about one overshoot. For a target ζ, use Kd ≈ 2·ζ·√(M·L·(Kp − 11.8)). With Kp = 40 and ζ = 0.7 that gives Kd ≈ 7.4.</li>
+      <li>Turn sensor noise up to 0.5° and watch the force trace. The jitter scales with Kd. If it bothers you, lower Kd or filter harder; a real motor heats up on that buzz.</li>
+      <li>Try <b>Ki</b> last, and watch "Largest stable Ki". Push it near the limit and the pole starts a slow, growing wobble. The "Too much I" preset sits past it.</li>
+      <li>Stress it. Push harder, raise the motor lag τ, lower the force limit. If F sits flat at the limit in the scope, the gains are asking for more than the motor has.</li>
+    </ol>
+
+    <h3>Reading the scope</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>What you see</th><th>Likely cause</th><th>Try</th></tr></thead>
+        <tbody>
+          <tr><td>Pole falls in the first second, cart chases it</td><td>Kp ≤ 11.8: spring weaker than gravity</td><td>Raise Kp</td></tr>
+          <tr><td>Steady rocking that grows over a few seconds</td><td>Too little Kd, or motor lag eating phase</td><td>Raise Kd, lower τ</td></tr>
+          <tr><td>Slow wobble that builds even with good Kp and Kd</td><td>Ki past the Routh limit</td><td>Lower Ki</td></tr>
+          <tr><td>Pole creeps back slowly, cart moves a lot</td><td>Overdamped, Kd too large for Kp</td><td>Lower Kd or raise Kp</td></tr>
+          <tr><td>Fuzzy force trace</td><td>D term amplifying sensor noise</td><td>Lower Kd</td></tr>
+          <tr><td>Force flat at the limit after a push</td><td>Motor saturation</td><td>Softer gains or a stronger motor</td></tr>
+          <tr><td>Cart cruises or accelerates away while the pole looks fine</td><td>No position feedback, or a sensor offset</td><td>Turn on the centering loop</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Why the I term can't save you from an offset</h3>
+    <p>Set the sensor offset to 1°. The controller now holds the <em>measured</em> angle at zero, so the real pole leans 1° the other way. A pole can only stay leaned if the cart keeps accelerating under it, so the cart speeds off and never stops. Adding Ki doesn't help, because from the angle alone the controller cannot tell an offset from a real lean.</p>
+    <p>The fix is information, not a gain. Turn on the <b>Centering loop</b>: the outer loop sees the cart running away and leans θ_ref until the cart stops, which finds the true upright on its own. The cart settles a little off center, and adding an integrator to the outer loop would remove that last bit. Keep the outer loop much slower than the inner one.</p>
+
+    <h3>Reading the Bode and Nyquist plots</h3>
+    <p>The plant has an unstable pole p = √((M+m)g/(M·L)) ≈ 3.4 rad/s. That changes the rules you may know from stable plants: the Nyquist curve must circle −1 <em>counter-clockwise once</em>, and a positive phase margin alone proves nothing. Load "Kp below (M+m)g" to see a 60°+ phase margin on a loop that falls over.</p>
+    <ul>
+      <li><b>Low frequencies.</b> With Ki = 0 the curve starts on the negative real axis at −Kp/((M+m)g). It must start left of −1, which is the Kp &gt; 11.8 rule again. How far left is the downward gain margin: how much you could lower every gain before the pole falls.</li>
+      <li><b>Crossover.</b> The PD zero at ω = Kp/Kd adds phase lead and swings the curve around −1. Read the phase margin where |L| = 0 dB; 35–60° is the usual target. Keep ωc above about 2·p: you can't stabilize an unstable pole with a loop slower than the pole.</li>
+      <li><b>Phase eaters.</b> Motor lag, the D filter and the sample delay all bend the phase down near crossover. Drag τ up and watch the margin shrink and the Nyquist curve slide toward −1 until the encirclement flips.</li>
+      <li><b>Ki.</b> It adds −90° at low frequency, so the curve now starts at infinity. Near the Routh limit, the extra lag reaches crossover and the margin collapses.</li>
+      <li><b>Ms.</b> The peak of |1/(1+L)| is the inverse of the closest distance from the curve to −1. Below 6 dB means no frequency gets amplified more than 2× by feedback.</li>
+    </ul>
+
+    <h3>What the simulation includes</h3>
+    <ul>
+      <li>Full nonlinear cart-pole: cart M = 1 kg, point-mass pole m = 0.2 kg at L = 1 m, cart friction 0.1 N·s/m, light pivot friction. Physics at 1 kHz.</li>
+      <li>Controller sampled every Ts (10 ms, 100 Hz, by default). An optional pure delay holds each command back before the motor sees it, the way sensing, computation and a slow bus would. Both appear in the Bode and Nyquist panel as phase lost: ω·(Ts/2 + delay).</li>
+      <li>Derivative taken on the measured angle with a 20 ms low-pass, so changes to θ_ref cause no derivative kick.</li>
+      <li>Motor force follows the command through a first-order lag τ and is clipped to the force limit. The integrator stops growing when its share reaches that limit (anti-windup); the I block outlines in red when it does.</li>
+    </ul>
+  </section>
+</div>
+<script>
+// ---------- simulation core (pure) ----------
+const G = 9.81, LEN = 1.0, MC = 1.0, MP = 0.2, CART_FR = 0.1, PIVOT_FR = 0.02, DT = 0.001, TC = 0.01, TF = 0.02, FALL = 1.2;
+
+function makeSim(params) {
+  const s = {};
+  s.reset = () => {
+    s.th = params.initDeg * Math.PI / 180; s.om = 0; s.x = 0; s.v = 0; s.acc = 0; s.Fa = 0;
+    s.I = 0; s.df = 0; s.prevMeas = s.th; s.meas = s.th; s.ref = 0; s.e = 0;
+    s.P = 0; s.Iv = 0; s.D = 0; s.uRaw = 0; s.u = 0; s.satU = false; s.satI = false;
+    s.t = 0; s.ctrlAcc = params.Ts; s.fallen = false; s.fellAt = 0;
+    s.uHist = []; s.uDel = 0;
+  };
+  s.randn = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  s.control = () => {
+    const p = params;
+    s.meas = s.th + (p.biasDeg + p.noiseDeg * s.randn()) * Math.PI / 180;
+    s.ref = p.center ? Math.max(-0.15, Math.min(0.15, -(p.kx * s.x + p.kv * s.v))) : 0;
+    s.e = s.meas - s.ref;
+    s.I += s.e * p.Ts;
+    s.satI = false;
+    if (p.Ki > 0) {
+      const lim = p.fmax / p.Ki;
+      if (s.I > lim) { s.I = lim; s.satI = true; } else if (s.I < -lim) { s.I = -lim; s.satI = true; }
+    }
+    const dRaw = (s.meas - s.prevMeas) / p.Ts;
+    s.prevMeas = s.meas;
+    s.df += (dRaw - s.df) * p.Ts / (TF + p.Ts);
+    s.P = p.Kp * s.e; s.Iv = p.Ki * s.I; s.D = p.Kd * s.df;
+    s.uRaw = s.P + s.Iv + s.D;
+    s.u = Math.max(-p.fmax, Math.min(p.fmax, s.uRaw));
+    s.satU = Math.abs(s.uRaw) > p.fmax;
+  };
+  s.physics = () => {
+    const p = params;
+    s.Fa += (s.uDel - s.Fa) * DT / p.tau;              // motor force lag
+    const sn = Math.sin(s.th), cs = Math.cos(s.th);
+    let acc = (s.Fa - CART_FR * s.v + MP * LEN * s.om * s.om * sn - MP * G * sn * cs) / (MC + MP * sn * sn);
+    if (p.walls && ((s.x >= 3 && acc > 0 && s.v >= 0) || (s.x <= -3 && acc < 0 && s.v <= 0))) acc = 0;
+    const alpha = (G * sn - acc * cs) / LEN - PIVOT_FR * s.om;
+    s.om += alpha * DT; s.th += s.om * DT;
+    s.v += acc * DT; s.x += s.v * DT; s.acc = acc;
+    if (p.walls) {
+      if (s.x > 3) { s.x = 3; if (s.v > 0) { s.om += s.v * cs / LEN; s.v = 0; } }
+      if (s.x < -3) { s.x = -3; if (s.v < 0) { s.om += s.v * cs / LEN; s.v = 0; } }
+    }
+    s.t += DT;
+    if (Math.abs(s.th) > FALL) { s.fallen = true; s.fellAt = s.t; }
+  };
+  s.step = () => {
+    s.ctrlAcc += DT;
+    if (s.ctrlAcc >= params.Ts - 1e-9) { s.control(); s.ctrlAcc -= params.Ts; }
+    // pure delay between the controller output and the actuator
+    const nDel = Math.round(params.delay / DT);
+    s.uHist.push(s.u);
+    if (s.uHist.length > nDel + 1) s.uHist.splice(0, s.uHist.length - nDel - 1);
+    s.uDel = s.uHist.length > nDel ? s.uHist[s.uHist.length - 1 - nDel] : 0;
+    s.physics();
+  };
+  s.push = (dir) => { s.om += dir * params.push; };
+  s.reset();
+  return s;
+}
+// ---------- end core ----------
+
+// ---------- frequency response (pure math) ----------
+const cx = (re, im = 0) => ({ re, im });
+const cadd = (a, b) => cx(a.re + b.re, a.im + b.im);
+const cmul = (a, b) => cx(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+const cdiv = (a, b) => { const d = b.re * b.re + b.im * b.im; return cx((a.re * b.re + a.im * b.im) / d, (a.im * b.re - a.re * b.im) / d); };
+const cexp = (a) => { const m = Math.exp(a.re); return cx(m * Math.cos(a.im), m * Math.sin(a.im)); };
+const cabs = (a) => Math.hypot(a.re, a.im);
+const ONE = cx(1);
+
+// PID with the same 20 ms derivative filter the simulation uses
+function ctrlTF(s, p) {
+  let c = cx(p.Kp);
+  c = cadd(c, cdiv(cx(p.Ki), s));
+  c = cadd(c, cdiv(cmul(cx(p.Kd), s), cadd(cmul(cx(TF), s), ONE)));
+  return c;
+}
+// actuator lag, pure delay, and the half-sample delay of the sampled controller
+function actuatorTF(s, p) {
+  return cmul(cdiv(ONE, cadd(cmul(cx(p.tau), s), ONE)), cexp(cmul(cx(-(p.Ts / 2 + p.delay)), s)));
+}
+
+function freqResponse(p) {
+  const pts = [], n = 1600, w0 = 0.01, w1 = 2000;
+  let prev = null, off = 0;
+  for (let k = 0; k <= n; k++) {
+    const w = w0 * Math.pow(w1 / w0, k / n);
+    const L = openLoop(cx(0, w), p);
+    const raw = Math.atan2(L.im, L.re) * 180 / Math.PI;
+    if (prev !== null) { while (raw + off - prev > 180) off -= 360; while (raw + off - prev < -180) off += 360; }
+    const ph = raw + off; prev = ph;
+    const mag = cabs(L);
+    pts.push({ w, L, mag, db: 20 * Math.log10(mag), ph, s: 1 / cabs(cadd(ONE, L)) });
+  }
+  let sh = 0;
+  while (pts[0].ph + sh > 0.5) sh -= 360;
+  while (pts[0].ph + sh <= -359.5) sh += 360;
+  for (const q of pts) q.ph += sh;
+
+  const gainX = [], phaseX = [];
+  for (let k = 1; k < pts.length; k++) {
+    const a = pts[k - 1], b = pts[k];
+    if ((a.db >= 0) !== (b.db >= 0)) {
+      const t = a.db / (a.db - b.db);
+      gainX.push({ w: a.w * Math.pow(b.w / a.w, t), ph: a.ph + t * (b.ph - a.ph) });
+    }
+    const lo = Math.min(a.ph, b.ph), hi = Math.max(a.ph, b.ph);
+    for (let j = Math.ceil((lo + 180) / 360); (j * 360 - 180) <= hi; j++) {
+      const lvl = j * 360 - 180;
+      if (lvl === a.ph && k > 1) continue;
+      const t = (lvl - a.ph) / (b.ph - a.ph || 1);
+      phaseX.push({ w: a.w * Math.pow(b.w / a.w, t), db: a.db + t * (b.db - a.db) });
+    }
+  }
+  if (Math.abs(((pts[0].ph + 180) % 360 + 360) % 360) < 2 || Math.abs(((pts[0].ph + 180) % 360 + 360) % 360 - 360) < 2) phaseX.unshift({ w: pts[0].w, db: pts[0].db, low: true });
+
+  const wrap = (x) => ((x + 180) % 360 + 360) % 360 - 180;
+  const main = gainX.length ? gainX[gainX.length - 1] : null;
+  const pm = main ? wrap(main.ph + 180) : null;
+  let gmUp = null, gmDown = null;
+  for (const q of phaseX) {
+    if (q.db < 0) gmUp = gmUp === null ? -q.db : Math.min(gmUp, -q.db);
+    else gmDown = gmDown === null ? q.db : Math.min(gmDown, q.db);
+  }
+  let ms = 0; for (const q of pts) ms = Math.max(ms, q.s);
+
+  // Nyquist contour: up the jω axis (detouring right of s = 0), back through the right half-plane
+  const eps = 1e-3, W = 1e5, m = 3000, path = [];
+  for (let k = 0; k <= m; k++) path.push(cx(0, -W * Math.pow(eps / W, k / m)));
+  for (let k = 1; k < 60; k++) { const a = -Math.PI / 2 + Math.PI * k / 60; path.push(cx(eps * Math.cos(a), eps * Math.sin(a))); }
+  for (let k = 0; k <= m; k++) path.push(cx(0, eps * Math.pow(W / eps, k / m)));
+  for (let k = 1; k < 60; k++) { const a = Math.PI / 2 - Math.PI * k / 60; path.push(cx(W * Math.cos(a), W * Math.sin(a))); }
+  path.push(path[0]);
+  let total = 0, pa = null;
+  for (const s of path) {
+    const F = cadd(ONE, openLoop(s, p));
+    const a = Math.atan2(F.im, F.re);
+    if (pa !== null) { let d = a - pa; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; total += d; }
+    pa = a;
+  }
+  const ccw = Math.round(total / (2 * Math.PI));
+  const Z = OL_RHP - ccw;
+  return { pts, gainX, phaseX, main, pm, gmUp, gmDown, ms, ccw, Z };
+}
+// ---------- end frequency response math ----------
+
+
+const params = { Kp: 40, Ki: 0, Kd: 8, noiseDeg: 0, biasDeg: 0, tau: 0.02, Ts: 0.01, delay: 0, fmax: 20, initDeg: 8, push: 1.0, walls: false, center: false, kx: 0.02, kv: 0.05 };
+const sim = makeSim(params);
+const $ = (id) => document.getElementById(id);
+
+// loop transfer function for the Bode/Nyquist panel: L = C·A / (M·L·s² − (M+m)·g)
+const OL_RHP = 1, UNSTABLE_POLE = Math.sqrt((MC + MP) * G / (MC * LEN));
+function openLoop(s, p) {
+  const den = cadd(cmul(cx(MC * LEN), cmul(s, s)), cx(-(MC + MP) * G));
+  return cdiv(cmul(ctrlTF(s, p), actuatorTF(s, p)), den);
+}
+
+// ---------- buffers ----------
+const N = 500, SAMPLE = 0.02;
+const buf = { t: [], th: [], ref: [], Fc: [], Fa: [], x: [], v: [], P: [], I: [], D: [] };
+let sampleAcc = 0;
+function clearBuf() { for (const k in buf) buf[k].length = 0; sampleAcc = 0; }
+function sample() {
+  const d = 180 / Math.PI;
+  const vals = { t: sim.t, th: sim.th * d, ref: sim.ref * d, Fc: sim.u, Fa: sim.Fa, x: sim.x, v: sim.v, P: sim.P, I: sim.Iv, D: sim.D };
+  for (const k in buf) { buf[k].push(vals[k]); if (buf[k].length > N) buf[k].shift(); }
+}
+
+// ---------- theme ----------
+let C = {};
+function readTheme() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ["bg", "surface", "sunk", "ink", "muted", "line", "grid", "theta", "vel", "pos", "p", "i", "d", "warn", "ok"]) C[k] = cs.getPropertyValue("--" + k).trim();
+  frDirty = true;
+}
+
+// ---------- canvas helpers ----------
+function fitCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: r.width, h: r.height };
+}
+function niceStep(span, target) {
+  const raw = span / target, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+  return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+}
+
+// ---------- stage ----------
+const stageCv = $("sim");
+let camX = 0;
+function drawStage() {
+  const { ctx, w, h } = fitCanvas(stageCv);
+  ctx.clearRect(0, 0, w, h);
+  const scale = Math.min(w / 7.2, (h - 50) / 1.45);
+  const groundY = h - 34;
+  const target = params.walls ? 0 : sim.x;
+  camX += (target - camX) * 0.15;
+  const X = (m) => w / 2 + (m - camX) * scale;
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-mono");
+
+  ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+  ctx.font = "11px " + mono; ctx.fillStyle = C.muted; ctx.textAlign = "center";
+  const left = camX - w / 2 / scale, right = camX + w / 2 / scale;
+  for (let m = Math.ceil(left * 2) / 2; m <= right; m += 0.5) {
+    const px = X(m), major = Math.abs(m - Math.round(m)) < 1e-6;
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px, groundY); ctx.lineTo(px, groundY + (major ? 9 : 5)); ctx.stroke();
+    if (major) ctx.fillText(Math.round(m) + " m", px, groundY + 22);
+  }
+  if (params.walls) {
+    ctx.fillStyle = C.warn;
+    for (const m of [-3, 3]) { const px = X(m) + (m > 0 ? 0.26 * scale : -0.26 * scale); ctx.fillRect(px - 3, groundY - 40, 6, 40); }
+  }
+  ctx.fillStyle = C.ok; ctx.beginPath(); ctx.moveTo(X(0), groundY - 1); ctx.lineTo(X(0) - 5, groundY - 8); ctx.lineTo(X(0) + 5, groundY - 8); ctx.closePath(); ctx.fill();
+
+  const cx0 = X(sim.x), cw = 0.5 * scale, ch = 0.2 * scale, wheel = 0.05 * scale;
+  const cy = groundY - wheel * 2 - ch;
+  ctx.fillStyle = C.ink;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx0 - cw / 2, cy, cw, ch, 5) : ctx.rect(cx0 - cw / 2, cy, cw, ch); ctx.fill();
+  ctx.fillStyle = C.muted;
+  for (const o of [-0.3, 0.3]) { ctx.beginPath(); ctx.arc(cx0 + o * cw, groundY - wheel, wheel, 0, Math.PI * 2); ctx.fill(); }
+
+  // applied force arrow: pushes from the trailing side
+  const arrowLen = sim.Fa * 0.03 * scale;
+  if (Math.abs(arrowLen) > 2) {
+    const ay = cy + ch / 2, s = Math.sign(arrowLen), x1 = cx0 - s * cw / 2, x0 = x1 - arrowLen;
+    ctx.strokeStyle = sim.satU ? C.warn : C.vel; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x0, ay); ctx.lineTo(x1 - s * 6, ay); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, ay); ctx.lineTo(x1 - s * 9, ay - 6); ctx.lineTo(x1 - s * 9, ay + 6); ctx.closePath(); ctx.fill();
+    ctx.font = "500 11px " + mono; ctx.textAlign = "center";
+    ctx.fillText(Math.abs(sim.Fa).toFixed(1) + " N", (x0 + x1) / 2, ay - 9);
+  }
+
+  const pivotY = cy, L = LEN * scale;
+  ctx.setLineDash([4, 5]); ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx0, pivotY); ctx.lineTo(cx0, pivotY - L * 1.05); ctx.stroke();
+  if (params.center && Math.abs(sim.ref) > 1e-4) {
+    ctx.strokeStyle = C.muted;
+    ctx.beginPath(); ctx.moveTo(cx0, pivotY); ctx.lineTo(cx0 + Math.sin(sim.ref) * L, pivotY - Math.cos(sim.ref) * L); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  const th = sim.th;
+  ctx.strokeStyle = C.theta; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cx0, pivotY, L * 0.32, -Math.PI / 2, -Math.PI / 2 + th, th < 0); ctx.stroke();
+  const tipX = cx0 + Math.sin(th) * L, tipY = pivotY - Math.cos(th) * L;
+  ctx.strokeStyle = sim.fallen ? C.warn : C.theta; ctx.lineWidth = Math.max(4, 0.045 * scale); ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(cx0, pivotY); ctx.lineTo(tipX, tipY); ctx.stroke();
+  ctx.fillStyle = sim.fallen ? C.warn : C.theta;
+  ctx.beginPath(); ctx.arc(tipX, tipY, Math.max(8, 0.09 * scale), 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = C.surface; ctx.strokeStyle = C.ink; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx0, pivotY, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = C.theta; ctx.textAlign = "left";
+  ctx.font = "500 13px " + mono;
+  const dg = (th * 180 / Math.PI).toFixed(1);
+  ctx.fillText("θ " + (dg > 0 ? "+" : "") + dg + "°", Math.min(w - 90, cx0 + 14), Math.max(18, pivotY - L * 0.38));
+}
+
+// ---------- scope ----------
+function drawPlot(cv, series, opts) {
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const padL = 40, padR = 8, padT = 8, padB = 18;
+  const n = buf.t.length, t1 = n ? buf.t[n - 1] : 0;
+  const tMax = Math.max(t1, N * SAMPLE), tMin = tMax - N * SAMPLE;
+  let lo = Infinity, hi = -Infinity;
+  for (const s of series) for (const v of buf[s.key]) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  if (!isFinite(lo)) { lo = -1; hi = 1; }
+  const m = Math.max(Math.abs(lo), Math.abs(hi), opts.minSpan);
+  if (opts.symmetric) { lo = -m * 1.1; hi = m * 1.1; }
+  else { const pad = Math.max((hi - lo) * 0.1, opts.minSpan * 0.5); lo -= pad; hi += pad; }
+  const X = (t) => padL + (t - tMin) / (tMax - tMin) * (w - padL - padR);
+  const Y = (v) => padT + (hi - v) / (hi - lo) * (h - padT - padB);
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-mono");
+  ctx.font = "10px " + mono; ctx.fillStyle = C.muted; ctx.lineWidth = 1;
+  const step = niceStep(hi - lo, 4);
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+    const y = Y(v);
+    ctx.strokeStyle = Math.abs(v) < step * 1e-6 ? C.line : C.grid;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillText((Math.abs(v) < step * 1e-6 ? 0 : +v.toFixed(2)).toString(), padL - 5, y);
+  }
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  for (let t = Math.ceil(tMin / 2) * 2; t <= tMax; t += 2) {
+    const x = X(t); ctx.strokeStyle = C.grid;
+    ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, h - padB); ctx.stroke();
+    ctx.fillText(t + "s", x, h - 4);
+  }
+  ctx.save(); ctx.beginPath(); ctx.rect(padL, padT, w - padL - padR, h - padT - padB); ctx.clip();
+  for (const s of series) {
+    const arr = buf[s.key]; if (arr.length < 2) continue;
+    ctx.strokeStyle = C[s.color]; ctx.lineWidth = s.width || 1.6; ctx.setLineDash(s.dash || []);
+    ctx.beginPath();
+    for (let k = 0; k < arr.length; k++) { const x = X(buf.t[k]), y = Y(arr[k]); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke(); ctx.setLineDash([]);
+    if (!s.dash) { ctx.fillStyle = C[s.color]; ctx.beginPath(); ctx.arc(X(buf.t[arr.length - 1]), Y(arr[arr.length - 1]), 2.5, 0, Math.PI * 2); ctx.fill(); }
+  }
+  if (opts.limit) {
+    ctx.strokeStyle = C.warn; ctx.setLineDash([2, 4]); ctx.lineWidth = 1;
+    for (const v of [opts.limit, -opts.limit]) if (v > lo && v < hi) { ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(w - padR, Y(v)); ctx.stroke(); }
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+function drawPlots() {
+  drawPlot($("pAngle"), [{ key: "ref", color: "muted", dash: [5, 4], width: 1.2 }, { key: "th", color: "theta" }], { symmetric: true, minSpan: 2 });
+  drawPlot($("pForce"), [{ key: "Fc", color: "ink", dash: [5, 4], width: 1.2 }, { key: "Fa", color: "vel" }], { symmetric: true, minSpan: 2, limit: params.fmax });
+  drawPlot($("pTerms"), [{ key: "P", color: "p" }, { key: "I", color: "i" }, { key: "D", color: "d" }], { symmetric: true, minSpan: 2 });
+  drawPlot($("pPos"), [{ key: "v", color: "pos", dash: [5, 4], width: 1.2 }, { key: "x", color: "pos" }], { symmetric: false, minSpan: 1 });
+}
+
+// ---------- readouts ----------
+const f1 = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(1);
+const f2 = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+const deg = (r) => r * 180 / Math.PI;
+function updateReadouts() {
+  $("dRef").textContent = f2(deg(sim.ref)) + "°";
+  $("dE").textContent = "e " + f2(deg(sim.e)) + "°";
+  $("dP").textContent = f1(sim.P);
+  $("dI").textContent = f1(sim.Iv);
+  $("dD").textContent = f1(sim.D);
+  $("dURaw").textContent = f1(sim.uRaw);
+  $("dU").textContent = "F_cmd " + f1(sim.u);
+  $("dF").textContent = "F " + f1(sim.Fa) + " N";
+  $("dV").textContent = "v " + f2(sim.v);
+  $("dA").textContent = "a " + f2(sim.acc);
+  $("dTh").textContent = "θ " + f2(deg(sim.th)) + "°";
+  $("dMeas").textContent = "θ measured " + f2(deg(sim.meas)) + "°";
+  $("bSat").classList.toggle("hot", sim.satU);
+  $("bI").classList.toggle("hot", sim.satI);
+  $("iNote").textContent = sim.satI ? "clamped (anti-windup)" : "Ki · ∫e dt";
+  $("gCenter").classList.toggle("off", !params.center);
+
+  const n = buf.th.length, last = Math.min(n, 250);
+  let ss = 0, pk = 0;
+  for (let k = n - last; k < n; k++) { ss += buf.th[k] * buf.th[k]; pk = Math.max(pk, Math.abs(buf.Fa[k])); }
+  $("mTime").textContent = (sim.fallen ? sim.fellAt : sim.t).toFixed(1) + " s";
+  $("mRms").textContent = (last ? Math.sqrt(ss / last) : 0).toFixed(2) + "°";
+  $("mPeak").textContent = pk.toFixed(1) + " N";
+  $("mX").textContent = f2(sim.x) + " m · " + f1(sim.v);
+  const st = $("status");
+  st.className = "status" + (sim.fallen ? " fallen" : running ? "" : " paused");
+  st.textContent = sim.fallen ? "Fell after " + sim.fellAt.toFixed(1) + " s" + ($("autoRestart").checked ? " · restarting" : " · press Reset") : running ? "Balancing" : "Paused";
+}
+
+// roots of a monic polynomial (Durand–Kerner)
+function polyRoots(coef) {
+  const n = coef.length - 1, a = coef.map((c) => c / coef[0]);
+  let z = Array.from({ length: n }, (_, k) => cmul(cx(1 + 0.1 * k), cexp(cx(0, 0.4 + 2 * Math.PI * k / n))));
+  const ev = (s) => { let r = cx(a[0]); for (let k = 1; k <= n; k++) r = cadd(cmul(r, s), cx(a[k])); return r; };
+  for (let it = 0; it < 300; it++) {
+    z = z.map((zi, i) => { let d = ONE; z.forEach((zj, j) => { if (j !== i) d = cmul(d, cadd(zi, cx(-zj.re, -zj.im))); }); const q = cdiv(ev(zi), d); return cadd(zi, cx(-q.re, -q.im)); });
+  }
+  return z;
+}
+
+function updateAnalysis() {
+  const a3 = MC * LEN, a2 = params.Kd, k = params.Kp - (MC + MP) * G, a0 = params.Ki;
+  const kiMax = a2 > 0 && k > 0 ? a2 * k / a3 : 0;
+  const eq = params.Ki > 0
+    ? `${a3.toFixed(1)}·s³ + ${a2.toFixed(1)}·s² + ${k.toFixed(1)}·s + ${a0.toFixed(1)}`
+    : `${a3.toFixed(1)}·s² + ${a2.toFixed(1)}·s + ${k.toFixed(1)}`;
+  $("aEq").textContent = eq + " = 0";
+  const roots = params.Ki > 0 ? polyRoots([a3, a2, k, a0]) : polyRoots([a3, a2, k]);
+  roots.sort((p, q) => q.re - p.re);
+  $("aPoles").textContent = roots.filter((r) => r.im > -1e-6).map((r) => Math.abs(r.im) < 1e-6 ? r.re.toFixed(2) : r.re.toFixed(2) + " ± " + r.im.toFixed(2) + "j").join(", ");
+  const pair = roots.find((r) => r.im > 1e-6);
+  if (pair) { const wn = cabs(pair); $("aZeta").textContent = (-pair.re / wn).toFixed(2) + " · " + wn.toFixed(2) + " rad/s"; }
+  else $("aZeta").textContent = "no oscillatory pair";
+  $("aKiMax").textContent = kiMax > 0 ? kiMax.toFixed(0) + " N/(rad·s)" : "none (fix Kp, Kd first)";
+
+  const v = $("aVerdict"); let note = "Ignores motor lag, saturation, sampling and noise. The Nyquist check below includes them.";
+  const set = (text, cls, n) => { v.textContent = text; v.className = "verdict " + cls; if (n) note = n; };
+  if (k <= 0) set("Unstable", "bad", "Kp ≤ (M+m)·g = " + ((MC + MP) * G).toFixed(1) + ": gravity wins. Raise Kp.");
+  else if (a2 <= 0) set("Undamped", "bad", "No damping: it rocks, and motor lag makes it grow. Raise Kd.");
+  else if (a0 > 0 && a2 * k <= a3 * a0) set("Unstable", "bad", "Ki is past the Routh limit Kd·(Kp − (M+m)g)/(M·L). Lower Ki.");
+  else if (!pair) set("Stable, sluggish", "", "Overdamped: no overshoot but a slow return. Lower Kd or raise Kp.");
+  else if (-pair.re / cabs(pair) < 0.3) set("Stable, ringing", "", "Lightly damped: several swings after a push. Raise Kd.");
+  else set("Stable, well damped", "good");
+  $("aNote").textContent = note;
+  $("gP").textContent = "Kp=" + +params.Kp.toFixed(2);
+  $("gI").textContent = "Ki=" + +params.Ki.toFixed(2);
+  $("gD").textContent = "Kd=" + +params.Kd.toFixed(2);
+  $("dFmax").textContent = "±" + params.fmax.toFixed(0) + " N";
+  $("dTau").textContent = "τ = " + (params.tau * 1000).toFixed(0) + " ms";
+  $("dTs").textContent = "PID sampled every " + (params.Ts * 1000).toFixed(0) + " ms";
+  $("dDelay").textContent = "delay " + (params.delay * 1000).toFixed(0) + " ms";
+  $("dNoise").textContent = "noise σ=" + params.noiseDeg.toFixed(2) + "°, offset " + params.biasDeg.toFixed(1) + "°";
+  recomputeFR();
+}
+
+// ---------- controls ----------
+function bindGain(key, rId, nId) {
+  const r = $(rId), n = $(nId);
+  const set = (val, from) => {
+    if (!isFinite(val)) return;
+    params[key] = val;
+    if (from !== r) r.value = val;
+    if (from !== n) n.value = +val.toFixed(3);
+    updateAnalysis();
+  };
+  r.addEventListener("input", () => set(parseFloat(r.value), r));
+  n.addEventListener("input", () => set(parseFloat(n.value), n));
+  r.value = params[key]; n.value = params[key];
+  return set;
+}
+function bindParam(key, id, fmt) {
+  const el = $(id), out = $(id + "O");
+  const upd = () => { params[key] = parseFloat(el.value); out.textContent = fmt(params[key]); updateAnalysis(); };
+  el.value = params[key]; el.addEventListener("input", upd); out.textContent = fmt(params[key]);
+}
+
+const PRESETS = [
+  ["Well damped", 40, 0, 8],
+  ["PD + a little I", 40, 4, 8],
+  ["P only", 40, 0, 0],
+  ["Kp below (M+m)g", 10, 0, 8],
+  ["Too much I", 40, 250, 8],
+  ["Sluggish", 25, 0, 20],
+  ["Stiff", 120, 0, 14],
+];
+
+let running = true, fallenSince = null;
+function doReset() { sim.reset(); clearBuf(); fallenSince = null; }
+function togglePause() { running = !running; $("btnPause").textContent = running ? "Pause" : "Resume"; }
+
+function init() {
+  readTheme();
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readTheme); } catch (e) {}
+  new MutationObserver(readTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  // remember the starting values of everything under "Plant, sensor and extras"
+  const EXTRAS = { noiseDeg: "noise", biasDeg: "bias", tau: "tau", Ts: "ts", delay: "delay", fmax: "fmax", initDeg: "init", push: "push", kx: "kx", kv: "kv" };
+  const extraDefaults = {}; for (const k in EXTRAS) extraDefaults[k] = params[k];
+  const gainDefaults = { Kp: params.Kp, Ki: params.Ki, Kd: params.Kd };
+  const setKp = bindGain("Kp", "kpR", "kpN"), setKi = bindGain("Ki", "kiR", "kiN"), setKd = bindGain("Kd", "kdR", "kdN");
+  bindParam("noiseDeg", "noise", (v) => v.toFixed(2) + "°");
+  bindParam("biasDeg", "bias", (v) => (v > 0 ? "+" : "") + v.toFixed(1) + "°");
+  bindParam("tau", "tau", (v) => (v * 1000).toFixed(0) + " ms");
+  bindParam("Ts", "ts", (v) => (v * 1000).toFixed(0) + " ms · " + (1 / v).toFixed(0) + " Hz");
+  bindParam("delay", "delay", (v) => (v * 1000).toFixed(0) + " ms");
+  bindParam("fmax", "fmax", (v) => v.toFixed(0) + " N");
+  bindParam("initDeg", "init", (v) => v.toFixed(0) + "°");
+  bindParam("push", "push", (v) => v.toFixed(1) + " rad/s");
+  bindParam("kx", "kx", (v) => v.toFixed(3));
+  bindParam("kv", "kv", (v) => v.toFixed(2));
+  $("walls").addEventListener("change", (e) => { params.walls = e.target.checked; });
+  $("center").addEventListener("change", (e) => { params.center = e.target.checked; $("centerSub").hidden = !params.center; });
+  $("centerSub").hidden = true;
+  let resetMsgTimer = null, resetGainsTimer = null;
+  $("btnResetGains").addEventListener("click", () => {
+    setKp(gainDefaults.Kp); setKi(gainDefaults.Ki); setKd(gainDefaults.Kd);
+    $("resetGainsMsg").textContent = "Kp " + gainDefaults.Kp + ", Ki " + gainDefaults.Ki + ", Kd " + gainDefaults.Kd + ". Extras unchanged.";
+    clearTimeout(resetGainsTimer); resetGainsTimer = setTimeout(() => { $("resetGainsMsg").textContent = ""; }, 2500);
+  });
+  $("btnResetExtras").addEventListener("click", () => {
+    for (const k in EXTRAS) { const el = $(EXTRAS[k]); el.value = extraDefaults[k]; el.dispatchEvent(new Event("input")); }
+    for (const id of ["walls", "center"]) { const el = $(id); if (el.checked) { el.checked = false; el.dispatchEvent(new Event("change")); } }
+    $("resetExtrasMsg").textContent = "Extras reset. Gains unchanged.";
+    clearTimeout(resetMsgTimer); resetMsgTimer = setTimeout(() => { $("resetExtrasMsg").textContent = ""; }, 2500);
+  });
+
+  const pre = $("presets");
+  for (const [name, p, i, d] of PRESETS) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = name;
+    b.addEventListener("click", () => { params.Kp = p; params.Ki = i; params.Kd = d; setKp(p); setKi(i); setKd(d); doReset(); });
+    pre.appendChild(b);
+  }
+  $("btnReset").addEventListener("click", doReset);
+  $("btnPause").addEventListener("click", togglePause);
+  $("btnNudgeL").addEventListener("click", () => sim.push(-1));
+  $("btnNudgeR").addEventListener("click", () => sim.push(1));
+  $("stage").addEventListener("click", (e) => { const r = e.currentTarget.getBoundingClientRect(); sim.push(e.clientX - r.left < r.width / 2 ? -1 : 1); });
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, select, textarea")) return;
+    if (e.key === "ArrowLeft") { sim.push(-1); e.preventDefault(); }
+    else if (e.key === "ArrowRight") { sim.push(1); e.preventDefault(); }
+    else if (e.key === " ") { togglePause(); e.preventDefault(); }
+    else if (e.key === "r" || e.key === "R") doReset();
+  });
+  updateAnalysis(); updateReadouts();
+  requestAnimationFrame(frame);
+}
+
+let last = null, uiAcc = 0;
+function frame(ts) {
+  if (last === null) last = ts;
+  const dtReal = Math.min((ts - last) / 1000, 0.05); last = ts;
+  if (running && !sim.fallen) {
+    const steps = Math.round(dtReal * parseFloat($("speed").value) / DT);
+    for (let k = 0; k < steps && !sim.fallen; k++) {
+      sim.step();
+      sampleAcc += DT;
+      if (sampleAcc >= SAMPLE - 1e-9) { sample(); sampleAcc -= SAMPLE; }
+    }
+  }
+  if (sim.fallen && running && $("autoRestart").checked) {
+    if (fallenSince === null) fallenSince = ts;
+    else if (ts - fallenSince > 1400) doReset();
+  }
+  drawStage();
+  drawPlots();
+  if (frDirty) drawFR();
+  uiAcc += dtReal;
+  if (uiAcc > 0.06) { uiAcc = 0; updateReadouts(); }
+  requestAnimationFrame(frame);
+}
+
+// ---------- frequency response UI ----------
+let FR = null, frDirty = true, nyqLog = true;
+function recomputeFR() { FR = freqResponse(params); frDirty = true; updateFRReadout(); }
+function updateFRReadout() {
+  const r = FR, st = $("fStable");
+  st.textContent = r.Z === 0 ? "Stable" : "Unstable";
+  st.className = r.Z === 0 ? "good" : "bad";
+  $("fStableSub").textContent = r.Z === 0 ? "no closed-loop RHP poles" : r.Z + " closed-loop RHP pole" + (r.Z > 1 ? "s" : "");
+  $("fEnc").textContent = r.ccw + " of " + OL_RHP + " needed";
+  $("fPM").textContent = r.pm === null ? "no crossover" : r.pm.toFixed(0) + "°";
+  $("fPMSub").textContent = r.main ? "at ωc = " + r.main.w.toFixed(2) + " rad/s" : "|L| never crosses 0 dB";
+  $("fGM").textContent = (r.gmUp === null ? "∞" : r.gmUp.toFixed(1)) + " · " + (r.gmDown === null ? "–" : r.gmDown.toFixed(1)) + " dB";
+  $("fMs").textContent = (20 * Math.log10(r.ms)).toFixed(1) + " dB";
+  $("fNote").hidden = r.Z === 0;
+}
+
+const LOGW0 = 0.1, LOGW1 = 1000;
+function logX(w, padL, width) { return padL + (Math.log10(w) - Math.log10(LOGW0)) / (Math.log10(LOGW1) - Math.log10(LOGW0)) * width; }
+function bodeFrame(ctx, w, h, lo, hi, padL, padR, padT, padB, fmtY, stepY, emph) {
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-mono");
+  const W = w - padL - padR, H = h - padT - padB;
+  const Y = (v) => padT + (hi - v) / (hi - lo) * H;
+  ctx.font = "10px " + mono; ctx.lineWidth = 1;
+  for (let d = -1; d <= 3; d++) {
+    for (let m = 1; m < 10; m++) {
+      const wv = Math.pow(10, d) * m; if (wv < LOGW0 || wv > LOGW1) continue;
+      const x = logX(wv, padL, W);
+      ctx.strokeStyle = C.grid; ctx.globalAlpha = m === 1 ? 1 : 0.45;
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + H); ctx.stroke();
+      ctx.globalAlpha = 1;
+      if (m === 1) { ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.fillText(String(wv), x, h - 4); }
+    }
+  }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (let v = Math.ceil(lo / stepY) * stepY; v <= hi + 1e-9; v += stepY) {
+    const y = Y(v), strong = emph(v);
+    ctx.strokeStyle = strong ? C.warn : C.grid; ctx.setLineDash(strong ? [4, 4] : []);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + W, y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = strong ? C.warn : C.muted; ctx.fillText(fmtY(v), padL - 5, y);
+  }
+  ctx.textBaseline = "alphabetic";
+  return { Y, W, H };
+}
+function markW(ctx, wv, padL, W, padT, H, color, label, dash) {
+  if (!(wv >= LOGW0 && wv <= LOGW1)) return;
+  const x = logX(wv, padL, W);
+  ctx.strokeStyle = color; ctx.setLineDash(dash); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + H); ctx.stroke(); ctx.setLineDash([]);
+  if (label) { ctx.fillStyle = color; ctx.textAlign = "left"; ctx.fillText(label, x + 4, padT + 11); }
+}
+function drawBode() {
+  const pts = FR.pts.filter((q) => q.w >= LOGW0 * 0.999 && q.w <= LOGW1 * 1.001);
+  const padL = 44, padR = 20, padT = 8, padB = 18;
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-mono");
+  { // magnitude
+    const { ctx, w, h } = fitCanvas($("bMag")); ctx.clearRect(0, 0, w, h);
+    let lo = Infinity, hi = -Infinity; for (const q of pts) { lo = Math.min(lo, q.db); hi = Math.max(hi, q.db); }
+    lo = Math.max(Math.min(lo, -10), -80); hi = Math.min(Math.max(hi, 10), 80);
+    const step = niceStep(hi - lo, 5); lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const f = bodeFrame(ctx, w, h, lo, hi, padL, padR, padT, padB, (v) => v + "", step, (v) => Math.abs(v) < 1e-9);
+    ctx.font = "10px " + mono;
+    markW(ctx, UNSTABLE_POLE, padL, f.W, padT, f.H, C.muted, "p = " + UNSTABLE_POLE.toFixed(1), [2, 3]);
+    if (FR.main) markW(ctx, FR.main.w, padL, f.W, padT, f.H, C.theta, "", [5, 4]);
+    ctx.save(); ctx.beginPath(); ctx.rect(padL, padT, f.W, f.H); ctx.clip();
+    ctx.strokeStyle = C.theta; ctx.lineWidth = 1.8; ctx.beginPath();
+    pts.forEach((q, k) => { const x = logX(q.w, padL, f.W), y = f.Y(q.db); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke(); ctx.restore();
+    if (FR.main && FR.main.w >= LOGW0 && FR.main.w <= LOGW1) {
+      ctx.fillStyle = C.theta; ctx.beginPath(); ctx.arc(logX(FR.main.w, padL, f.W), f.Y(0), 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.textAlign = "left"; ctx.fillText("ωc " + FR.main.w.toFixed(1), logX(FR.main.w, padL, f.W) + 6, f.Y(0) - 6);
+    }
+  }
+  { // phase
+    const { ctx, w, h } = fitCanvas($("bPh")); ctx.clearRect(0, 0, w, h);
+    let lo = Infinity, hi = -Infinity; for (const q of pts) { lo = Math.min(lo, q.ph); hi = Math.max(hi, q.ph); }
+    lo = Math.min(lo, -200); hi = Math.max(hi, -160);
+    lo = Math.floor(lo / 45) * 45; hi = Math.ceil(hi / 45) * 45;
+    const step = (hi - lo) > 360 ? 90 : 45;
+    const f = bodeFrame(ctx, w, h, lo, hi, padL, padR, padT, padB, (v) => v + "°", step, (v) => Math.abs(((v + 180) % 360 + 360) % 360) < 1e-6);
+    ctx.font = "10px " + mono;
+    markW(ctx, UNSTABLE_POLE, padL, f.W, padT, f.H, C.muted, "", [2, 3]);
+    if (FR.main) markW(ctx, FR.main.w, padL, f.W, padT, f.H, C.theta, "", [5, 4]);
+    ctx.save(); ctx.beginPath(); ctx.rect(padL, padT, f.W, f.H); ctx.clip();
+    ctx.strokeStyle = C.i; ctx.lineWidth = 1.8; ctx.beginPath();
+    pts.forEach((q, k) => { const x = logX(q.w, padL, f.W), y = f.Y(q.ph); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke(); ctx.restore();
+    if (FR.main && FR.main.w >= LOGW0 && FR.main.w <= LOGW1) {
+      const x = logX(FR.main.w, padL, f.W), ph = FR.main.ph, ref = ph - FR.pm;
+      ctx.strokeStyle = FR.pm >= 0 ? C.ok : C.warn; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x, f.Y(ref)); ctx.lineTo(x, f.Y(ph)); ctx.stroke();
+      ctx.fillStyle = ctx.strokeStyle; ctx.textAlign = "left";
+      ctx.fillText("PM " + FR.pm.toFixed(0) + "°", x + 6, (f.Y(ref) + f.Y(ph)) / 2 + 3);
+    }
+  }
+}
+function drawNyquist() {
+  const { ctx, w, h } = fitCanvas($("nyq")); ctx.clearRect(0, 0, w, h);
+  const mono = getComputedStyle(document.body).getPropertyValue("--font-mono");
+  const map = (L) => { const r = cabs(L); if (!nyqLog || r === 0) return L; const k = Math.log2(1 + r) / r; return cx(L.re * k, L.im * k); };
+  const mp = FR.pts.map((q) => map(q.L));
+  let maxR = 0; for (const z of mp) maxR = Math.max(maxR, cabs(z));
+  const E = nyqLog ? Math.max(1.8, maxR * 1.08) : Math.max(1.8, Math.min(maxR * 1.08, 5));
+  const pad = 14, S = Math.min(w, h) / 2 - pad, ox = w / 2, oy = h / 2;
+  const X = (z) => ox + z.re / E * S, Y = (z) => oy - z.im / E * S;
+  ctx.font = "10px " + mono; ctx.lineWidth = 1;
+  ctx.strokeStyle = C.line;
+  ctx.beginPath(); ctx.moveTo(ox - S - pad, oy); ctx.lineTo(ox + S + pad, oy); ctx.moveTo(ox, oy - S - pad); ctx.lineTo(ox, oy + S + pad); ctx.stroke();
+  const rings = nyqLog ? [1, 10, 100, 1000] : [1, 2, 3, 4, 5];
+  ctx.fillStyle = C.muted; ctx.textAlign = "left";
+  for (const r of rings) {
+    const rr = nyqLog ? Math.log2(1 + r) : r; if (rr > E) continue;
+    ctx.strokeStyle = r === 1 ? C.line : C.grid; ctx.setLineDash(r === 1 ? [4, 4] : []);
+    ctx.beginPath(); ctx.arc(ox, oy, rr / E * S, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillText("|L|=" + r, ox + rr / E * S * 0.71 + 3, oy - rr / E * S * 0.71 - 3);
+  }
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
+  // negative frequencies (mirror)
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]); ctx.beginPath();
+  mp.forEach((z, k) => { const x = X(z), y = oy + z.im / E * S; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+  ctx.stroke(); ctx.setLineDash([]);
+  // positive frequencies
+  ctx.strokeStyle = C.theta; ctx.lineWidth = 2; ctx.beginPath();
+  mp.forEach((z, k) => { k ? ctx.lineTo(X(z), Y(z)) : ctx.moveTo(X(z), Y(z)); });
+  ctx.stroke();
+  // direction arrows (increasing ω)
+  for (const frac of [0.3, 0.55]) {
+    const k = Math.floor(mp.length * frac), a = mp[k], b = mp[Math.min(k + 4, mp.length - 1)];
+    const ang = Math.atan2(Y(b) - Y(a), X(b) - X(a));
+    if (Math.hypot(X(b) - X(a), Y(b) - Y(a)) < 0.5) continue;
+    ctx.fillStyle = C.theta; ctx.save(); ctx.translate(X(a), Y(a)); ctx.rotate(ang);
+    ctx.beginPath(); ctx.moveTo(6, 0); ctx.lineTo(-4, -4.5); ctx.lineTo(-4, 4.5); ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  ctx.restore();
+  // -1 point
+  const m1 = map(cx(-1)), px = X(m1), py = Y(m1);
+  ctx.strokeStyle = C.warn; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(px - 6, py - 6); ctx.lineTo(px + 6, py + 6); ctx.moveTo(px + 6, py - 6); ctx.lineTo(px - 6, py + 6); ctx.stroke();
+  ctx.fillStyle = C.warn; ctx.textAlign = "right"; ctx.fillText("−1", px - 8, py - 8);
+  // crossover point
+  if (FR.main) {
+    const z = map(openLoop(cx(0, FR.main.w), params));
+    ctx.fillStyle = C.theta; ctx.beginPath(); ctx.arc(X(z), Y(z), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = "left"; ctx.fillText("ωc", X(z) + 6, Y(z) + 12);
+  }
+  // low-frequency start
+  const z0 = mp[0];
+  ctx.strokeStyle = C.theta; ctx.fillStyle = C.surface; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(X(z0), Y(z0), 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.fillText("ω→0", X(z0), Y(z0) - 9);
+}
+function drawFR() { if (!FR) return; drawBode(); drawNyquist(); frDirty = false; }
+$("nyqLog").addEventListener("change", (e) => { nyqLog = e.target.checked; frDirty = true; });
+try { new ResizeObserver(() => { frDirty = true; }).observe($("freqPanel")); } catch (e) {}
+// ---------- end frequency response UI ----------
+
+init();
+</script>
+
+</body></html>

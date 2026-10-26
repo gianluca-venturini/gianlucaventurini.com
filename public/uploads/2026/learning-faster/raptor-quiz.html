@@ -1,0 +1,239 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Raptor Engine Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one question card at a time under a slim test-sequence header; review list at the end */
+:root{
+  --bg:#EEF1F1; --panel:#F8FAFA; --ink:#1B2326; --muted:#5B686C; --line:#C9D2D3;
+  --accent:#D9822B; --ok:#0E8C7A; --okbg:#E0F1ED; --bad:#C2452B; --badbg:#F8E4DF; --sel:#2F6FC9; --selbg:#E3ECF8;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101618; --panel:#172024; --ink:#E4EBEC; --muted:#93A1A5; --line:#2C3A3F;
+  --accent:#EBA05A; --ok:#3CC7B2; --okbg:#143430; --bad:#F2714A; --badbg:#3A1E17; --sel:#6FA2F0; --selbg:#1A2A40; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101618; --panel:#172024; --ink:#E4EBEC; --muted:#93A1A5; --line:#2C3A3F;
+  --accent:#EBA05A; --ok:#3CC7B2; --okbg:#143430; --bad:#F2714A; --badbg:#3A1E17; --sel:#6FA2F0; --selbg:#1A2A40; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(2.2rem,6vw,3rem);line-height:1;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.seq{display:flex;gap:4px;margin-top:10px}
+.seq i{flex:1;height:8px;border-radius:2px;background:var(--line)}
+.seq i.cur{background:var(--ink)}
+.seq i.ok{background:var(--ok)} .seq i.bad{background:var(--bad)}
+.meta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px 22px 20px;display:flex;flex-direction:column;gap:16px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.q{font-size:1.25rem;font-weight:700;line-height:1.35;margin:0;text-wrap:pretty}
+.ctx{color:var(--muted);margin:0;font-size:15.5px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;text-align:left;font:inherit;font-size:16px;color:var(--ink);
+  background:var(--bg);border:1.5px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer}
+.opt .key{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:4px;text-align:center;padding:1px 0;color:var(--muted);margin-top:2px}
+.opt:hover:not(:disabled){border-color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--sel);background:var(--selbg)}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt:disabled{cursor:default}
+.opt:focus-visible,.btn:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.num{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.num input{font:500 1.2rem var(--mono);width:10ch;padding:8px 10px;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.num span{color:var(--muted);font-family:var(--mono)}
+.order{display:flex;flex-direction:column;gap:10px}
+.slots{display:flex;flex-direction:column;gap:6px;counter-reset:s}
+.slot{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:center;min-height:42px;border:1.5px dashed var(--line);border-radius:6px;padding:6px 12px;color:var(--muted)}
+.slot b{font-family:var(--mono);font-weight:500;font-size:13px}
+.slot.filled{border-style:solid;color:var(--ink);background:var(--bg)}
+.slot.right{border-color:var(--ok);background:var(--okbg)} .slot.wrong{border-color:var(--bad);background:var(--badbg)}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.chip:disabled{opacity:.35;cursor:default}
+.err{color:var(--bad);font-size:14px;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:700 15px var(--body);border:1.5px solid var(--ink);background:var(--ink);color:var(--panel);border-radius:6px;padding:9px 18px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.fb{border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.fb.ok{background:var(--okbg);border:1px solid var(--ok)} .fb.bad{background:var(--badbg);border:1px solid var(--bad)}
+.fb strong{font-size:1.05rem}
+.fb p{margin:0;font-size:15.5px}
+.fb .calc{font-family:var(--mono);font-size:13px;white-space:pre-wrap;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.end h2{font-family:var(--display);font-weight:600;font-size:2.4rem;line-height:1;margin:0}
+.score{font-family:var(--display);font-weight:600;font-size:4.5rem;line-height:.9;font-variant-numeric:tabular-nums}
+.review{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.review li{display:grid;grid-template-columns:22px 1fr;gap:10px;font-size:15px;border-top:1px solid var(--line);padding-top:8px}
+.review .m{font-family:var(--mono);font-weight:500}
+.review .m.ok{color:var(--ok)} .review .m.bad{color:var(--bad)}
+.review small{display:block;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Raptor engine quiz</h1>
+    <p class="lede">Fifteen questions on how Raptor works, from the full-flow cycle to why the nozzle doesn't melt. Answer each one before you see the explanation.</p>
+    <div class="seq" id="seq" aria-hidden="true"></div>
+    <div class="meta"><span id="pos">Question 1 of 15</span><span id="tally">0 correct</span></div>
+  </header>
+  <main id="stage"></main>
+  <p class="hint">Keys: 1–4 pick an answer, Enter checks it and moves on.</p>
+</div>
+
+<script>
+const Q=[
+ {t:'choice',k:'The cycle',q:'What does "full-flow" mean in Raptor\'s full-flow staged combustion cycle?',
+  o:['All of both propellants passes through a turbine before reaching the main chamber','All propellant is burned at the ideal mixture ratio in the main chamber','The engine is designed to run only at full thrust','All the fuel flows through the entire cooling jacket'],a:0,
+  e:'Raptor has two preburners: a fuel-rich one feeding the methane turbine and an oxygen-rich one feeding the oxygen turbine. Essentially every kilogram of methane and oxygen passes through one of the two turbines. Because the turbines get so much mass flow, each can run cooler for the same power.'},
+ {t:'choice',k:'Feeding the engine',q:'Why can\'t methane simply flow from the tank into the combustion chamber on its own?',
+  o:['The chamber is at ~330 bar and the tank at a few bar, and fluid only flows from high to low pressure','Liquid methane is too viscous to flow without heating','Methane must be ignited in the pipe before it can enter','The tank is below the engine, so gravity holds it back'],a:0,
+  e:'Without a pump, the chamber\'s pressure would push back up the feed line. Making the tank hold over 330 bar would make it far too heavy, so a turbopump raises the pressure just before the engine.'},
+ {t:'number',k:'Numbers to know',q:'What is Raptor 3\'s operational chamber pressure, in bar?',unit:'bar',ans:330,tol:.1,
+  e:'Raptor 3 runs at about 330 bar and has reached 350 bar in testing. That is roughly 330 times atmospheric pressure, among the highest of any flying engine.'},
+ {t:'choice',k:'The preburner',q:'Why does the fuel-rich preburner run so far from the ideal oxygen-to-methane ratio (about 0.23 instead of about 4)?',
+  o:['To keep the gas cool enough for the turbine blades','To make more thrust inside the preburner','Because oxygen is in short supply on Starship','To avoid needing an igniter'],a:0,
+  e:'Burning at the ideal ratio would make gas at about 3,600 K, which would destroy turbine blades. Starving the fire of oxygen limits the burn, and the large excess of methane soaks up the heat, giving gas of roughly 900–1,000 K.'},
+ {t:'choice',k:'The preburner',q:'Roughly what share of the methane entering the fuel-rich preburner actually burns there?',
+  o:['About 6%','About 25%','About half','Nearly all of it'],a:0,
+  e:'At a mixture ratio of about 0.23, the oxygen runs out after burning only around 6% of the methane (an estimate from the cycle balance; SpaceX hasn\'t published it). The other ~94% is just heated and carried on to the main chamber, where it finally burns.'},
+ {t:'order',k:'The methane path',q:'Put the methane\'s journey in order, from tank to flame.',
+  items:['Pump','Cooling jacket','Fuel-rich preburner','Turbine','Main injector','Main chamber'],
+  e:'The pump raises the pressure, the cooling jacket uses the cold methane to cool the chamber wall, the preburner heats it, the turbine extracts power, and the main injector feeds the gas into the chamber.'},
+ {t:'choice',k:'The turbopump',q:'What does the fuel turbine power?',
+  o:['Only the methane pump on the same shaft','Both the methane and oxygen pumps','A generator for the engine\'s electronics','The steering actuators'],a:0,
+  e:'Raptor is a twin-shaft engine. The fuel turbine and methane pump share one shaft; the oxygen side has its own. No generator or hydraulics are known to hang off either shaft, and Starship\'s steering actuators are electric, powered by the vehicle.'},
+ {t:'choice',k:'Pressure and energy',q:'Along the methane\'s path, where does its pressure go up?',
+  o:['Only in the pump (inducer and impellers)','In the preburner, because combustion raises pressure','In the cooling jacket, because heating raises pressure','In the turbine'],a:0,
+  e:'Every other step spends pressure: friction in ducts and the jacket, deliberate drops across injectors, and above all the turbine. Heat and combustion add temperature, not pressure, in a flowing system. That is why the pump must overshoot to ~950 bar to end up just above 330 bar.'},
+ {t:'choice',k:'Staying alive',q:'Which of these is NOT one of the ways Raptor keeps its chamber and nozzle wall from melting?',
+  o:['An ablative liner that slowly chars and burns away','Cold methane flowing through channels in the wall','A cooler film of fuel along the inside of the wall','A thin copper-alloy liner that conducts heat away quickly'],a:0,
+  e:'Ablative liners are used on some expendable engines, but they wear away and don\'t suit a reusable engine. Raptor relies on regenerative cooling, film cooling and a highly conductive copper liner backed by a steel jacket.'},
+ {t:'choice',k:'Supercritical',q:'In the cooling jacket, methane warms from ~110 K to ~350 K. Why doesn\'t it boil?',
+  o:['It\'s far above methane\'s critical pressure (46 bar), so there is no boiling, only a smooth change','It moves too fast to have time to boil','The copper liner absorbs the heat before the methane can boil','It does boil, and the vapour is vented'],a:0,
+  e:'Above the critical point (about 191 K and 46 bar), liquid and gas stop being distinct phases. At ~900 bar the methane turns smoothly from a dense liquid into a dense, gas-like fluid without the bubbles and hot spots boiling would cause.'},
+ {t:'number',k:'Back of the envelope',q:'Estimate Raptor 3\'s methane mass flow in kg/s. Use thrust ≈ 2,452 kN, sea-level Isp ≈ 327 s, g₀ ≈ 9.81 m/s² and a mixture ratio (O/F) of 3.6.',unit:'kg/s',ans:166,tol:.12,
+  e:'Total flow = thrust ÷ (Isp × g₀). Methane is 1 part in 4.6 of that total.',
+  calc:'ṁ total = 2,452,000 ÷ (327 × 9.81) ≈ 765 kg/s\nṁ CH₄ = 765 ÷ (1 + 3.6) ≈ 166 kg/s'},
+ {t:'choice',k:'The turbine',q:'Inside the fuel turbine, what do the fixed nozzle guide vanes do?',
+  o:['Turn most of the gas\'s pressure into a high-speed jet aimed at the rotor blades','Hold the turbine shaft in place','Burn the remaining oxygen before it reaches the blades','Cool the rotor blades with methane'],a:0,
+  e:'The vanes act as a ring of small nozzles. Most of the pressure drop happens there, producing a jet of roughly 700 m/s. The rotor blades then turn that jet around, and changing the gas\'s direction pushes them and spins the shaft.'},
+ {t:'choice',k:'The nozzle',q:'Raptor\'s exhaust leaves the nozzle at only about 0.84 bar, down from 330 bar in the chamber. Where did that pressure go?',
+  o:['The bell expanded the gas and converted the pressure into exhaust speed','It leaked out through the cooling channels','It was lost as heat to the nozzle wall','It was used to drive the turbopumps'],a:0,
+  e:'A rocket nozzle\'s job is to trade pressure and heat for velocity. Raptor\'s exhaust leaves at over 3 km/s, and that speed is what makes thrust. Aiming the exit pressure close to ambient extracts nearly all the useful push.'},
+ {t:'choice',k:'The nozzle',q:'What goes wrong at sea level if a nozzle is made much larger, so the exit pressure drops far below ambient?',
+  o:['The exhaust peels away from the wall (flow separation), causing violent side loads','The engine produces more thrust and burns hotter','The chamber pressure rises until the engine shuts down','Nothing; a bigger nozzle is always better'],a:0,
+  e:'Below roughly 40% of ambient pressure, outside air pushes into the bell and the flow detaches unevenly. That is why sea-level Raptors use a smaller nozzle than the vacuum version, whose large bell only works where there\'s no air.'},
+ {t:'choice',k:'Cycle comparison',q:'Falcon 9\'s Merlin and Raptor both drive their turbines with burned propellant. What is the key difference in what happens to that turbine exhaust?',
+  o:['Merlin dumps it overboard; Raptor sends it into the main chamber to burn','Merlin sends it to the main chamber; Raptor dumps it overboard','Both dump it overboard','Both reuse it to cool the nozzle'],a:0,
+  e:'Merlin uses a gas-generator cycle: a few percent of its propellant drives the turbine and leaves through a separate exhaust pipe, producing little thrust. Raptor\'s staged combustion routes all turbine exhaust into the main chamber, so nothing is wasted. That raises efficiency, at the cost of much higher pressures.'}
+];
+const N=Q.length;
+const st={i:0,phase:'ask',res:Array(N).fill(null),sel:null,ord:[],num:'',shuf:[]};
+function shuffle(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
+function prep(){st.shuf=Q.map(q=>q.t==='choice'?shuffle(q.o.map((_,i)=>i)):q.t==='order'?shuffle(q.items.map((_,i)=>i)):null)}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function save(){try{localStorage.setItem('raptor-quiz',JSON.stringify(st))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem('raptor-quiz'));if(s&&s.res&&s.res.length===N&&s.shuf&&s.shuf.length===N){Object.assign(st,s);return true}}catch(e){}return false}
+
+function header(){
+  const correct=st.res.filter(r=>r&&r.ok).length,done=st.res.filter(Boolean).length;
+  $('seq').innerHTML=st.res.map((r,i)=>`<i class="${r?(r.ok?'ok':'bad'):(i===st.i&&st.phase!=='end'?'cur':'')}"></i>`).join('');
+  $('pos').textContent=st.phase==='end'?'Finished':`Question ${st.i+1} of ${N}`;
+  $('tally').textContent=`${correct} of ${done} correct`;
+}
+function render(){
+  header();save();
+  if(st.phase==='end')return renderEnd();
+  const q=Q[st.i],r=st.res[st.i],done=st.phase==='shown';
+  let body='';
+  if(q.t==='choice'){
+    body=`<div class="opts" role="group" aria-label="Answers">${st.shuf[st.i].map((oi,k)=>{
+      let cls='';if(done){if(oi===q.a)cls='right';else if(r.pick===oi)cls='wrong'}
+      return `<button class="opt ${cls}" data-o="${oi}" aria-pressed="${!done&&st.sel===oi}" ${done?'disabled':''} id="opt-${st.i}-${k}"><span class="key">${k+1}</span><span>${esc(q.o[oi])}</span></button>`}).join('')}</div>`;
+  }else if(q.t==='number'){
+    const v=done?r.val:st.num;
+    body=`<form class="num" id="nf"><input id="numin" type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer in ${q.unit}" value="${esc(v)}" ${done?'disabled':''}><span>${q.unit}</span></form>`;
+  }else{
+    const order=done?r.ord:st.ord;
+    body=`<div class="order"><div class="slots">${q.items.map((_,p)=>{const it=order[p];let cls=it!=null?'filled':'';if(done)cls+=(it===p?' right':' wrong');
+      return `<div class="slot ${cls}"><b>${p+1}</b><span>${it!=null?esc(q.items[it]):'—'}${done&&it!==p?` <small style="color:var(--muted)">(should be ${esc(q.items[p])})</small>`:''}</span></div>`}).join('')}</div>
+      ${done?'':`<div class="pool">${st.shuf[st.i].map(ii=>`<button class="chip" data-it="${ii}" ${order.includes(ii)?'disabled':''} id="chip-${st.i}-${ii}">${esc(q.items[ii])}</button>`).join('')}</div>
+      <div class="row"><button class="btn ghost" id="undo">Undo last</button><button class="btn ghost" id="clr">Clear</button></div>`}</div>`;
+  }
+  let fb='';
+  if(done){
+    fb=`<div class="fb ${r.ok?'ok':'bad'}"><strong>${r.ok?'Correct.':(q.t==='number'?`Not quite. The answer is about ${q.ans.toLocaleString()} ${q.unit}.`:'Not quite.')}</strong>${q.calc?`<div class="calc">${esc(q.calc)}</div>`:''}<p>${esc(q.e)}</p></div>`;
+  }
+  $('stage').innerHTML=`<section class="card" aria-live="polite">
+    <div class="kicker">${esc(q.k)}</div>
+    <h2 class="q">${esc(q.q)}</h2>
+    ${q.t==='order'&&!done?'<p class="ctx">Tap the steps in order. Use Undo if you misplace one.</p>':''}
+    ${q.t==='number'&&!done?`<p class="ctx">Within ${Math.round(q.tol*100)}% counts as correct.</p>`:''}
+    ${body}
+    <p class="err" id="err" hidden></p>
+    ${fb}
+    <div class="row">${done?`<button class="btn" id="next">${st.i===N-1?'See results':'Next question'}</button>`:'<button class="btn" id="check">Check answer</button>'}</div>
+  </section>`;
+  wire();
+}
+function err(msg){const e=$('err');e.textContent=msg;e.hidden=false}
+function clearErr(){const e=$('err');if(e)e.hidden=true}
+function wire(){
+  const q=Q[st.i];
+  document.querySelectorAll('.opt:not(:disabled)').forEach(b=>b.addEventListener('click',()=>{st.sel=+b.dataset.o;document.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed',x===b));clearErr();save()}));
+  const ni=$('numin');if(ni&&!ni.disabled){ni.addEventListener('input',()=>{st.num=ni.value;clearErr();save()});$('nf').addEventListener('submit',e=>{e.preventDefault();check()});ni.focus({preventScroll:true})}
+  document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{st.ord.push(+c.dataset.it);clearErr();render()}));
+  $('undo')&&$('undo').addEventListener('click',()=>{st.ord.pop();render()});
+  $('clr')&&$('clr').addEventListener('click',()=>{st.ord=[];render()});
+  $('check')&&$('check').addEventListener('click',check);
+  if($('next')){$('next').addEventListener('click',next);$('next').focus({preventScroll:true})}
+}
+function check(){
+  const q=Q[st.i];let r;
+  if(q.t==='choice'){if(st.sel==null)return err('Pick an answer first.');r={pick:st.sel,ok:st.sel===q.a}}
+  else if(q.t==='number'){const raw=String(st.num).replace(/,/g,'').trim(),v=parseFloat(raw);
+    if(!raw)return err('Type a number first.');if(!isFinite(v))return err('That isn\'t a number. Use digits only, like 250.');
+    r={val:st.num,ok:Math.abs(v-q.ans)<=q.ans*q.tol}}
+  else{if(st.ord.length<q.items.length)return err(`Place all ${q.items.length} steps first (${st.ord.length} placed).`);r={ord:st.ord.slice(),ok:st.ord.every((v,i)=>v===i)}}
+  st.res[st.i]=r;st.phase='shown';render();
+}
+function next(){
+  if(st.i===N-1){st.phase='end';return render()}
+  st.i++;st.phase='ask';st.sel=null;st.ord=[];st.num='';render();window.scrollTo({top:0,behavior:'auto'});
+}
+function renderEnd(){
+  const c=st.res.filter(r=>r&&r.ok).length;
+  const verdict=c>=13?'You know this engine inside out.':c>=10?'Solid. A couple of details to revisit.':c>=6?'Good start. The explanations below fill in the gaps.':'Worth another pass through the explainers, then try again.';
+  $('stage').innerHTML=`<section class="card end"><div class="kicker">Results</div>
+    <div class="row" style="align-items:flex-end;gap:16px"><div class="score">${c}/${N}</div><h2>${verdict}</h2></div>
+    <ul class="review">${Q.map((q,i)=>{const r=st.res[i];return `<li><span class="m ${r&&r.ok?'ok':'bad'}">${r&&r.ok?'✓':'✗'}</span><span>${esc(q.q)}<small>${r&&r.ok?'':esc(q.e)}</small></span></li>`}).join('')}</ul>
+    <div class="row"><button class="btn" id="again">Start over (new answer order)</button><button class="btn ghost" id="retry">Retry only the ones I missed</button></div></section>`;
+  $('again').addEventListener('click',()=>{Object.assign(st,{i:0,phase:'ask',res:Array(N).fill(null),sel:null,ord:[],num:''});prep();render()});
+  const missed=st.res.map((r,i)=>r&&r.ok?-1:i).filter(i=>i>=0);
+  if(!missed.length)$('retry').hidden=true;
+  $('retry').addEventListener('click',()=>{missed.forEach(i=>st.res[i]=null);prep();st.i=missed[0];st.phase='ask';st.sel=null;st.ord=[];st.num='';retryQueue=missed.slice(1);render()});
+}
+let retryQueue=null;
+const _next=next;
+next=function(){if(retryQueue){if(!retryQueue.length){retryQueue=null;st.phase='end';return render()}st.i=retryQueue.shift();st.phase='ask';st.sel=null;st.ord=[];st.num='';return render()}_next()};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(st.phase==='ask'&&Q[st.i].t==='choice'&&/^[1-4]$/.test(e.key)){const b=document.querySelectorAll('.opt')[+e.key-1];if(b){b.click();b.focus()}}
+  if(e.key==='Enter'&&!e.target.closest('button')){if(st.phase==='ask')check();else if(st.phase==='shown')next()}
+});
+function start(data){
+  if(data&&data.st){Object.assign(st,data.st)}else if(!load()){prep()}
+  if(!st.shuf||st.shuf.length!==N)prep();
+  render();
+}
+window.claude?.hot?.snapshot?.(()=>({st}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+
+</body></html>

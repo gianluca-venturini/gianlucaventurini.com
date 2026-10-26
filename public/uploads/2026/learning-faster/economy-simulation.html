@@ -1,0 +1,549 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Policy Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=JetBrains+Mono:wght@400;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a sticky control desk on the left (a fixed bottom sheet on phones) beside a grid of draggable chart cards */
+:root{
+  --bg:#ECF0EC; --panel:#F8FAF7; --ink:#14231C; --muted:#5A6B61; --rule:#CCD6CE; --grid:#E2E8E3;
+  --accent:#1E6B4C; --accent-soft:rgba(30,107,76,.12); --s2:#B0661A; --crit:#B33A3A; --warn:#9A6514;
+  --shadow:0 10px 30px rgba(20,35,28,.18);
+  --f-display:"Gloock", Georgia, "Times New Roman", serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1411; --panel:#141F19; --ink:#E2ECE5; --muted:#8FA297; --rule:#27372D; --grid:#1D2A23;
+    --accent:#5CC497; --accent-soft:rgba(92,196,151,.14); --s2:#E5A24C; --crit:#E46E6E; --warn:#E0A64F;
+    --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1411; --panel:#141F19; --ink:#E2ECE5; --muted:#8FA297; --rule:#27372D; --grid:#1D2A23;
+  --accent:#5CC497; --accent-soft:rgba(92,196,151,.14); --s2:#E5A24C; --crit:#E46E6E; --warn:#E0A64F;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start;
+  padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Desk ---------- */
+.desk{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);max-height:calc(100vh - 40px);overflow:auto;
+  background:var(--panel);border:1px solid var(--rule);border-radius:10px;display:flex;flex-direction:column}
+.desk-top{position:sticky;top:0;z-index:2;background:var(--panel);padding:14px 16px 12px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.brand h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0;letter-spacing:.01em}
+.clock{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.transport{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--rule);background:var(--bg);border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:600;font-size:13px;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--panel);min-width:72px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 9px;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
+.readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ro{display:flex;flex-direction:column}
+.ro span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ro b{font-family:var(--f-mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.ro b.hot{color:var(--crit)}
+.desk-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:16px}
+.group-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:0 0 2px}
+.levers{display:flex;flex-direction:column;gap:14px}
+.lever label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600;font-size:13px}
+.lever output{font-family:var(--f-mono);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lever small{display:block;color:var(--muted);font-size:11.5px;margin-top:1px}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 0;height:22px}
+.treasury{border:1px dashed var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.treasury .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.treasury b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.treasury .warn{color:var(--warn);font-size:12px;font-weight:600}
+.shocks{display:flex;flex-wrap:wrap;gap:6px}
+.shocks .btn{font-weight:500;font-size:12px;background:transparent}
+.notes{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.notes li{font-size:12.5px;padding-left:12px;position:relative;color:var(--ink)}
+.notes li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.notes li.alert::before{background:var(--crit)}
+
+/* ---------- Main ---------- */
+main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.intro h1{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,4vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+.intro p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-size:12.5px;padding:4px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:6px;min-width:0;transition:box-shadow .15s, transform .15s}
+.card.dragging{box-shadow:var(--shadow);transform:scale(1.015);border-color:var(--accent);z-index:5;position:relative}
+.card header{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:start}
+.card h3{margin:0;font-size:14px;font-weight:700}
+.card .hint{margin:2px 0 0;font-size:12px;color:var(--muted);line-height:1.35}
+.card .val{font-family:var(--f-mono);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.card .val .s2{color:var(--s2)}
+.handle{border:1px solid transparent;background:transparent;border-radius:6px;width:30px;height:30px;display:grid;place-items:center;cursor:grab;color:var(--muted);touch-action:none;margin:-4px -4px 0 0}
+.handle:hover{border-color:var(--rule);color:var(--ink)}
+.handle svg{width:14px;height:14px;fill:currentColor}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+canvas{width:100%;height:150px;display:block}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr);padding-bottom:calc(var(--deskH,46vh) + 16px)}
+  .desk{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:46vh;border-radius:14px 14px 0 0;border-bottom:0;z-index:20;box-shadow:0 -8px 24px rgba(0,0,0,.12)}
+  .desk-top{padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));gap:8px}
+  .desk-body{padding:12px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  .brand h2{font-size:18px}
+  .levers{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+  .lever small{display:none}
+  .grid{grid-template-columns:minmax(0,1fr)}
+  canvas{height:140px}
+}
+@media (prefers-reduced-motion: reduce){ .card{transition:none} .card.dragging{transform:none} }
+</style>
+
+<div class="app">
+  <aside class="desk" id="desk" aria-label="Policy controls">
+    <div class="desk-top">
+      <div class="brand"><h2>Policy controls</h2><span class="clock" id="clock">Year 0 · Jan</span></div>
+      <div class="transport">
+        <button class="btn primary" id="play" type="button">Pause</button>
+        <div class="seg" role="group" aria-label="Speed">
+          <button type="button" data-speed="2">Slow</button>
+          <button type="button" data-speed="6" aria-pressed="true">Normal</button>
+          <button type="button" data-speed="16">Fast</button>
+        </div>
+        <button class="btn" id="reset" type="button">Restart</button>
+      </div>
+      <div class="readouts">
+        <div class="ro"><span>Inflation</span><b id="roPi">2.0%</b></div>
+        <div class="ro"><span>Unemployed</span><b id="roU">4.5%</b></div>
+        <div class="ro"><span>Real GDP</span><b id="roG">$9.6T</b></div>
+      </div>
+    </div>
+    <div class="desk-body">
+      <div>
+        <p class="group-label">Your four levers</p>
+        <div class="levers">
+          <div class="lever">
+            <label for="rate">Interest rate <output id="rateOut">4.00%</output></label>
+            <input id="rate" type="range" min="0" max="15" step="0.25" value="4">
+            <small>Neutral is about 4%. Takes 6–18 months to bite.</small>
+          </div>
+          <div class="lever">
+            <label for="bonds">Issue bonds <output id="bondsOut">0% GDP/yr</output></label>
+            <input id="bonds" type="range" min="0" max="20" step="0.5" value="0">
+            <small>Borrowed cash lands in the treasury. It earns nothing until spent.</small>
+          </div>
+          <div class="lever">
+            <label for="infra">Infrastructure <output id="infraOut">0% GDP/yr</output></label>
+            <input id="infra" type="range" min="0" max="10" step="0.5" value="0">
+            <small>Hires workers directly. Jobs end when spending stops.</small>
+          </div>
+          <div class="lever">
+            <label for="heli">Helicopter money <output id="heliOut">0% GDP/yr</output></label>
+            <input id="heli" type="range" min="0" max="10" step="0.5" value="0">
+            <small>Cash to households, who spend it over about a year.</small>
+          </div>
+        </div>
+      </div>
+      <div class="treasury">
+        <div class="row"><span>Unspent bond cash</span><b id="cash">$0B</b></div>
+        <div class="row"><span>Mail cheques now</span><button class="btn" id="drop" type="button">Drop 2% of GDP</button></div>
+        <div class="warn" id="capped" hidden>Spending is capped by available cash. Issue more bonds.</div>
+      </div>
+      <div>
+        <p class="group-label">Trigger a shock</p>
+        <div class="shocks">
+          <button class="btn" type="button" data-shock="R">Recession</button>
+          <button class="btn" type="button" data-shock="O">Oil shock</button>
+          <button class="btn" type="button" data-shock="H">Housing crash</button>
+          <button class="btn" type="button" data-shock="B">Bank panic</button>
+        </div>
+      </div>
+      <div>
+        <p class="group-label">What's happening</p>
+        <ul class="notes" id="notes"></ul>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="intro">
+      <div>
+        <h1>The Policy Desk</h1>
+        <p>A toy economy that runs one month per tick. Move the levers and watch the effects arrive with a delay. Drag any chart by its handle to reorder.</p>
+      </div>
+      <button class="linkbtn" id="resetLayout" type="button">Reset chart order</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script>
+(() => {
+"use strict";
+const L = 100, NEUTRAL_R = 2, U_STAR = 4.5, MAX_HIST = 1200;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const $ = id => document.getElementById(id);
+
+const ctl = { rate:4, bonds:0, infra:0, heli:0 };
+let S, hist, events, playing = true, speed = 6, acc = 0;
+
+function fresh(){
+  return { t:0, E:95.5, privE:95.5, infraJobs:0, A:100, P:1, pi:2, pie:2, W:6, H:400, N:50, orig:0.25,
+    rS:2, M:7, D:9, cash:0, effRate:3.5, Sav:0, conf:0, supply:0, hShock:0, rd:0.79, capped:false, spendShare:0 };
+}
+const ngdpOf = s => s.E*s.A*s.P/1000;
+
+function step(){
+  const s = S, ngdp = ngdpOf(s);
+  // Government: issue bonds into the treasury, then spend from it
+  const issue = ctl.bonds/100*ngdp/12;
+  s.D += issue; s.cash += issue;
+  const wantInfra = ctl.infra/100*ngdp/12, infraFlow = Math.min(wantInfra, s.cash); s.cash -= infraFlow;
+  const wantHeli = ctl.heli/100*ngdp/12, heliFlow = Math.min(wantHeli, s.cash); s.cash -= heliFlow;
+  s.capped = infraFlow < wantInfra - 1e-9 || heliFlow < wantHeli - 1e-9;
+  s.Sav += heliFlow;
+  s.M += 0.6*(infraFlow + heliFlow);
+  const debtRatio = s.D/ngdp*100;
+  const premium = Math.max(0, (debtRatio - 150)*0.04);
+  s.effRate += (ctl.rate + 0.5 + premium - s.effRate)/72;          // old bonds roll over slowly
+  const interest = s.D*s.effRate/1200; s.D += interest;            // interest is borrowed too
+
+  // Monetary transmission, lagged
+  s.rS += ((ctl.rate - s.pie) - s.rS)/9;
+
+  // Housing
+  const mRate = Math.max(ctl.rate + 1.75 + premium, 0.1), mr = mRate/1200;
+  const pay = s.H*0.8*mr/(1 - Math.pow(1+mr, -360));
+  const aff = pay/s.W;
+  const affF = clamp(Math.exp(-(aff - 0.31)/0.07), 0.1, 2.5);
+  let origT = 0.25*affF*Math.pow(s.E/95.5, 3);
+  if (s.hShock > 0){ origT *= 0.35; s.hShock--; }
+  s.orig += (origT - s.orig)/4;
+  s.N += s.orig - s.N/200;
+  const hd = s.orig/0.25 - 1;
+  s.H *= 1 + clamp(0.006*hd + (s.pi + 2.5*s.rd)/1200, -0.03, 0.03);
+
+  // Households spend helicopter money over time
+  const spend = s.Sav*0.08; s.Sav -= spend;
+  s.spendShare = spend*12/ngdp*100;
+
+  // Demand -> jobs
+  const gap = -1.2*(s.rS - NEUTRAL_R) + s.spendShare + clamp(1.5*hd, -4, 3) + 0.4*s.infraJobs/L*100 + s.conf;
+  s.conf *= 0.94;
+  const demandRate = 95.5 + gap;
+  s.privE += (clamp(demandRate, 70, 98)/100*L - s.privE)/5;
+  const jobsT = infraFlow*1000/(s.W*1.6);
+  s.infraJobs += (jobsT - s.infraJobs)/3;
+  s.E = Math.min(s.privE + s.infraJobs, 0.99*L);
+  const u = 100*(1 - s.E/L);
+
+  // Prices and expectations
+  const overheat = Math.max(0, demandRate + s.infraJobs/L*100 - 98);
+  const piT = s.pie + 0.5*(U_STAR - u) + 0.5*overheat + s.supply + 0.3*s.spendShare;
+  s.pi += (piT - s.pi)/3;
+  s.pie += 0.03*(s.pi - s.pie) + (s.rS > 0 ? 0.015 : 0.004)*(2 - s.pie);
+  s.supply *= 0.92;
+  s.P *= 1 + s.pi/1200;
+
+  // R&D and efficiency
+  s.rd = clamp((s.E/L - 0.90)/0.07, 0, 1);
+  s.A *= 1 + 0.025*s.rd/12;
+  s.W *= 1 + (s.pie + 2.5*s.rd + 0.6*(U_STAR - u))/1200;
+
+  // Bank lending creates money
+  s.M *= 1 + 0.035*(s.orig/0.25)/12;
+  s.t++;
+
+  const ng = ngdpOf(s);
+  hist.push({ t:s.t, pi:s.pi, u, V:ng/s.M, N:s.N, D:s.D, gdp:s.E*s.A/1000, A:s.A, H:s.H, aff:aff*100,
+    dg:s.D/ng*100, int:interest*12*1000, M:s.M, i:ctl.rate, r:ctl.rate - s.pi, wage:s.W/6*100, price:s.P*100 });
+  if (hist.length > MAX_HIST) hist.shift();
+}
+
+function shock(k){
+  const s = S;
+  if (k === "R"){ s.conf -= 5; }
+  if (k === "O"){ s.supply += 6; s.conf -= 1.5; }
+  if (k === "H"){ s.H *= 0.8; s.hShock = 8; s.conf -= 2.5; }
+  if (k === "B"){ s.M *= 0.9; s.conf -= 3; s.hShock = Math.max(s.hShock, 4); }
+  events.push({ t:s.t, k });
+  dirty = true;
+}
+
+// ---------- Charts ----------
+const fPct = v => v.toFixed(1) + "%";
+const fT = v => "$" + v.toFixed(1) + "T";
+const CHARTS = [
+  { id:"inflation", title:"Inflation", hint:"Annual price growth. Dashed line is the 2% target.", series:[{k:"pi"}], refs:[{v:2,l:"target"}], fmt:fPct },
+  { id:"unemp", title:"Unemployment", hint:"Share of workers without a job. Above 10%, R&D stops.", series:[{k:"u"}], refs:[{v:4.5,l:"natural"},{v:10,l:"R&D stops"}], zero:true, fmt:fPct },
+  { id:"velocity", title:"Velocity of money", hint:"Times each dollar is spent per year: nominal GDP ÷ money supply.", series:[{k:"V"}], fmt:v => v.toFixed(2) + "×" },
+  { id:"mortgages", title:"Active mortgages", hint:"Homes with a mortgage. New loans dry up when payments get expensive.", series:[{k:"N"}], fmt:v => v.toFixed(1) + "M" },
+  { id:"debt", title:"Total government debt", hint:"Every bond issued, plus interest that rolls on top.", series:[{k:"D"}], zero:true, fmt:fT },
+  { id:"gdp", title:"Real GDP", hint:"Employed workers × efficiency, in starting-year dollars.", series:[{k:"gdp"}], fmt:v => "$" + v.toFixed(2) + "T" },
+  { id:"eff", title:"Efficiency", hint:"Output per worker. Grows only while R&D runs, at more than 90% employed.", series:[{k:"A"}], fmt:v => "$" + v.toFixed(1) + "k" },
+  { id:"house", title:"House prices", hint:"Median home price. Cheap mortgages bid prices up.", series:[{k:"H"}], fmt:v => "$" + Math.round(v) + "k" },
+  { id:"afford", title:"Mortgage payment vs income", hint:"Monthly payment on a new mortgage as a share of a monthly wage.", series:[{k:"aff"}], refs:[{v:31,l:"start"}], fmt:fPct },
+  { id:"debtgdp", title:"Debt to GDP", hint:"Above 150%, lenders charge a risk premium on all new borrowing.", series:[{k:"dg"}], refs:[{v:150,l:"premium"}], fmt:v => v.toFixed(0) + "%" },
+  { id:"interest", title:"Interest paid on debt", hint:"The yearly interest bill. It is borrowed too, so debt compounds.", series:[{k:"int"}], zero:true, fmt:v => "$" + v.toFixed(0) + "B" },
+  { id:"money", title:"Money supply", hint:"Deposits created by bank lending and government spending.", series:[{k:"M"}], fmt:fT },
+  { id:"rates", title:"Policy rate vs real rate", hint:"Real rate = policy rate − inflation. Above zero, policy cools the economy.", series:[{k:"i",n:"Policy rate"},{k:"r",n:"Real rate"}], refs:[{v:0,l:""}], fmt:fPct },
+  { id:"wages", title:"Wages vs prices", hint:"Both start at 100. Wages above prices means workers are better off.", series:[{k:"wage",n:"Wages"},{k:"price",n:"Prices"}], fmt:v => v.toFixed(0) },
+];
+const DEFAULT_ORDER = CHARTS.map(c => c.id);
+const grid = $("grid"), cards = new Map();
+const HANDLE = '<svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="4" cy="2.5" r="1.4"/><circle cx="10" cy="2.5" r="1.4"/><circle cx="4" cy="7" r="1.4"/><circle cx="10" cy="7" r="1.4"/><circle cx="4" cy="11.5" r="1.4"/><circle cx="10" cy="11.5" r="1.4"/></svg>';
+
+function loadOrder(){
+  try{
+    const o = JSON.parse(localStorage.getItem("policy-desk-order") || "null");
+    if (Array.isArray(o) && o.length === DEFAULT_ORDER.length && DEFAULT_ORDER.every(id => o.includes(id))) return o;
+  }catch(e){}
+  return DEFAULT_ORDER.slice();
+}
+function saveOrder(){
+  try{ localStorage.setItem("policy-desk-order", JSON.stringify([...grid.children].map(c => c.dataset.id))); }catch(e){}
+}
+
+function buildCards(order){
+  grid.innerHTML = "";
+  for (const id of order){
+    const def = CHARTS.find(c => c.id === id);
+    const el = document.createElement("article");
+    el.className = "card"; el.dataset.id = id;
+    const legend = def.series.length > 1
+      ? `<div class="legend">${def.series.map((s,i) => `<span><i style="background:var(${i ? "--s2" : "--accent"})"></i>${s.n}</span>`).join("")}</div>` : "";
+    el.innerHTML = `<header><div><h3>${def.title}</h3><p class="hint">${def.hint}</p></div><div class="val"></div>
+      <button class="handle" type="button" aria-label="Move ${def.title} chart. Use arrow keys or drag.">${HANDLE}</button></header>${legend}<canvas></canvas>`;
+    grid.appendChild(el);
+    cards.set(id, { el, def, canvas: el.querySelector("canvas"), val: el.querySelector(".val") });
+  }
+}
+
+let colors = {};
+function readColors(){
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ["ink","muted","rule","grid","accent","s2","crit","panel"]) colors[k] = cs.getPropertyValue("--" + k).trim();
+}
+function niceStep(range, n){
+  const raw = range/n, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw/mag;
+  return (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10)*mag;
+}
+const EV_LABEL = { R:"Recession", O:"Oil", H:"Housing", B:"Bank", $:"Cheques" };
+
+function draw(c){
+  const cv = c.canvas, w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+  const g = cv.getContext("2d");
+  g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  if (hist.length < 2) return;
+  const def = c.def, pl = 44, pr = 8, pt = 8, pb = 20, iw = w - pl - pr, ih = h - pt - pb;
+  let lo = Infinity, hi = -Infinity;
+  for (const p of hist) for (const s of def.series){ const v = p[s.k]; if (v < lo) lo = v; if (v > hi) hi = v; }
+  for (const r of def.refs || []){ lo = Math.min(lo, r.v); hi = Math.max(hi, r.v); }
+  if (def.zero) lo = Math.min(lo, 0);
+  if (hi - lo < 1e-6){ hi += 1; lo -= 1; }
+  const padv = (hi - lo)*0.08; hi += padv; if (!(def.zero && lo === 0)) lo -= padv;
+  const st = niceStep(hi - lo, 4); lo = Math.floor(lo/st)*st; hi = Math.ceil(hi/st)*st;
+  const t0 = hist[0].t, t1 = Math.max(hist[hist.length-1].t, t0 + 12);
+  const X = t => pl + (t - t0)/(t1 - t0)*iw, Y = v => pt + (1 - (v - lo)/(hi - lo))*ih;
+
+  g.font = "10.5px " + getComputedStyle(document.body).getPropertyValue("--f-mono");
+  g.textBaseline = "middle"; g.lineWidth = 1;
+  const dec = st < 0.1 ? 2 : st < 1 ? 1 : 0;
+  for (let v = lo; v <= hi + st/2; v += st){
+    const y = Math.round(Y(v)) + .5;
+    g.strokeStyle = colors.grid; g.beginPath(); g.moveTo(pl, y); g.lineTo(w - pr, y); g.stroke();
+    g.fillStyle = colors.muted; g.textAlign = "right"; g.fillText(Math.abs(v) < st/1e3 ? "0" : v.toFixed(dec), pl - 6, y);
+  }
+  const spanY = (t1 - t0)/12, yst = [1,2,5,10,20,50].find(s => spanY/s <= 6) || 50;
+  g.textAlign = "center"; g.textBaseline = "alphabetic";
+  for (let yr = Math.ceil(t0/12/yst)*yst; yr*12 <= t1; yr += yst){
+    const x = X(yr*12); if (x < pl + 8) continue;
+    g.fillStyle = colors.muted; g.fillText("Y" + yr, x, h - 5);
+  }
+  // reference lines
+  g.setLineDash([4,4]);
+  for (const r of def.refs || []){
+    const y = Math.round(Y(r.v)) + .5;
+    g.strokeStyle = colors.muted; g.beginPath(); g.moveTo(pl, y); g.lineTo(w - pr, y); g.stroke();
+    if (r.l){ g.fillStyle = colors.muted; g.textAlign = "left"; g.textBaseline = "bottom"; g.fillText(r.l, pl + 4, y - 2); }
+  }
+  // shock markers
+  g.setLineDash([2,3]);
+  for (const e of events){
+    if (e.t < t0) continue;
+    const x = Math.round(X(e.t)) + .5;
+    g.strokeStyle = colors.crit; g.beginPath(); g.moveTo(x, pt); g.lineTo(x, pt + ih); g.stroke();
+    g.fillStyle = colors.crit; g.textAlign = "left"; g.textBaseline = "top"; g.fillText(EV_LABEL[e.k], x + 3, pt);
+  }
+  g.setLineDash([]);
+  // series
+  def.series.forEach((s, si) => {
+    const col = si ? colors.s2 : colors.accent;
+    g.beginPath();
+    hist.forEach((p, i) => { const x = X(p.t), y = Y(p[s.k]); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    if (si === 0 && def.series.length === 1){
+      g.save(); g.lineTo(X(hist[hist.length-1].t), pt + ih); g.lineTo(X(hist[0].t), pt + ih); g.closePath();
+      g.globalAlpha = 0.12; g.fillStyle = col; g.fill(); g.restore();
+      g.beginPath(); hist.forEach((p, i) => { const x = X(p.t), y = Y(p[s.k]); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    }
+    g.strokeStyle = col; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
+    const last = hist[hist.length-1];
+    g.fillStyle = col; g.beginPath(); g.arc(X(last.t), Y(last[s.k]), 3.5, 0, Math.PI*2); g.fill();
+    g.strokeStyle = colors.panel; g.lineWidth = 1.5; g.stroke();
+  });
+}
+
+// ---------- UI ----------
+const fmtCash = v => v >= 1 ? "$" + v.toFixed(2) + "T" : "$" + Math.round(v*1000) + "B";
+function updateUI(){
+  const s = S, last = hist[hist.length-1];
+  $("clock").textContent = `Year ${Math.floor(s.t/12)} · ${MONTHS[s.t % 12]}`;
+  $("roPi").textContent = fPct(s.pi); $("roPi").classList.toggle("hot", s.pi > 4 || s.pi < 0);
+  $("roU").textContent = fPct(last.u); $("roU").classList.toggle("hot", last.u > 7);
+  $("roG").textContent = "$" + last.gdp.toFixed(1) + "T";
+  $("cash").textContent = fmtCash(s.cash);
+  $("capped").hidden = !s.capped;
+  for (const c of cards.values()){
+    const d = c.def;
+    c.val.innerHTML = d.series.map((sr, i) => `<span class="${i ? "s2" : ""}">${d.fmt(last[sr.k])}</span>`).join(" · ");
+  }
+  // diagnostics
+  const n = [], real = ctl.rate - s.pi;
+  if (s.pi > 4) n.push(["Inflation is well above the 2% target. Higher rates would cool it, after a delay.", 1]);
+  else if (s.pi < 0) n.push(["Prices are falling (deflation). People delay purchases, which deepens a slump.", 1]);
+  if (real < -0.5) n.push(["The real rate is negative. Borrowing is cheap, so demand and house prices climb.", 0]);
+  else if (real > 3) n.push(["The real rate is high. Policy is squeezing demand and mortgages.", 0]);
+  if (last.u > 10) n.push(["More than 10% are unemployed, so R&D has stopped and efficiency is frozen.", 1]);
+  else if (last.u > 7) n.push(["Unemployment is high. Spending or lower rates would add jobs.", 1]);
+  if (s.cash > 0.3 && ctl.infra + ctl.heli < ctl.bonds*0.5) n.push(["Bond cash is piling up unspent. It adds debt and interest but no jobs.", 0]);
+  if (s.Sav > 0.1) n.push([`Households still hold ${fmtCash(s.Sav)} of helicopter money to spend.`, 0]);
+  if (last.dg > 150) n.push(["Debt is above 150% of GDP. Lenders now charge a premium, raising mortgage rates too.", 1]);
+  if (s.capped) n.push(["Spending is limited to the bond cash you have.", 1]);
+  if (!n.length) n.push(["The economy is near balance: inflation near target and unemployment near its natural rate.", 0]);
+  $("notes").innerHTML = n.slice(0,3).map(([t,a]) => `<li class="${a ? "alert" : ""}">${t}</li>`).join("");
+}
+
+let dirty = true, lastDraw = 0;
+function render(){ readColors(); for (const c of cards.values()) draw(c); updateUI(); dirty = false; }
+
+let prev = performance.now();
+function frame(now){
+  const dt = Math.min(0.25, (now - prev)/1000); prev = now;
+  if (playing){ acc += dt*speed; while (acc >= 1){ step(); acc -= 1; dirty = true; } }
+  if (drag) autoScroll();
+  if (dirty && now - lastDraw > 60){ render(); lastDraw = now; }
+  requestAnimationFrame(frame);
+}
+
+function reset(){
+  S = fresh(); hist = []; events = [];
+  for (let i = 0; i < 24; i++) step();
+  dirty = true;
+}
+
+// controls
+const sliders = { rate:v => v.toFixed(2) + "%", bonds:v => v + "% GDP/yr", infra:v => v + "% GDP/yr", heli:v => v + "% GDP/yr" };
+for (const [id, f] of Object.entries(sliders)){
+  const inp = $(id), out = $(id + "Out");
+  const sync = () => { ctl[id] = parseFloat(inp.value); out.textContent = f(ctl[id]); dirty = true; };
+  inp.addEventListener("input", sync); sync();
+}
+$("play").addEventListener("click", () => { playing = !playing; $("play").textContent = playing ? "Pause" : "Play"; });
+document.querySelectorAll("[data-speed]").forEach(b => b.addEventListener("click", () => {
+  speed = +b.dataset.speed;
+  document.querySelectorAll("[data-speed]").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+}));
+$("reset").addEventListener("click", reset);
+document.querySelectorAll("[data-shock]").forEach(b => b.addEventListener("click", () => shock(b.dataset.shock)));
+$("drop").addEventListener("click", () => {
+  const amt = Math.min(0.02*ngdpOf(S), S.cash);
+  if (amt <= 0){ $("capped").hidden = false; $("capped").textContent = "No bond cash to mail. Issue bonds first."; return; }
+  S.cash -= amt; S.Sav += amt; S.M += 0.6*amt; events.push({ t:S.t, k:"$" }); dirty = true;
+  $("capped").textContent = "Spending is capped by available cash. Issue more bonds.";
+});
+$("resetLayout").addEventListener("click", () => { buildCards(DEFAULT_ORDER); saveOrder(); observe(); dirty = true; });
+
+// ---------- Drag to reorder ----------
+let drag = null;
+grid.addEventListener("pointerdown", e => {
+  const h = e.target.closest(".handle"); if (!h || e.button > 0) return;
+  e.preventDefault();
+  const card = h.closest(".card");
+  h.setPointerCapture(e.pointerId);
+  drag = { card, id:e.pointerId, x:e.clientX, y:e.clientY };
+  card.classList.add("dragging"); document.body.classList.add("is-dragging");
+});
+grid.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.x = e.clientX; drag.y = e.clientY; reorderAt(drag.x, drag.y);
+});
+function endDrag(e){
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.card.classList.remove("dragging"); document.body.classList.remove("is-dragging");
+  drag = null; saveOrder(); dirty = true;
+}
+grid.addEventListener("pointerup", endDrag);
+grid.addEventListener("pointercancel", endDrag);
+function reorderAt(x, y){
+  const hit = document.elementFromPoint(x, y);
+  const el = hit && hit.closest(".card");
+  if (!el || el === drag.card || el.parentNode !== grid) return;
+  const r = el.getBoundingClientRect();
+  const cols = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
+  const after = cols > 1 ? (y > r.bottom - r.height*0.25 || (x > r.left + r.width/2 && y > r.top + r.height*0.25)) : y > r.top + r.height/2;
+  const ref = after ? el.nextSibling : el;
+  if (ref !== drag.card && ref !== drag.card.nextSibling) grid.insertBefore(drag.card, ref);
+}
+function autoScroll(){
+  const desk = $("desk"), mobile = getComputedStyle(desk).position === "fixed";
+  const bottom = mobile ? window.innerHeight - desk.offsetHeight : window.innerHeight, edge = 70;
+  let dy = 0;
+  if (drag.y < edge) dy = -Math.ceil((edge - drag.y)/5);
+  else if (drag.y > bottom - edge) dy = Math.ceil((drag.y - (bottom - edge))/5);
+  if (dy){ window.scrollBy(0, dy); reorderAt(drag.x, drag.y); }
+}
+grid.addEventListener("keydown", e => {
+  const h = e.target.closest(".handle"); if (!h) return;
+  const card = h.closest(".card");
+  if (e.key === "ArrowUp" || e.key === "ArrowLeft"){ if (card.previousElementSibling){ grid.insertBefore(card, card.previousElementSibling); } }
+  else if (e.key === "ArrowDown" || e.key === "ArrowRight"){ if (card.nextElementSibling){ grid.insertBefore(card.nextElementSibling, card); } }
+  else return;
+  e.preventDefault(); h.focus(); saveOrder(); dirty = true;
+});
+
+// sizing
+let ro;
+function observe(){
+  if (ro) ro.disconnect();
+  ro = new ResizeObserver(() => { dirty = true; });
+  for (const c of cards.values()) ro.observe(c.canvas);
+}
+const deskRO = new ResizeObserver(() => {
+  document.documentElement.style.setProperty("--deskH", $("desk").offsetHeight + "px");
+});
+deskRO.observe($("desk"));
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+mq.addEventListener && mq.addEventListener("change", () => { dirty = true; });
+new MutationObserver(() => { dirty = true; }).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] });
+
+buildCards(loadOrder());
+observe();
+reset();
+render();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
