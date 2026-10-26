@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Quad PID Lab</title><meta name="description" content="A 5-inch class quadcopter with a cascaded angle and rate PID. Fly it, disturb it, and watch the Bode, Nyquist and step plots update."><meta name="preview-element" content="#view">
+<title>Quad PID Lab</title><meta name="description" content="A 5-inch class quadcopter with a cascaded angle and rate PID. Fly it, disturb it, and watch the Bode, Nyquist and step plots update."><meta name="preview-params" content="autofly=1"><meta name="preview-element" content="#view">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Condensed:wght@500;600;700&display=swap">
@@ -818,6 +818,21 @@ const sim = new Core.Sim(S.af, S.tune);
 sim.env = S.env;
 const live = { lx: 0, ly: 0, rx: 0, ry: 0 }; // ly: throttle 0..1, others -1..1 (ry: forward +)
 let paused = false, speed = 1;
+// ?autofly=1 flies a demo: climb, then fly in a random direction, then start again.
+// It uses its own flight mode and never changes the saved settings.
+const autofly = new URLSearchParams(location.search).get('autofly') === '1';
+const AUTOFLY_MODE = { flight: 'angle', altHold: true };
+let autoT = 0, autoDir = 0;
+function autoReset() { sim.reset(FLOOR); clearCharts(); if (G3) G3.resetTrail(); autoT = 0; autoDir = Math.random() * 2 * Math.PI; }
+function autoFly(dt) {
+  autoT += dt;
+  if (autoT > 9) autoReset();
+  const climb = autoT < 2.5;
+  live.lx = 0;
+  live.ly = climb ? 1 : 0.6;
+  live.rx = climb ? 0 : 0.6 * Math.cos(autoDir);
+  live.ry = climb ? 0 : 0.6 * Math.sin(autoDir);
+}
 function heldSticks() { const h = S.init.sticks; return { lx: h.yaw, ly: h.thr / 100, rx: h.roll, ry: h.pitch }; }
 function stickState() { return S.init.hold ? heldSticks() : live; }
 function cmdFromSticks(s) { return { thr: s.ly, roll: s.rx, pitch: -s.ry, yaw: s.lx }; }
@@ -1679,6 +1694,7 @@ buildAxisSliders(); buildShared(); buildPresets(); buildEnv(); buildAf(); buildI
 syncMode(); setAxis(S.ui.axis);
 G3 = init3D();
 doReset();
+if (autofly) autoReset();
 runAnalysis();
 let last = performance.now(), acc = 0, frameN = 0, recN = 0;
 function frame(now) {
@@ -1686,8 +1702,9 @@ function frame(now) {
   inputs(real);
   if (!paused) {
     acc += real * speed; let n = 0;
-    const cmd = cmdFromSticks(stickState());
-    while (acc >= 0.001 && n < 60) { sim.step(0.001, cmd, S.mode); acc -= 0.001; n++; if (++recN % 10 === 0) record(); }
+    if (autofly) autoFly(real * speed);
+    const cmd = cmdFromSticks(autofly ? live : stickState());
+    while (acc >= 0.001 && n < 60) { sim.step(0.001, cmd, autofly ? AUTOFLY_MODE : S.mode); acc -= 0.001; n++; if (++recN % 10 === 0) record(); }
     if (n >= 60) acc = 0;
   }
   if (G3) G3.render(paused ? 0 : real * speed);

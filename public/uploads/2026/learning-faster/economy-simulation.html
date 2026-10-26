@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>The Policy Desk</title><meta name="description" content="A toy economy that runs one month per tick. Move the levers and watch the effects arrive with a delay."><meta name="preview-element" content="#grid > :first-child">
+<title>The Policy Desk</title><meta name="description" content="A toy economy that runs one month per tick. Move the levers and watch the effects arrive with a delay."><meta name="preview-params" content="shocks=5"><meta name="preview-element" content="#grid > :first-child">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -195,6 +195,8 @@ const $ = id => document.getElementById(id);
 
 const ctl = { rate:4, bonds:0, infra:0, heli:0 };
 let S, hist, events, playing = true, speed = 6, acc = 0;
+// ?shocks=<years> triggers a random shock at that interval of simulated time
+const shockEvery = Math.round(parseFloat(new URLSearchParams(location.search).get("shocks")) * 12) || 0;
 
 function fresh(){
   return { t:0, E:95.5, privE:95.5, infraJobs:0, A:100, P:1, pi:2, pie:2, W:6, H:400, N:50, orig:0.25,
@@ -441,7 +443,7 @@ function render(){ readColors(); for (const c of cards.values()) draw(c); update
 let prev = performance.now();
 function frame(now){
   const dt = Math.min(0.25, (now - prev)/1000); prev = now;
-  if (playing){ acc += dt*speed; while (acc >= 1){ step(); acc -= 1; dirty = true; } }
+  if (playing){ acc += dt*speed; while (acc >= 1){ step(); if (shockEvery > 0 && S.t % shockEvery === 0) shock("ROHB"[Math.floor(Math.random()*4)]); acc -= 1; dirty = true; } }
   if (drag) autoScroll();
   if (dirty && now - lastDraw > 60){ render(); lastDraw = now; }
   requestAnimationFrame(frame);
