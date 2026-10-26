@@ -79,6 +79,27 @@ export default {
                     ],
                 },
                 {
+                    name: 'Embed',
+                    label: 'Embed',
+                    fields: [
+                        {
+                            name: 'src',
+                            label: 'Source',
+                            type: 'string',
+                        },
+                        {
+                            name: 'title',
+                            label: 'Title',
+                            type: 'string',
+                        },
+                        {
+                            name: 'height',
+                            label: 'Height ("auto" to fit the page)',
+                            type: 'string',
+                        },
+                    ],
+                },
+                {
                     name: 'VideoYoutube',
                     label: 'VideoYoutube',
                     fields: [

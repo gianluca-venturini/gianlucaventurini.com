@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
+import { Embed, type EmbedProps } from './Embed';
 import {
     extractFootnotes,
     FootnoteBackLink,
@@ -41,6 +42,7 @@ interface CustomComponents {
     Image: ImageProps;
     Video: { src?: string };
     VideoYoutube: { id?: string; time?: number };
+    Embed: EmbedProps;
     Comment: { comment?: string };
     FootnoteReference: { label: string; number: number; first: boolean };
     FootnoteBackLink: { label: string };
@@ -115,6 +117,7 @@ const components: Components<CustomComponents> & any = {
         ) : (
             <div />
         ),
+    Embed: (props: any) => <Embed {...props} />,
     Comment: () => <></>,
     FootnoteReference: (props: any) => <FootnoteReference {...props} />,
     FootnoteBackLink: (props: any) => <FootnoteBackLink {...props} />,
