@@ -4,6 +4,10 @@ export interface LinkPreviewData {
     description?: string;
     image?: string;
     siteName?: string;
+    // CSS selector of the part of the page to show live in the card
+    previewElement?: string;
+    // URL settings added to the page only when it is shown live in the card
+    previewParams?: string;
 }
 
 const ENTITIES: Record<string, string> = {
@@ -40,7 +44,9 @@ function clean(text?: string) {
 // Works on the server and in the browser, so it uses regexes and not DOMParser.
 export function parseLinkPreview(html: string, url: string): LinkPreviewData {
     const meta: Record<string, string> = {};
-    for (const [tag] of Array.from(html.matchAll(/<meta\s[^>]*>/gi))) {
+    for (const [tag] of Array.from(
+        html.matchAll(/<meta\s(?:[^>"']|"[^"]*"|'[^']*')*>/gi)
+    )) {
         const key = /(?:property|name)\s*=\s*["']([^"']+)["']/i.exec(tag)?.[1];
         const content = /content\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
         if (key && content && !(key.toLowerCase() in meta)) {
@@ -60,5 +66,7 @@ export function parseLinkPreview(html: string, url: string): LinkPreviewData {
         ),
         image: image && new URL(image, url).toString(),
         siteName: clean(meta['og:site_name']),
+        previewElement: clean(meta['preview-element']),
+        previewParams: clean(meta['preview-params']),
     };
 }

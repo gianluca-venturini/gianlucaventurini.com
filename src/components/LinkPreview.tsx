@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { ElementFrame } from './ElementFrame';
 import { type LinkPreviewData, parseLinkPreview } from './LinkPreviewMeta';
 
 const OPEN_DELAY_MS = 300;
@@ -8,6 +9,8 @@ const CLOSE_DELAY_MS = 150;
 const CARD_WIDTH = 320;
 const GAP = 8;
 const MARGIN = 16;
+// A tall element makes the card taller, up to this height
+const FRAME_MAX_HEIGHT = 260;
 
 const cache = new Map<string, Promise<LinkPreviewData | null>>();
 
@@ -124,6 +127,15 @@ export const PreviewLink = (
     );
 };
 
+// The page without the link `#` part, plus the settings the page asks for in previews
+function frameUrl(target: URL, params?: string) {
+    const url = new URL(target.pathname + target.search, target.origin);
+    new URLSearchParams(params).forEach((value, key) => {
+        url.searchParams.set(key, value);
+    });
+    return url.toString();
+}
+
 const PreviewCard = (props: {
     anchor: DOMRect;
     preview: LinkPreviewData;
@@ -133,22 +145,40 @@ const PreviewCard = (props: {
     const { anchor, preview } = props;
     const ref = useRef<HTMLAnchorElement>(null);
     const [position, setPosition] = useState<{ top: number; left: number }>();
-    const host = new URL(preview.url).hostname.replace(/^www\./, '');
+    const target = new URL(preview.url);
+    const host = target.hostname.replace(/^www\./, '');
+    // The link can name the element to show after `#`, else the page names it
+    const selector = target.hash
+        ? `#${CSS.escape(decodeURIComponent(target.hash.slice(1)))}`
+        : preview.previewElement;
+    // Only pages of this site can be shown live, other sites block it
+    const live = selector && target.origin === window.location.origin;
 
-    // Show the card under the link, or above it when there is no space below
+    // Show the card under the link, or above it when there is no space below.
+    // The live view can change the card height after it loads.
     useLayoutEffect(() => {
-        const height = ref.current?.offsetHeight ?? 0;
-        const below = anchor.bottom + GAP;
-        const top =
-            below + height > window.innerHeight - MARGIN &&
-            anchor.top - GAP - height > MARGIN
-                ? anchor.top - GAP - height
-                : below;
-        const left = Math.max(
-            MARGIN,
-            Math.min(anchor.left, window.innerWidth - CARD_WIDTH - MARGIN)
-        );
-        setPosition({ top, left });
+        const card = ref.current;
+        if (!card) return;
+        const place = () => {
+            const height = card.offsetHeight;
+            const below = anchor.bottom + GAP;
+            const top =
+                below + height > window.innerHeight - MARGIN &&
+                anchor.top - GAP - height > MARGIN
+                    ? anchor.top - GAP - height
+                    : below;
+            const left = Math.max(
+                MARGIN,
+                Math.min(anchor.left, window.innerWidth - CARD_WIDTH - MARGIN)
+            );
+            setPosition({ top, left });
+        };
+        place();
+        const observer = new ResizeObserver(place);
+        observer.observe(card);
+        return () => {
+            observer.disconnect();
+        };
     }, [anchor, preview]);
 
     return (
@@ -166,16 +196,26 @@ const PreviewCard = (props: {
             }}
             className="fixed z-50 flex flex-col overflow-hidden rounded-md border border-neutral-300 bg-neutral-50 text-neutral-600 shadow-lg animate-fade-in dark:border-neutral-600 dark:bg-neutral-700 dark:text-gray-300"
         >
-            {preview.image && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={preview.image}
-                    alt=""
-                    className="h-40 w-full object-cover bg-neutral-200 dark:bg-neutral-600"
-                    onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                    }}
+            {live ? (
+                <ElementFrame
+                    url={frameUrl(target, preview.previewParams)}
+                    selector={selector}
+                    initialHeight={160}
+                    maxHeight={FRAME_MAX_HEIGHT}
+                    className="bg-neutral-200 dark:bg-neutral-600"
                 />
+            ) : (
+                preview.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={preview.image}
+                        alt=""
+                        className="h-40 w-full object-cover bg-neutral-200 dark:bg-neutral-600"
+                        onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                        }}
+                    />
+                )
             )}
             <div className="flex flex-col gap-1 p-3">
                 <span className="font-semibold line-clamp-2 dark:text-gray-50">
