@@ -3,6 +3,7 @@ import { type Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 
 import { Code } from './Code';
 import { Image, type ImageProps } from './Image';
+import { PreviewLink } from './LinkPreview';
 
 export const Markdown = (props: Parameters<typeof TinaMarkdown>[0]) => {
     return (
@@ -29,6 +30,9 @@ const components: Components<CustomComponents> & any = {
             <div />
         ),
     img: (props: any) => (props ? <Image {...props} /> : <div />),
+    a: (props: any) => (
+        <PreviewLink url={props?.url}>{props?.children}</PreviewLink>
+    ),
     table: (props: any) =>
         props ? (
             <div style={{ overflowX: 'auto' }} className="mb-6">

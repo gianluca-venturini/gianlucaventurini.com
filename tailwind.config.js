@@ -33,8 +33,13 @@ module.exports = {
                     '90%': { opacity: 0.9 },
                     '100%': { opacity: 1 }
                 },
+                fadeIn: {
+                    '0%': { opacity: 0, transform: 'translateY(4px)' },
+                    '100%': { opacity: 1, transform: 'translateY(0)' }
+                },
             },
             animation: {
+                'fade-in': 'fadeIn 0.15s ease-out',
                 'flickering-off': 'flickeringOff 0.5s forwards',
                 'flickering-on': 'flickeringOn 0.5s forwards',
             },
