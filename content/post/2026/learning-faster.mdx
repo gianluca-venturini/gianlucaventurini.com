@@ -1,0 +1,65 @@
+---
+title: Learning new topics just got faster
+snippet: 
+cover: /uploads/2026/learning-faster/cover.webp
+date: 2026-10-26T15:00:00.000Z
+---
+
+With an AI tutor such as Claude, I now learn hard topics much faster. Before, I needed a few hours of books, classes and videos before I could work with the core ideas. Now I need a few minutes. In this post, I explain my method, using the [SpaceX Raptor engine](https://en.wikipedia.org/wiki/SpaceX_Raptor) as an example.
+
+Learning is a big part of how I spend my solo time. I enjoy learning about a wide range of topics, such as physics, math or economics. I love the feeling of being deeply engaged with the core ideas, the felling of minutes turning into hours without realizing the passage of time.
+
+## How I used to learn
+
+I'm always been a practical learner: I can read the same concept multiple times and barely remember it, but once I engage with it on a playful simulation it's permanently burned in my brain. Up to one year ago the fastest way I learned was watching just enough Youtube videos, online classes, books, blog posts or papers that I could code a simulation. I find all these methods effective, but requiring a lot of my attention and dedication, meaning I can only engage few times per week. This has changed drastically in the past year. Before, I had to build each simulation myself. Most of that time went into details that were not about the topic, such as how to draw a pipe or why my code had a bug. Now the tutor builds the simulation in a few minutes. I spend all my time on the core ideas: I change the simulation, ask a question, and see the result as fast as I can think of the next question.
+
+In [a post from 2025](/posts/2025/assisted-coding), I wrote that LLMs make coding less interesting, because they do the thinking for me. Learning is different. The tutor does the work that is not the topic, and I keep the thinking.
+
+## My method now
+
+The method I'm now using is jumping directly to core ideas of the topic in a conversation with an AI tutor. I use Claude, but other AI tutors can do the same. I use the explainer style of [Bartosz Ciechanowski](https://ciechanow.ski), one of my favorite bloggers of all time. My favorite of his posts is [Mechanical Watch](https://ciechanow.ski/mechanical-watch/).
+
+**Step 1.** Ask the tutor for the simplest possible explainer page. An explainer page is a single web page with text and diagrams. The tutor makes it for you (Claude calls it an [artifact](https://code.claude.com/docs/en/artifacts)). Let's supposed I want to learn how the Raptor engine works, I would start with a simple prompt like:
+
+> How does a rocket engine works? Let's take the Raptor Engine from Spacex. I want you to create the simplest possible explainer with a very simple figure, I'll guide you where to go from there.
+
+![Simple diagram of a Raptor engine: methane and oxygen go through turbopumps, burn at high pressure, and the nozzle pushes the gas out fast to make thrust](</uploads/2026/learning-faster/raptor-engine-simple.png>)
+
+**Step 2.** Once the list of components and relationship is clear, I expand.
+
+> We need to make the diagram a little more complete with all the main components, for example how is the nozzle prevented from melting? How are the fluids injected in the combustion chamber? We'll do a simple 2D visualization complete with all the real components.
+
+The tutor then adds [all the main components](https://claude.ai/artifact/SQCpoY8wkSrSG8DGUsTnhW) of the full-flow cycle: the fuel and oxygen pumps, the turbines, the two preburners, the main injector, the cooling jacket, the combustion chamber and the nozzle.
+
+**Step 3.** The next step is the most rewarding: keep expanding whatever sparks my curiosity. I add a comment to any part of the page, and the tutor answers it. There's no set amount of time here, only the occasional subscription token limit stops me.
+
+![A comment on the fuel-rich preburner in the explainer page, sent to Claude: why do we need the preburner stage, and why can the turbine not use methane directly from the cooling jacket?](</uploads/2026/learning-faster/raptor-comment.png>)
+
+I keep going until the explainer page [answers all my questions](https://claude.ai/artifact/SQCpoY8wkSrSG8DGUsTnhW). Often I start tangents, for example analyzing how a specific component works: [raptor engine turbopump](https://claude.ai/artifact/Wzsabkrdi5nZzmwMqNJtuk).
+
+**Step 4.** When I think I understand the topic, I ask the tutor to [quiz me](https://claude.ai/artifact/6pBPqJBeZShtzBnAkDwAht). The quiz finds the parts that I only think I know. Before, a working simulation told me that I understood a topic. Now the quiz does that job.
+
+> Quiz me on the Raptor engine. Ask one question at a time and wait for my answer. Do not tell me the answer before I try.
+
+![A Raptor engine quiz with fifteen questions. The first question asks what "full-flow" means in the full-flow staged combustion cycle, with four answers to choose from](</uploads/2026/learning-faster/raptor-quiz.png>)
+
+**Step 5.** Furthermore, now that the tutor is really good at 3D modeling I often repackage the simplified concepts [into a realistic 3D model](/uploads/2026/learning-faster/raptor-3d-astra.html) in order to appreciate how all the concepts I learned fit together as physical object that I can now understand (and 3D print if I wanted to).
+
+<Video src="/uploads/2026/learning-faster/raptor-3d.mp4" />
+
+## Conclusions
+
+The example I presented is inherently visual but this method works well for any hard topic. I find this activity extremely effective in teaching me complex concepts. What I like the most of it is that it's extremely addictive in all the possible good ways: requires very little activation energy, got a curiosity, make this 30min trip to the airport a learning session!. I've never experienced that much engagement with an arbitrary topic, I'm now learning as fast as I can think about new topics.
+
+
+## Footnotes
+- These are some of the topics I've studied this week.
+    - [oscillator](https://claude.ai/artifact/5bVTEWYv33dTyTwQxHJwN8)
+    - [government check and balances](https://claude.ai/artifact/MHFzmMYxdkMJeoZaRjw8qa)
+    - [economy simulation](https://claude.ai/artifact/4QLxTUDFHcJoGKiQeDh7TG)
+    - [economy control simulation](https://claude.ai/artifact/GY7D13kpbKSkb1BryDDHyo)
+    - [quadricopter multi-variable control system](https://claude.ai/artifact/TeVT5475ZixrF6aESBFUM9)
+
+- Simulations I used to prove to myself I understand enough of a topic [life simulation](https://github.com/gianluca-venturini/vita), [Electromagnetic field](https://github.com/gianluca-venturini/james/), [Raft in Rust](https://github.com/gianluca-venturini/raft).
+- Good physics books I've learned from: *The Biggest Ideas in the Universe* by Sean M. Carroll, *QED: The Strange Theory of Light and Matter* by Richard Feynman. More in [my bookshelf](/bookshelf).
+- Some of my favorite online classes [Cryptography I, Stanford](https://www.coursera.org/learn/crypto)

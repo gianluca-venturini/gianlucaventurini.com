@@ -52,4 +52,8 @@ body {
         list-style-type: disc;
         margin-left: 20px;
     }
+
+    blockquote {
+        @apply border-l-4 border-neutral-300 pl-4 mb-4 italic dark:border-neutral-600;
+    }
 }
